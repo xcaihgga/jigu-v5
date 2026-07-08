@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Route, Users, ArrowRight, Check, Flag, ChevronRight, Sparkles, AlertTriangle, Map, BookOpen, Layers, Zap } from "lucide-react";
+import { Route, Users, ArrowRight, Check, Flag, ChevronRight, Sparkles, AlertTriangle, Map, BookOpen, Layers, Zap, ClipboardPaste, Wand2 } from "lucide-react";
 import { pathway, patient, assess } from "@/services";
 import { toast } from "@/store/ui";
 import { fmtDate } from "@/lib/storage";
 import { cn } from "@/lib/utils";
+import { parseCase } from "@/lib/text-parser";
+import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
 import CategoryIcon from "@/components/CategoryIcon";
 import type { Patient } from "@/lib/types";
@@ -21,6 +23,28 @@ export default function PathwayPage() {
   const suggestions = useMemo(() => (patientId ? pathway.recommend(patientId) : []), [patientId]);
   const states = useMemo(() => (patientId ? pathway.statesByPatient(patientId) : []), [patientId]);
   const records = useMemo(() => (patientId ? assess.listRecords(patientId) : []), [patientId]);
+
+  const [caseOpen, setCaseOpen] = useState(false);
+  const [caseText, setCaseText] = useState("");
+  const [caseResult, setCaseResult] = useState<{ tags: string[]; suggestions: string[] } | null>(null);
+
+  const handleCaseParse = () => {
+    if (!caseText.trim()) { toast.error("请粘贴病例描述"); return; }
+    const r = parseCase(caseText);
+    setCaseResult(r);
+  };
+
+  const handleImport = (selected: string) => {
+    if (!patientId) { toast.error("请先选择患者"); return; }
+    const pw = pathway.list().find((p) => p.title === selected);
+    if (pw) {
+      pathway.start(patientId, pw.id);
+      toast.success(`已为「${current?.name ?? "该患者"}」启用「${pw.title}」`);
+      setCaseOpen(false);
+    } else {
+      toast.error("未找到匹配的路径定义");
+    }
+  };
 
   if (patients.length === 0) {
     return <div className="card"><EmptyState icon={<Users className="h-12 w-12" />} title="暂无患者" desc="请先在患者档案中新建" action={<button onClick={() => navigate("/patients")} className="btn-primary btn-sm">去新建</button>} /></div>;
@@ -39,8 +63,63 @@ export default function PathwayPage() {
           <select value={patientId} onChange={(e) => setPatientId(e.target.value)} className="input w-auto min-w-[200px]">
             {patients.map((p) => <option key={p.id} value={p.id}>{p.name} · {p.diagnosis}</option>)}
           </select>
+          <button onClick={() => setCaseOpen(true)} className="btn-ghost btn-sm">
+            <ClipboardPaste className="h-3.5 w-3.5" /> 病例导入
+          </button>
         </div>
       </header>
+
+      {/* 病例导入 Modal */}
+      <Modal
+        open={caseOpen}
+        onClose={() => setCaseOpen(false)}
+        title="病例导入 · 智能推荐路径"
+        size="lg"
+        footer={
+          <>
+            <button onClick={() => { setCaseText(""); setCaseResult(null); }} className="btn-ghost btn-sm">清空</button>
+            <button onClick={() => setCaseOpen(false)} className="btn-ghost btn-sm">关闭</button>
+            <button onClick={handleCaseParse} disabled={!caseText.trim()} className="btn-primary btn-sm disabled:opacity-50">
+              <Wand2 className="h-3.5 w-3.5" /> 解析病例
+            </button>
+          </>
+        }
+      >
+        <p className="text-sm text-ink-mute mb-2">粘贴一段病例描述（含诊断、症状、合并症等），系统将自动识别关键词并推荐合适的临床路径。</p>
+        <textarea
+          value={caseText}
+          onChange={(e) => setCaseText(e.target.value)}
+          placeholder="示例：&#10;患者男性，62 岁，因突发右侧肢体无力 5 天入院&#10;诊断：急性脑梗死（左侧大脑中动脉）&#10;现右上肢 Brunnstrom Ⅱ，下肢 Brunnstrom Ⅲ&#10;合并高血压、2 型糖尿病"
+          className="input min-h-[180px] font-mono text-2xs leading-relaxed"
+        />
+        {caseResult && (
+          <div className="mt-4 space-y-3">
+            <div>
+              <p className="label-text mb-1.5">识别标签</p>
+              {caseResult.tags.length === 0 ? <p className="text-2xs text-ink-faint">未识别到匹配标签</p> : (
+                <div className="flex flex-wrap gap-1.5">
+                  {caseResult.tags.map((t) => <span key={t} className="chip chip-active text-2xs">{t}</span>)}
+                </div>
+              )}
+            </div>
+            <div>
+              <p className="label-text mb-1.5">推荐路径</p>
+              {caseResult.suggestions.length === 0 ? <p className="text-2xs text-ink-faint">未匹配到已知路径</p> : (
+                <div className="space-y-2">
+                  {caseResult.suggestions.map((s) => (
+                    <div key={s} className="flex items-center justify-between gap-2 rounded border border-line p-2.5">
+                      <span className="text-sm text-ink">{s}</span>
+                      <button onClick={() => handleImport(s)} className="btn-primary btn-sm text-2xs">
+                        <Route className="h-3 w-3" /> 启用
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {/* 患者信息条 */}
       {current && (

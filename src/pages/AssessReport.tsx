@@ -1,13 +1,16 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, FileText, CalendarPlus, Route, TrendingUp, Info } from "lucide-react";
-import { assess, pathway } from "@/services";
+import { ArrowLeft, FileText, CalendarPlus, Route, TrendingUp, Info, FileDown, FileSpreadsheet, FileType, Network, Eye, X, Loader2 } from "lucide-react";
+import { assess, patient, pathway } from "@/services";
 import { useCountUp } from "@/hooks/useCountUp";
 import { fmtDateTime } from "@/lib/storage";
+import { exportToPDF, exportToWord, exportToExcel, exportToMindmap, renderMindmapSVG } from "@/lib/exporters";
+import { toast } from "@/store/ui";
 import RadarChart from "@/components/ui/RadarChart";
 import GradeBadge from "@/components/ui/GradeBadge";
 import CategoryIcon from "@/components/CategoryIcon";
 import EmptyState from "@/components/ui/EmptyState";
+import Modal from "@/components/ui/Modal";
 import { cn } from "@/lib/utils";
 
 const toneText: Record<"good" | "warn" | "bad", { color: string; bg: string }> = {
@@ -28,6 +31,15 @@ export default function AssessReport() {
   );
 
   const animatedScore = useCountUp(record?.totalScore ?? 0);
+  const reportRef = useRef<HTMLDivElement>(null);
+  const [exporting, setExporting] = useState<string | null>(null);
+  const [mindmapOpen, setMindmapOpen] = useState(false);
+  const [mindmapSvg, setMindmapSvg] = useState<string>("");
+
+  const pat = record ? patient.get(record.patientId) : undefined;
+  const patientTags = pat?.tags;
+
+  const buildReportPayload = () => record && scale ? { record, scale, interpretation, patientTags } : null;
 
   if (!record || !scale) {
     return <EmptyState icon={<FileText className="h-10 w-10" />} title="报告不存在" action={<button onClick={() => navigate("/assess")} className="btn-ghost btn-sm">返回评估中心</button>} />;
@@ -48,6 +60,8 @@ export default function AssessReport() {
       <button onClick={() => navigate("/assess")} className="inline-flex items-center gap-1 text-2xs text-ink-mute hover:text-teal-500">
         <ArrowLeft className="h-3 w-3" /> 评估中心
       </button>
+
+      <div ref={reportRef} className="space-y-5">
 
       {/* 报告头 */}
       <div className="card overflow-hidden">
@@ -161,6 +175,136 @@ export default function AssessReport() {
           <TrendingUp className="h-4 w-4" /> 查看进度追踪
         </button>
       </div>
+      </div>
+
+      {/* 导出区 */}
+      <div className="card p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <FileDown className="h-4 w-4 text-coral" />
+          <h2 className="section-title">导出报告</h2>
+          <span className="text-2xs text-ink-mute">支持 PDF / Word / Excel / 思维导图</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <button
+            onClick={async () => {
+              if (!reportRef.current) { toast.error("报告尚未渲染"); return; }
+              setExporting("pdf");
+              try {
+                await exportToPDF(reportRef.current, `${scale.abbr}-${record.patientName}-评估报告.pdf`);
+                toast.success("PDF 已下载");
+              } catch (e) {
+                toast.error(e instanceof Error ? e.message : "PDF 导出失败");
+              } finally {
+                setExporting(null);
+              }
+            }}
+            disabled={!!exporting}
+            className="btn-ghost flex-col h-auto py-3 text-2xs"
+          >
+            {exporting === "pdf" ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileType className="h-4 w-4 text-coral" />}
+            <span className="mt-1">导出 PDF</span>
+          </button>
+          <button
+            onClick={() => {
+              const payload = buildReportPayload();
+              if (!payload) return;
+              try {
+                exportToWord(payload, `${scale.abbr}-${record.patientName}-评估报告.docx`);
+                toast.success("Word 已下载");
+              } catch (e) {
+                toast.error(e instanceof Error ? e.message : "Word 导出失败");
+              }
+            }}
+            disabled={!!exporting}
+            className="btn-ghost flex-col h-auto py-3 text-2xs"
+          >
+            <FileType className="h-4 w-4 text-teal-500" />
+            <span className="mt-1">导出 Word</span>
+          </button>
+          <button
+            onClick={() => {
+              const payload = buildReportPayload();
+              if (!payload) return;
+              try {
+                exportToExcel(payload, `${scale.abbr}-${record.patientName}-评估报告.xlsx`);
+                toast.success("Excel 已下载");
+              } catch (e) {
+                toast.error(e instanceof Error ? e.message : "Excel 导出失败");
+              }
+            }}
+            disabled={!!exporting}
+            className="btn-ghost flex-col h-auto py-3 text-2xs"
+          >
+            <FileSpreadsheet className="h-4 w-4 text-amber-dark" />
+            <span className="mt-1">导出 Excel</span>
+          </button>
+          <button
+            onClick={async () => {
+              const payload = buildReportPayload();
+              if (!payload) return;
+              setExporting("mindmap");
+              try {
+                await exportToMindmap(payload, `${scale.abbr}-${record.patientName}-评估脑图.png`);
+                toast.success("思维导图已下载");
+              } catch (e) {
+                toast.error(e instanceof Error ? e.message : "思维导图导出失败");
+              } finally {
+                setExporting(null);
+              }
+            }}
+            disabled={!!exporting}
+            className="btn-ghost flex-col h-auto py-3 text-2xs"
+          >
+            {exporting === "mindmap" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Network className="h-4 w-4 text-teal-500" />}
+            <span className="mt-1">导出思维导图</span>
+          </button>
+        </div>
+        <div className="flex justify-end mt-3">
+          <button
+            onClick={() => {
+              const payload = buildReportPayload();
+              if (!payload) return;
+              setMindmapSvg(renderMindmapSVG(payload));
+              setMindmapOpen(true);
+            }}
+            className="text-2xs text-ink-mute hover:text-teal-500 inline-flex items-center gap-1"
+          >
+            <Eye className="h-3 w-3" /> 预览思维导图
+          </button>
+        </div>
+      </div>
+
+      <Modal
+        open={mindmapOpen}
+        onClose={() => setMindmapOpen(false)}
+        title="评估脑图预览"
+        size="lg"
+        footer={
+          <>
+            <button onClick={() => setMindmapOpen(false)} className="btn-ghost btn-sm">关闭</button>
+            <button
+              onClick={async () => {
+                const payload = buildReportPayload();
+                if (!payload) return;
+                setExporting("mindmap");
+                try {
+                  await exportToMindmap(payload, `${scale.abbr}-${record.patientName}-评估脑图.png`);
+                  toast.success("思维导图已下载");
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : "导出失败");
+                } finally {
+                  setExporting(null);
+                }
+              }}
+              className="btn-primary btn-sm"
+            >
+              <FileDown className="h-3.5 w-3.5" /> 下载 PNG
+            </button>
+          </>
+        }
+      >
+        <div className="rounded border border-line bg-cream-50 overflow-hidden" dangerouslySetInnerHTML={{ __html: mindmapSvg }} />
+      </Modal>
     </div>
   );
 }

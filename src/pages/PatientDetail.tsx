@@ -1,21 +1,27 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Stethoscope, CalendarPlus, Route, ClipboardList, CalendarRange, ArrowRight } from "lucide-react";
+import { ArrowLeft, Stethoscope, CalendarPlus, Route, ClipboardList, CalendarRange, ArrowRight, ClipboardPaste, Wand2, Save, Edit3 } from "lucide-react";
 import { assess, patient, pathway, plan } from "@/services";
 import { fmtDate, relativeTime } from "@/lib/storage";
+import { parsePatient } from "@/lib/text-parser";
+import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
 import GradeBadge from "@/components/ui/GradeBadge";
 import CategoryIcon, { CATEGORY_META } from "@/components/CategoryIcon";
+import { toast } from "@/store/ui";
+import type { Category, Patient } from "@/lib/types";
 
 export default function PatientDetail() {
   const { patientId } = useParams();
   const navigate = useNavigate();
   const p = patientId ? patient.get(patientId) : undefined;
+  const [editOpen, setEditOpen] = useState(false);
+  const [tick, setTick] = useState(0);
 
-  const records = useMemo(() => (patientId ? assess.listRecords(patientId) : []), [patientId]);
-  const plans = useMemo(() => (patientId ? plan.list(patientId) : []), [patientId]);
-  const states = useMemo(() => (patientId ? pathway.statesByPatient(patientId) : []), [patientId]);
-  const suggestions = useMemo(() => (patientId ? pathway.recommend(patientId) : []), [patientId]);
+  const records = useMemo(() => (patientId ? assess.listRecords(patientId) : []), [patientId, tick]);
+  const plans = useMemo(() => (patientId ? plan.list(patientId) : []), [patientId, tick]);
+  const states = useMemo(() => (patientId ? pathway.statesByPatient(patientId) : []), [patientId, tick]);
+  const suggestions = useMemo(() => (patientId ? pathway.recommend(patientId) : []), [patientId, tick]);
 
   if (!p) {
     return <EmptyState title="患者不存在" action={<button onClick={() => navigate("/patients")} className="btn-ghost btn-sm">返回列表</button>} />;
@@ -47,6 +53,7 @@ export default function PatientDetail() {
           <div className="flex flex-col gap-2">
             <button onClick={() => navigate("/assess")} className="btn-primary btn-sm"><Stethoscope className="h-3.5 w-3.5" /> 发起评估</button>
             <button onClick={() => navigate("/plan")} className="btn-ghost btn-sm"><CalendarPlus className="h-3.5 w-3.5" /> 生成计划</button>
+            <button onClick={() => setEditOpen(true)} className="btn-ghost btn-sm"><Edit3 className="h-3.5 w-3.5" /> 编辑档案</button>
           </div>
         </div>
       </div>
@@ -149,6 +156,147 @@ export default function PatientDetail() {
           </div>
         </div>
       )}
+
+      <EditPatientModal
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        patient={p}
+        onSaved={() => { setEditOpen(false); setTick((t) => t + 1); }}
+      />
     </div>
+  );
+}
+
+function EditPatientModal({
+  open,
+  onClose,
+  patient: p,
+  onSaved,
+}: {
+  open: boolean;
+  onClose: () => void;
+  patient: Patient;
+  onSaved: () => void;
+}) {
+  const [name, setName] = useState(p.name);
+  const [age, setAge] = useState(String(p.age));
+  const [sex, setSex] = useState<"男" | "女">(p.sex);
+  const [diagnosis, setDiagnosis] = useState(p.diagnosis);
+  const [category, setCategory] = useState<Category>(p.category);
+  const [tags, setTags] = useState(p.tags.join("，"));
+  const [pasteOpen, setPasteOpen] = useState(false);
+  const [pasteText, setPasteText] = useState("");
+
+  // 当外部 patient 变化时重置表单
+  useEffect(() => {
+    setName(p.name);
+    setAge(String(p.age));
+    setSex(p.sex);
+    setDiagnosis(p.diagnosis);
+    setCategory(p.category);
+    setTags(p.tags.join("，"));
+  }, [p]);
+
+  const save = () => {
+    if (!name.trim() || !diagnosis.trim()) {
+      toast.error("请填写姓名与诊断");
+      return;
+    }
+    patient.update(p.id, {
+      name,
+      age: +age || 0,
+      sex,
+      diagnosis,
+      category,
+      tags: tags.split(/[,，\s]+/).filter(Boolean),
+    });
+    toast.success("档案已更新");
+    onSaved();
+  };
+
+  const applyParsed = () => {
+    const parsed = parsePatient(pasteText) as Record<string, any>;
+    if (parsed.name) setName(parsed.name);
+    if (typeof parsed.age === "number") setAge(String(parsed.age));
+    if (parsed.sex) setSex(parsed.sex);
+    if (parsed.diagnosis) setDiagnosis(parsed.diagnosis);
+    if (parsed.category) setCategory(parsed.category);
+    if (Array.isArray(parsed.tags)) {
+      const merged = Array.from(new Set([...tags.split(/[,，\s]+/).filter(Boolean), ...parsed.tags]));
+      setTags(merged.join("，"));
+    }
+    setPasteOpen(false);
+    toast.success("已从粘贴内容识别字段");
+  };
+
+  return (
+    <>
+      <Modal
+        open={open}
+        onClose={onClose}
+        title={`编辑档案 · ${p.name}`}
+        footer={
+          <>
+            <button onClick={onClose} className="btn-ghost btn-sm">取消</button>
+            <button onClick={save} className="btn-primary btn-sm"><Save className="h-3.5 w-3.5" /> 保存</button>
+          </>
+        }
+        size="lg"
+      >
+        <div className="space-y-4">
+          <div className="flex justify-end">
+            <button onClick={() => setPasteOpen(true)} className="btn-ghost btn-sm text-2xs">
+              <ClipboardPaste className="h-3.5 w-3.5" /> 智能粘贴更新
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div><label className="label-text">姓名</label><input className="input" value={name} onChange={(e) => setName(e.target.value)} /></div>
+            <div><label className="label-text">年龄</label><input className="input" type="number" value={age} onChange={(e) => setAge(e.target.value)} /></div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="label-text">性别</label>
+              <div className="flex rounded border border-line p-0.5 text-sm">
+                {(["男", "女"] as const).map((s) => (
+                  <button key={s} onClick={() => setSex(s)} className={`flex-1 rounded py-1.5 ${sex === s ? "bg-teal-500 text-cream-50" : "text-ink-mute"}`}>{s}</button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="label-text">亚专科</label>
+              <select className="input" value={category} onChange={(e) => setCategory(e.target.value as Category)}>
+                {(Object.keys(CATEGORY_META) as Category[]).map((c) => <option key={c} value={c}>{CATEGORY_META[c].name}</option>)}
+              </select>
+            </div>
+          </div>
+          <div><label className="label-text">诊断</label><input className="input" value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} /></div>
+          <div><label className="label-text">标签 <span className="lowercase tracking-normal text-ink-faint">（逗号分隔）</span></label><input className="input" value={tags} onChange={(e) => setTags(e.target.value)} /></div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={pasteOpen}
+        onClose={() => setPasteOpen(false)}
+        title="智能粘贴识别"
+        size="lg"
+        footer={
+          <>
+            <button onClick={() => setPasteText("")} className="btn-ghost btn-sm">清空</button>
+            <button onClick={() => setPasteOpen(false)} className="btn-ghost btn-sm">取消</button>
+            <button onClick={applyParsed} disabled={!pasteText.trim()} className="btn-primary btn-sm disabled:opacity-50">
+              <Wand2 className="h-3.5 w-3.5" /> 解析并填充
+            </button>
+          </>
+        }
+      >
+        <p className="text-sm text-ink-mute mb-2">粘贴一段主诉/现病史/查体文字，识别后仅覆盖匹配字段。</p>
+        <textarea
+          value={pasteText}
+          onChange={(e) => setPasteText(e.target.value)}
+          placeholder="示例：&#10;姓名：李四&#10;女，58 岁&#10;电话 13900002222&#10;主诉：腰部疼痛 2 周&#10;现病史：弯腰加重，伴左下肢放射痛…&#10;诊断：腰椎间盘突出"
+          className="input min-h-[200px] font-mono text-2xs leading-relaxed"
+        />
+      </Modal>
+    </>
   );
 }

@@ -15,6 +15,8 @@ import PathwayPage from "@/pages/PathwayPage";
 import PatientsPage from "@/pages/PatientsPage";
 import PatientDetail from "@/pages/PatientDetail";
 import Profile from "@/pages/Profile";
+import QuizPage from "@/pages/QuizPage";
+import DocsPage from "@/pages/DocsPage";
 
 export default function App() {
   const init = useAuthStore((s) => s.init);
@@ -39,6 +41,8 @@ export default function App() {
             <Route path="/patients" element={<PatientsPage />} />
             <Route path="/patients/:patientId" element={<PatientDetail />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/quiz" element={<QuizPage />} />
+            <Route path="/docs" element={<DocsPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

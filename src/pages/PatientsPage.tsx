@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, Users, ArrowRight } from "lucide-react";
+import { Plus, Search, Users, ArrowRight, ClipboardPaste, Wand2 } from "lucide-react";
 import { patient as patientSvc, assess, plan } from "@/services";
 import { useAuthStore } from "@/store/auth";
 import { toast } from "@/store/ui";
 import { fmtDate, relativeTime } from "@/lib/storage";
+import { parsePatient } from "@/lib/text-parser";
 import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
 import CategoryIcon, { CATEGORY_META } from "@/components/CategoryIcon";
@@ -100,6 +101,8 @@ function CreatePatientModal({ open, onClose, onCreated }: { open: boolean; onClo
   const [diagnosis, setDiagnosis] = useState("");
   const [category, setCategory] = useState<Category>("musculo");
   const [tags, setTags] = useState("");
+  const [pasteOpen, setPasteOpen] = useState(false);
+  const [pasteText, setPasteText] = useState("");
 
   const submit = () => {
     if (!name.trim() || !diagnosis.trim() || !user) { toast.error("请填写姓名与诊断"); return; }
@@ -113,37 +116,84 @@ function CreatePatientModal({ open, onClose, onCreated }: { open: boolean; onClo
     setName(""); setAge(""); setDiagnosis(""); setTags("");
   };
 
+  const applyParsed = () => {
+    const parsed = parsePatient(pasteText) as Record<string, any>;
+    if (parsed.name) setName(parsed.name);
+    if (typeof parsed.age === "number") setAge(String(parsed.age));
+    if (parsed.sex) setSex(parsed.sex);
+    if (parsed.diagnosis) setDiagnosis(parsed.diagnosis);
+    if (parsed.category) setCategory(parsed.category);
+    if (Array.isArray(parsed.tags)) {
+      const merged = Array.from(new Set([...tags.split(/[,，\s]+/).filter(Boolean), ...parsed.tags]));
+      setTags(merged.join("，"));
+    }
+    setPasteOpen(false);
+    toast.success("已从粘贴内容识别字段，请检查后再保存");
+  };
+
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      title="新建患者档案"
-      footer={<><button onClick={onClose} className="btn-ghost btn-sm">取消</button><button onClick={submit} className="btn-primary btn-sm">创建</button></>}
-    >
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          <div><label className="label-text">姓名</label><input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="患者姓名" /></div>
-          <div><label className="label-text">年龄</label><input className="input" type="number" value={age} onChange={(e) => setAge(e.target.value)} placeholder="岁" /></div>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="label-text">性别</label>
-            <div className="flex rounded border border-line p-0.5 text-sm">
-              {(["男", "女"] as const).map((s) => (
-                <button key={s} onClick={() => setSex(s)} className={`flex-1 rounded py-1.5 ${sex === s ? "bg-teal-500 text-cream-50" : "text-ink-mute"}`}>{s}</button>
-              ))}
+    <>
+      <Modal
+        open={open}
+        onClose={onClose}
+        title="新建患者档案"
+        footer={<><button onClick={onClose} className="btn-ghost btn-sm">取消</button><button onClick={submit} className="btn-primary btn-sm">创建</button></>}
+      >
+        <div className="space-y-4">
+          <div className="flex justify-end">
+            <button onClick={() => setPasteOpen(true)} className="btn-ghost btn-sm text-2xs">
+              <ClipboardPaste className="h-3.5 w-3.5" /> 智能粘贴
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div><label className="label-text">姓名</label><input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="患者姓名" /></div>
+            <div><label className="label-text">年龄</label><input className="input" type="number" value={age} onChange={(e) => setAge(e.target.value)} placeholder="岁" /></div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="label-text">性别</label>
+              <div className="flex rounded border border-line p-0.5 text-sm">
+                {(["男", "女"] as const).map((s) => (
+                  <button key={s} onClick={() => setSex(s)} className={`flex-1 rounded py-1.5 ${sex === s ? "bg-teal-500 text-cream-50" : "text-ink-mute"}`}>{s}</button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="label-text">亚专科</label>
+              <select className="input" value={category} onChange={(e) => setCategory(e.target.value as Category)}>
+                {(Object.keys(CATEGORY_META) as Category[]).map((c) => <option key={c} value={c}>{CATEGORY_META[c].name}</option>)}
+              </select>
             </div>
           </div>
-          <div>
-            <label className="label-text">亚专科</label>
-            <select className="input" value={category} onChange={(e) => setCategory(e.target.value as Category)}>
-              {(Object.keys(CATEGORY_META) as Category[]).map((c) => <option key={c} value={c}>{CATEGORY_META[c].name}</option>)}
-            </select>
-          </div>
+          <div><label className="label-text">诊断</label><input className="input" value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} placeholder="如：右侧脑梗死后偏瘫" /></div>
+          <div><label className="label-text">标签 <span className="lowercase tracking-normal text-ink-faint">（逗号分隔）</span></label><input className="input" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="偏瘫, 上肢功能障碍" /></div>
         </div>
-        <div><label className="label-text">诊断</label><input className="input" value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} placeholder="如：右侧脑梗死后偏瘫" /></div>
-        <div><label className="label-text">标签 <span className="lowercase tracking-normal text-ink-faint">（逗号分隔）</span></label><input className="input" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="偏瘫, 上肢功能障碍" /></div>
-      </div>
-    </Modal>
+      </Modal>
+
+      <Modal
+        open={pasteOpen}
+        onClose={() => setPasteOpen(false)}
+        title="智能粘贴识别"
+        size="lg"
+        footer={
+          <>
+            <button onClick={() => setPasteText("")} className="btn-ghost btn-sm">清空</button>
+            <button onClick={() => setPasteOpen(false)} className="btn-ghost btn-sm">取消</button>
+            <button onClick={applyParsed} disabled={!pasteText.trim()} className="btn-primary btn-sm disabled:opacity-50">
+              <Wand2 className="h-3.5 w-3.5" /> 解析并填充
+            </button>
+          </>
+        }
+      >
+        <p className="text-sm text-ink-mute mb-2">粘贴一段主诉/现病史文字，系统将自动识别姓名、性别、年龄、电话、主诉、诊断、标签等字段。</p>
+        <textarea
+          value={pasteText}
+          onChange={(e) => setPasteText(e.target.value)}
+          placeholder="示例：&#10;姓名：张三&#10;男，65 岁&#10;电话 13800001111&#10;主诉：右侧肢体无力 3 天&#10;现病史：突发右侧偏瘫，口角歪斜…&#10;既往史：高血压 10 年&#10;诊断：脑梗死"
+          className="input min-h-[200px] font-mono text-2xs leading-relaxed"
+        />
+        <div className="mt-2 text-2xs text-ink-faint">识别字段后将返回原表单，可在保存前手动调整。</div>
+      </Modal>
+    </>
   );
 }

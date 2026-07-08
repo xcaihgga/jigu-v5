@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Check, X, Users, ClipboardCheck, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, X, Users, ClipboardCheck, Loader2, ClipboardPaste, Wand2, History } from "lucide-react";
 import { assess, patient } from "@/services";
 import { useAuthStore } from "@/store/auth";
 import { toast } from "@/store/ui";
 import { cn } from "@/lib/utils";
+import { parseAssessment } from "@/lib/text-parser";
 import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
 import type { Patient } from "@/lib/types";
@@ -20,6 +21,8 @@ export default function AssessRunner() {
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [quickOpen, setQuickOpen] = useState(false);
+  const [quickText, setQuickText] = useState("");
 
   const patients = useMemo(() => patient.list(user?.id), [user?.id]);
 
@@ -34,6 +37,62 @@ export default function AssessRunner() {
 
   const choose = (qid: string, score: number) => {
     setAnswers((a) => ({ ...a, [qid]: score }));
+  };
+
+  // 智能粘贴：基于 scale 上下文推断每题得分
+  const handleQuickApply = () => {
+    if (!quickText.trim()) { toast.error("请先粘贴文字"); return; }
+    const parsed = parseAssessment(quickText, scale.id);
+    const newAnswers: Record<string, number> = { ...answers };
+    const filled: string[] = [];
+    // 1) VAS 优先：选择包含 vas 关键词的题（用首题作 fallback）
+    if (typeof parsed.vas === "number") {
+      const vasQ = scale.questions.find((qq) => /vas|疼痛|pain/i.test(qq.text + qq.dimension));
+      const target = vasQ || scale.questions[0];
+      if (target) { newAnswers[target.id] = parsed.vas; filled.push(`${target.text} = ${parsed.vas}`); }
+    }
+    // 2) Barthel / Berg / Tinetti / FIM 量表题：用首题
+    const singleScale = ["barthel", "berg", "tinetti", "fim", "mmt"].find((k) => parsed[k] !== undefined) as keyof typeof parsed | undefined;
+    if (singleScale) {
+      const value = parsed[singleScale];
+      const firstQ = scale.questions[0];
+      if (firstQ && typeof value === "number") { newAnswers[firstQ.id] = value; filled.push(`${firstQ.text} = ${value}`); }
+    }
+    // 3) Ashworth / MAS：优先肌张力相关题
+    if (parsed.ashworth || parsed.mas) {
+      const ashQ = scale.questions.find((qq) => /肌张力|痉挛|ashworth|spasm/i.test(qq.text + qq.dimension));
+      if (ashQ) {
+        const v = parseInt(String(parsed.ashworth ?? parsed.mas).replace("+", ""), 10);
+        if (!isNaN(v)) { newAnswers[ashQ.id] = v; filled.push(`${ashQ.text} = ${v}`); }
+      }
+    }
+    // 4) 6MWD 步行距离：寻找 6 分钟相关题
+    if (typeof parsed.walk6min === "number") {
+      const wq = scale.questions.find((qq) => /6.*分钟|6MW|步行距离/i.test(qq.text + qq.dimension));
+      if (wq) { newAnswers[wq.id] = parsed.walk6min; filled.push(`${wq.text} = ${parsed.walk6min}`); }
+    }
+    // 5) ROM 角度：模糊匹配关节+运动
+    if (Array.isArray(parsed.rom)) {
+      for (const r of parsed.rom) {
+        const mq = scale.questions.find((qq) => qq.text.includes(r.joint) && qq.text.includes(r.movement));
+        if (mq) { newAnswers[mq.id] = r.angle; filled.push(`${mq.text} = ${r.angle}°`); }
+      }
+    }
+    // 6) 肌力：按"肌力"题填入
+    if (Array.isArray(parsed.strength)) {
+      for (const s of parsed.strength) {
+        const mq = scale.questions.find((qq) => /肌力|strength|MMT/i.test(qq.text + qq.dimension));
+        if (mq) { newAnswers[mq.id] = s.level; filled.push(`${mq.text} = ${s.level}`); }
+      }
+    }
+    setAnswers(newAnswers);
+    setQuickOpen(false);
+    setQuickText("");
+    if (filled.length) {
+      toast.success(`已自动填入 ${filled.length} 项：${filled.slice(0, 2).join("；")}${filled.length > 2 ? "…" : ""}`);
+    } else {
+      toast.error("未识别到匹配的题项，请检查量表类型或粘贴格式");
+    }
   };
 
   const submit = () => {
@@ -70,6 +129,15 @@ export default function AssessRunner() {
         )}
       </div>
       <p className="text-sm text-ink-mute mb-5">{scale.subtitle} · 适用 {scale.scenario}</p>
+
+      <div className="flex items-center justify-end gap-2 mb-3">
+        <button onClick={() => setQuickOpen(true)} className="btn-ghost btn-sm text-2xs">
+          <ClipboardPaste className="h-3.5 w-3.5" /> 快速记录
+        </button>
+        <button onClick={() => setIdx(0)} className="btn-ghost btn-sm text-2xs">
+          <History className="h-3.5 w-3.5" /> 重置进度
+        </button>
+      </div>
 
       {/* 进度条 */}
       <div className="mb-6">
@@ -180,6 +248,34 @@ export default function AssessRunner() {
             ))}
           </div>
         )}
+      </Modal>
+
+      {/* 快速记录（智能粘贴） */}
+      <Modal
+        open={quickOpen}
+        onClose={() => setQuickOpen(false)}
+        title="快速记录（智能粘贴）"
+        size="lg"
+        footer={
+          <>
+            <button onClick={() => setQuickText("")} className="btn-ghost btn-sm">清空</button>
+            <button onClick={() => setQuickOpen(false)} className="btn-ghost btn-sm">取消</button>
+            <button onClick={handleQuickApply} disabled={!quickText.trim()} className="btn-primary btn-sm disabled:opacity-50">
+              <Wand2 className="h-3.5 w-3.5" /> 解析并填入
+            </button>
+          </>
+        }
+      >
+        <p className="text-sm text-ink-mute mb-2">
+          粘贴医嘱/查体文字，系统将自动识别 VAS、ROM、肌力、肌张力、Berg、Barthel 等数值并填入对应题目。
+        </p>
+        <textarea
+          value={quickText}
+          onChange={(e) => setQuickText(e.target.value)}
+          placeholder="示例：&#10;VAS 评分：5/10&#10;左肩前屈 120°，后伸 30°，外展 90°&#10;左肱二头肌肌力 4 级&#10;Ashworth 1+&#10;Berg 评分 42&#10;Barthel 指数 65"
+          className="input min-h-[200px] font-mono text-2xs leading-relaxed"
+        />
+        <p className="text-2xs text-ink-faint mt-2">识别后仅覆盖匹配字段，可手动调整。</p>
       </Modal>
     </div>
   );
