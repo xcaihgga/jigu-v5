@@ -10,6 +10,7 @@ import AssessRunner from "@/pages/AssessRunner";
 import AssessReport from "@/pages/AssessReport";
 import PlanList from "@/pages/PlanList";
 import PlanEditor from "@/pages/PlanEditor";
+import TreatmentPlanPage from "@/pages/TreatmentPlanPage";
 import ProgressPage from "@/pages/ProgressPage";
 import PathwayPage from "@/pages/PathwayPage";
 import PatientsPage from "@/pages/PatientsPage";
@@ -35,6 +36,7 @@ export default function App() {
             <Route path="/assess/:scaleId" element={<AssessRunner />} />
             <Route path="/assess/:scaleId/report/:recordId" element={<AssessReport />} />
             <Route path="/plan" element={<PlanList />} />
+            <Route path="/plan/hub" element={<TreatmentPlanPage />} />
             <Route path="/plan/:planId" element={<PlanEditor />} />
             <Route path="/progress" element={<ProgressPage />} />
             <Route path="/pathway" element={<PathwayPage />} />

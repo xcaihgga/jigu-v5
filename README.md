@@ -1,57 +1,54 @@
-# React + TypeScript + Vite
+# 康衡 Rehabalance · 康复评估与训练在线平台
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> 覆盖肌骨、神经、心肺、儿童四大亚专科的康复评估与训练管理平台
 
-Currently, two official plugins are available:
+## 核心功能
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **分级评估体系** — 78个评估量表，7大分类，支持交互式评估
+- **互动式康复计划** — 训练动作库、循证方案库、自动排程、计划编辑
+- **训练进度追踪** — 打卡、14天趋势、完成率统计
+- **个性化临床路径** — 基于评估/诊断的智能路径推荐
+- **进修中心** — 543+ 道康复知识题库，含多选/案例分析
+- **智能粘贴识别** — 一键解析患者档案/评估/病例文字
+- **多格式导出** — PDF/Word/Excel/思维导图
 
-## Expanding the ESLint configuration
+## 技术栈
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- React 18 + TypeScript + Vite 5
+- React Router 6 + Zustand
+- TailwindCSS 3 + CSS 变量
+- lucide-react 图标库
+- localStorage 持久化
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## 启动
+
+```bash
+pnpm install
+pnpm dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+构建生产版本：
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  extends: [
-    // other configs...
-    // Enable lint rules for React
-    reactX.configs['recommended-typescript'],
-    // Enable lint rules for React DOM
-    reactDom.configs.recommended,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+pnpm build
 ```
+
+## 演示账号
+
+- 治疗师：therapist@rh.com / 123456
+- 或点击"以访客身份浏览"
+
+## 模块
+
+| 路径 | 模块 |
+|---|---|
+| / | 工作台 |
+| /assess | 评估中心 |
+| /plan | 康复计划 |
+| /plan/hub | 治疗计划汇总 |
+| /progress | 进度追踪 |
+| /pathway | 临床路径 |
+| /patients | 患者档案 |
+| /quiz | 进修中心 |
+| /docs | 使用文档 |
+| /profile | 个人中心 |

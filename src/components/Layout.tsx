@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Brain,
   BookOpen,
+  ListChecks,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import { toast } from "@/store/ui";
@@ -22,6 +23,7 @@ const NAV = [
   { to: "/", label: "工作台", icon: LayoutDashboard, end: true },
   { to: "/assess", label: "评估中心", icon: ClipboardCheck },
   { to: "/plan", label: "康复计划", icon: CalendarRange },
+  { to: "/plan/hub", label: "治疗计划汇总", icon: ListChecks },
   { to: "/progress", label: "进度追踪", icon: LineChartIcon },
   { to: "/pathway", label: "临床路径", icon: Route },
   { to: "/patients", label: "患者档案", icon: Users },

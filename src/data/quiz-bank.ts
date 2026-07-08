@@ -1,6 +1,7 @@
 // 康复知识题库 — 覆盖 78 个量表 / 50 块肌肉 / 30+ 肌骨疾病 / 7 类红旗征 /
-// 6 阶段康复路径 / 干针疗法 / 循证医学 / 临床案例
+// 6 阶段康复路径 / 干针疗法 / 循证医学 / 临床案例 / 急性期处理 / 重返运动
 // 题型：single（单选）/ multi（多选）/ case（临床案例）
+import { Q_ACUTE, Q_RETURN, Q_DRYNEEDLE, Q_REGION, Q_MUSDIS, Q_EVIDENCE_UPDATE, Q_EVIDENCE_LEVEL } from "./quiz-bank-deep";
 
 export type QuizCategory =
   | "anatomy"        // 解剖学
@@ -734,4 +735,11 @@ export const QUIZ_BANK: QuizQuestion[] = [
   ...Q_PED,
   ...Q_SPORTS,
   ...Q_PT,
+  ...Q_ACUTE,
+  ...Q_RETURN,
+  ...Q_DRYNEEDLE,
+  ...Q_REGION,
+  ...Q_MUSDIS,
+  ...Q_EVIDENCE_UPDATE,
+  ...Q_EVIDENCE_LEVEL,
 ];
