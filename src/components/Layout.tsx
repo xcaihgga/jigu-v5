@@ -25,7 +25,7 @@ const NAV = [
   { to: "/progress", label: "进度追踪", icon: LineChartIcon },
   { to: "/pathway", label: "临床路径", icon: Route },
   { to: "/patients", label: "患者档案", icon: Users },
-  { to: "/quiz", label: "刷题", icon: Brain },
+  { to: "/quiz", label: "进修中心", icon: Brain },
   { to: "/docs", label: "使用文档", icon: BookOpen },
   { to: "/profile", label: "个人中心", icon: Settings },
 ];

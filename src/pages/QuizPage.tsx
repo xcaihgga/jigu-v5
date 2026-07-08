@@ -74,6 +74,23 @@ function loadTarget(): number {
   return load<number>(TARGET_KEY, 20);
 }
 
+// 通用答案校验
+function isAnswerCorrect(q: QuizQuestion, given: "A" | "B" | "C" | "D" | "E" | ("A" | "B" | "C" | "D" | "E")[]): boolean {
+  const a = q.answer;
+  if (Array.isArray(a)) {
+    const givens = Array.isArray(given) ? given : [given];
+    if (givens.length !== a.length) return false;
+    return a.every((x) => givens.includes(x as any));
+  }
+  return a === given;
+}
+
+// 格式化答案为可显示字符串
+function formatAnswer(a: string | string[]): string {
+  if (Array.isArray(a)) return a.sort().join("、");
+  return a;
+}
+
 export default function QuizPage() {
   const [mode, setMode] = useState<Mode>("sequence");
   const [stats, setStats] = useState<Stats>(loadStats);
@@ -85,11 +102,12 @@ export default function QuizPage() {
   const [search, setSearch] = useState("");
   const [currentList, setCurrentList] = useState<QuizQuestion[]>([]);
   const [idx, setIdx] = useState(0);
-  const [picked, setPicked] = useState<"A" | "B" | "C" | "D" | null>(null);
+  const [picked, setPicked] = useState<"A" | "B" | "C" | "D" | "E" | null>(null);
+  const [pickedList, setPickedList] = useState<("A" | "B" | "C" | "D" | "E")[]>([]);
   const [showAnswer, setShowAnswer] = useState(false);
   const [examSeconds, setExamSeconds] = useState(20 * 60); // 20 分钟
   const [examActive, setExamActive] = useState(false);
-  const [examAnswers, setExamAnswers] = useState<Record<string, "A" | "B" | "C" | "D">>({});
+  const [examAnswers, setExamAnswers] = useState<Record<string, "A" | "B" | "C" | "D" | ("A" | "B" | "C" | "D" | "E")[]>>({});
   const [examFinished, setExamFinished] = useState(false);
 
   // 派生：题目库（带筛选/搜索）
@@ -121,6 +139,7 @@ export default function QuizPage() {
     }
     setIdx(0);
     setPicked(null);
+    setPickedList([]);
     setShowAnswer(false);
     setExamAnswers({});
     setExamFinished(false);
@@ -150,11 +169,29 @@ export default function QuizPage() {
   const progress = total ? ((idx + 1) / total) * 100 : 0;
 
   // 单题模式：选完答案后自动展示反馈；用户点"下一题"
-  const handlePick = (k: "A" | "B" | "C" | "D") => {
+  const handlePick = (k: "A" | "B" | "C" | "D" | "E") => {
     if (!q || showAnswer) return;
-    setPicked(k);
+    const type = q.type || "single";
+    if (type === "multi") {
+      // 多选：累加/移除选项，必须所有答案都对才算正确
+      const nextPicked = pickedList.includes(k)
+        ? pickedList.filter((x) => x !== k)
+        : [...pickedList, k];
+      setPickedList(nextPicked);
+    } else {
+      // 单选 / 案例
+      setPicked(k);
+      const correct = isAnswerCorrect(q, k);
+      setShowAnswer(true);
+      recordAnswer(q, correct);
+    }
+  };
+
+  const handleMultiSubmit = () => {
+    if (!q || pickedList.length === 0) return;
     setShowAnswer(true);
-    recordAnswer(q, k === q.answer);
+    const correct = isAnswerCorrect(q, pickedList);
+    recordAnswer(q, correct);
   };
 
   const handleNext = () => {
@@ -434,17 +471,35 @@ export default function QuizPage() {
                 </button>
               )}
             </div>
-            <p className="font-display text-xl text-ink leading-snug mb-6 text-balance">{q.question}</p>
+            <p className="font-display text-xl text-ink leading-snug mb-3 text-balance">{q.question}</p>
+            {q.case && (
+              <div className="rounded border border-teal-300 bg-teal-50/40 p-3 mb-5 text-sm text-ink-soft leading-relaxed whitespace-pre-line">
+                <div className="text-2xs font-medium text-teal-600 mb-1 flex items-center gap-1">
+                  <FileText className="h-3 w-3" /> 病例摘要
+                </div>
+                {q.case}
+              </div>
+            )}
+            <div className="flex items-center gap-2 mb-3 text-2xs text-ink-mute">
+              <span className="chip text-2xs bg-cream-200 text-ink-soft border-line">
+                {q.type === "multi" ? "多选题" : q.type === "case" ? "案例分析" : "单选题"}
+              </span>
+              {q.subCategory && <span className="text-ink-faint">· {q.subCategory}</span>}
+              {q.evidenceLevel && <span className="chip text-2xs bg-teal-50 border-teal-300 text-teal-700">证据 {q.evidenceLevel}</span>}
+            </div>
             <div className="space-y-2.5">
-              {(["A", "B", "C", "D"] as const).map((k) => {
-                const selected = picked === k;
-                const isAnswer = q.answer === k;
+              {(["A", "B", "C", "D", "E"] as const).filter((k) => q.options[k]).map((k) => {
+                const selectedMulti = pickedList.includes(k);
+                const selectedSingle = picked === k;
+                const selected = (q.type === "multi" ? selectedMulti : selectedSingle);
+                const correctSet = Array.isArray(q.answer) ? q.answer : [q.answer];
+                const isAnswer = correctSet.includes(k);
                 const show = showAnswer;
                 return (
                   <button
                     key={k}
                     onClick={() => handlePick(k)}
-                    disabled={show}
+                    disabled={show && q.type !== "multi"}
                     className={cn(
                       "w-full flex items-center gap-3 rounded border px-4 py-3 text-left transition-all",
                       show && isAnswer ? "border-teal-500 bg-teal-50" : "",
@@ -471,14 +526,27 @@ export default function QuizPage() {
               })}
             </div>
 
+            {/* 多选题：提交按钮 */}
+            {q && q.type === "multi" && !showAnswer && (
+              <button
+                onClick={handleMultiSubmit}
+                disabled={pickedList.length === 0}
+                className="btn-primary mt-3 w-full disabled:opacity-40"
+              >
+                提交答案（已选 {pickedList.length} 项）
+              </button>
+            )}
+
             {/* 反馈区 */}
             {showAnswer && (
               <div className="mt-5 rounded border border-line bg-cream-50/60 p-4 animate-fade-up">
                 <div className="flex items-center gap-2 mb-2">
-                  {picked === q.answer ? (
+                  {isAnswerCorrect(q, q.type === "multi" ? pickedList : picked) ? (
                     <span className="chip chip-active text-2xs"><Check className="h-3 w-3" /> 回答正确</span>
                   ) : (
-                    <span className="chip text-2xs bg-coral-soft/40 border-coral-soft text-coral-dark"><X className="h-3 w-3" /> 正确答案为 {q.answer}</span>
+                    <span className="chip text-2xs bg-coral-soft/40 border-coral-soft text-coral-dark">
+                      <X className="h-3 w-3" /> 正确答案为 {formatAnswer(q.answer)}
+                    </span>
                   )}
                 </div>
                 <div className="flex items-start gap-2 text-sm text-ink-soft leading-relaxed">
