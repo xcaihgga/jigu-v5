@@ -17,6 +17,9 @@ export type QuizCategory =
   | "evidence"       // 循证医学
   | "rehab"          // 康复路径
   | "multi"          // 综合多选
+  | "acute"          // 急性期处理
+  | "return"         // 重返运动
+  | "dryneedle"      // 干针疗法
   ;
 
 export type QuizDifficulty = "easy" | "medium" | "hard";
@@ -54,6 +57,9 @@ export const QUIZ_CATEGORIES: { id: QuizCategory; name: string; en: string; colo
   { id: "evidence", name: "循证医学", en: "Evidence", color: "text-teal-500" },
   { id: "rehab", name: "康复路径", en: "Rehab Pathway", color: "text-teal-500" },
   { id: "multi", name: "综合多选", en: "Multi-Select", color: "text-coral" },
+  { id: "acute", name: "急性期处理", en: "Acute Care", color: "text-coral" },
+  { id: "return", name: "重返运动", en: "Return to Sport", color: "text-teal-600" },
+  { id: "dryneedle", name: "干针疗法", en: "Dry Needling", color: "text-amber-dark" },
 ];
 
 // ============================================================================
