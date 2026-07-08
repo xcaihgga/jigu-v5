@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Save, Trash2, Plus, Dumbbell, Search, X, Check } from "lucide-react";
+import { ArrowLeft, Save, Trash2, Plus, Dumbbell, Search, X, Check, Route, Target, Thermometer } from "lucide-react";
 import { plan as planSvc } from "@/services";
 import { toast } from "@/store/ui";
 import { cn } from "@/lib/utils";
 import EmptyState from "@/components/ui/EmptyState";
 import type { Exercise, PlanEntry } from "@/lib/types";
+import { REHAB_STAGES, RETURN_STANDARDS, ACUTE_COMPARE, ACUTE_COMPARE_NOTE } from "@/data/rehab-pathways";
 
 const DAY_LABEL = ["", "周一", "周二", "周三", "周四", "周五", "周六", "周日"];
 const BODY_PARTS = ["肩", "肘", "腕", "颈", "腰", "膝", "踝", "核心", "平衡", "步态", "心肺", "手"];
@@ -197,6 +198,115 @@ export default function PlanEditor() {
           </div>
         </div>
       )}
+
+      {/* 康复路径参考 */}
+      <section className="card p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <Route className="h-4 w-4 text-teal-500" />
+          <h2 className="section-title">康复路径参考</h2>
+          <span className="text-2xs text-ink-mute">从急性期到重返运动的决策流程</span>
+        </div>
+        <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {REHAB_STAGES.map((stage, idx) => (
+            <div key={idx} className="rounded border border-line bg-surface p-3 relative">
+              <div className="absolute -top-2 left-3 bg-teal-500 text-cream-50 text-2xs px-1.5 py-0.5 rounded">{stage.stage}</div>
+              <p className="text-2xs text-teal-600 mt-3 font-medium">{stage.time}</p>
+              <p className="text-2xs text-ink-mute mt-1.5 leading-relaxed">{stage.coreMeasures}</p>
+              <div className="mt-2 rounded bg-cream-100 px-2 py-1 text-2xs text-ink-soft">
+                目标：{stage.goal}
+              </div>
+              <div className="mt-1 rounded bg-teal-50 px-2 py-1 text-2xs text-teal-600">
+                判断：{stage.keyJudgment}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 重返运动测试矩阵 */}
+      <section className="card p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <Target className="h-4 w-4 text-coral" />
+          <h2 className="section-title">重返运动测试矩阵</h2>
+          <span className="text-2xs text-ink-mute">客观化 RTS 决策标准</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-2xs">
+            <thead>
+              <tr className="border-b border-line text-left text-ink-mute">
+                <th className="py-2 pr-3 font-medium">测试类别</th>
+                <th className="py-2 pr-3 font-medium">测试名称</th>
+                <th className="py-2 pr-3 font-medium">阈值 / 目标</th>
+                <th className="py-2 pr-3 font-medium text-center">腘绳肌</th>
+                <th className="py-2 pr-3 font-medium text-center">股四头肌</th>
+                <th className="py-2 pr-3 font-medium text-center">踝扭伤</th>
+                <th className="py-2 pr-3 font-medium text-center">肩袖</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {RETURN_STANDARDS.map((row, i) => (
+                <tr key={i} className="hover:bg-cream-50/60">
+                  <td className="py-2 pr-3 text-ink font-medium">{row.category}</td>
+                  <td className="py-2 pr-3 text-ink">{row.test}</td>
+                  <td className="py-2 pr-3 text-teal-600">{row.threshold}</td>
+                  <td className="py-2 pr-3 text-center text-ink-mute">{row.hamstring}</td>
+                  <td className="py-2 pr-3 text-center text-ink-mute">{row.quadriceps}</td>
+                  <td className="py-2 pr-3 text-center text-ink-mute">{row.ankle}</td>
+                  <td className="py-2 pr-3 text-center text-ink-mute">{row.rotatorCuff}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* 急性期处理对比 */}
+      <section className="card p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <Thermometer className="h-4 w-4 text-amber-dark" />
+          <h2 className="section-title">急性期处理对比</h2>
+          <span className="text-2xs text-ink-mute">PEACE & LOVE vs RICE vs POLICE</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-2xs">
+            <thead>
+              <tr className="border-b border-line text-left text-ink-mute">
+                <th className="py-2 pr-3 font-medium">原则</th>
+                <th className="py-2 pr-3 font-medium">年份</th>
+                <th className="py-2 pr-3 font-medium text-center">冰敷</th>
+                <th className="py-2 pr-3 font-medium text-center">抗炎药</th>
+                <th className="py-2 pr-3 font-medium text-center">休息</th>
+                <th className="py-2 pr-3 font-medium text-center">负荷</th>
+                <th className="py-2 pr-3 font-medium text-center">加压</th>
+                <th className="py-2 pr-3 font-medium text-center">抬高</th>
+                <th className="py-2 pr-3 font-medium text-center">教育</th>
+                <th className="py-2 pr-3 font-medium text-center">心理</th>
+                <th className="py-2 pr-3 font-medium text-center">运动</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {ACUTE_COMPARE.map((row, i) => (
+                <tr key={i} className="hover:bg-cream-50/60">
+                  <td className="py-2 pr-3 text-ink font-medium">{row.principle}</td>
+                  <td className="py-2 pr-3 text-ink-mute">{row.year}</td>
+                  <td className={cn("py-2 pr-3 text-center", row.ice === "0" ? "text-coral" : row.ice === "3" ? "text-teal-600" : "text-ink-mute")}>{row.ice}</td>
+                  <td className={cn("py-2 pr-3 text-center", row.antiInflammatory === "0" ? "text-coral" : row.antiInflammatory === "3" ? "text-teal-600" : "text-ink-mute")}>{row.antiInflammatory}</td>
+                  <td className="py-2 pr-3 text-center text-ink-mute">{row.rest}</td>
+                  <td className={cn("py-2 pr-3 text-center", row.load === "3" ? "text-teal-600" : "text-ink-mute")}>{row.load}</td>
+                  <td className={cn("py-2 pr-3 text-center", row.compression === "3" ? "text-teal-600" : "text-ink-mute")}>{row.compression}</td>
+                  <td className="py-2 pr-3 text-center text-ink-mute">{row.elevation}</td>
+                  <td className={cn("py-2 pr-3 text-center", row.education === "3" ? "text-teal-600" : "text-ink-mute")}>{row.education}</td>
+                  <td className={cn("py-2 pr-3 text-center", row.psychology === "3" ? "text-teal-600" : "text-ink-mute")}>{row.psychology}</td>
+                  <td className={cn("py-2 pr-3 text-center", row.exercise === "3" ? "text-teal-600" : "text-ink-mute")}>{row.exercise}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-2xs text-ink-mute mt-3 bg-amber-soft/20 rounded p-2">
+          {ACUTE_COMPARE_NOTE}
+        </p>
+      </section>
     </div>
   );
 }

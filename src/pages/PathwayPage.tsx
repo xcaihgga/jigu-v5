@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Route, Users, ArrowRight, Check, Flag, ChevronRight, Sparkles } from "lucide-react";
+import { Route, Users, ArrowRight, Check, Flag, ChevronRight, Sparkles, AlertTriangle, Map, BookOpen, Layers, Zap } from "lucide-react";
 import { pathway, patient, assess } from "@/services";
 import { toast } from "@/store/ui";
 import { fmtDate } from "@/lib/storage";
@@ -8,6 +8,9 @@ import { cn } from "@/lib/utils";
 import EmptyState from "@/components/ui/EmptyState";
 import CategoryIcon from "@/components/CategoryIcon";
 import type { Patient } from "@/lib/types";
+import { MUSCLE_DISEASE_MAP, REGION_SUMMARY, QUICK_REF } from "@/data/quick-reference";
+import { RED_FLAGS } from "@/data/red-flags";
+import { EVIDENCE_UPDATES } from "@/data/quick-reference";
 
 export default function PathwayPage() {
   const navigate = useNavigate();
@@ -198,6 +201,142 @@ export default function PathwayPage() {
           </div>
         </section>
       )}
+
+      {/* 红旗征警示系统 */}
+      <section className="card p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <AlertTriangle className="h-4 w-4 text-coral" />
+          <h2 className="section-title">红旗征警示系统</h2>
+          <span className="text-2xs text-ink-mute">需立即识别与转介的危险信号</span>
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {RED_FLAGS.map((rf, idx) => (
+            <div key={idx} className="rounded border border-coral-soft/40 bg-coral-soft/10 p-3">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm font-medium text-coral-dark">{rf.system}</span>
+                <span className="chip text-2xs bg-coral-soft/20 text-coral-dark">出现 {rf.frequency} 次</span>
+              </div>
+              <p className="text-2xs text-ink mt-1">{rf.flag}</p>
+              <p className="text-2xs text-ink-mute mt-1">相关肌肉：{rf.muscles}</p>
+              <div className="mt-2 rounded bg-cream-100 px-2 py-1 text-2xs text-ink-soft">
+                处置：{rf.action}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 肌肉-疾病关联 */}
+      <section className="card p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <Map className="h-4 w-4 text-teal-500" />
+          <h2 className="section-title">肌肉疾病映射</h2>
+          <span className="text-2xs text-ink-mute">肌肉与常见疾病的关联速查</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-2xs">
+            <thead>
+              <tr className="border-b border-line text-left text-ink-mute">
+                <th className="py-2 pr-3 font-medium">肌肉</th>
+                <th className="py-2 pr-3 font-medium">疾病数量</th>
+                <th className="py-2 pr-3 font-medium">相关疾病</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {MUSCLE_DISEASE_MAP.filter((m) => m.diseaseCount > 0).map((m, i) => (
+                <tr key={i} className="hover:bg-cream-50/60">
+                  <td className="py-2 pr-3 text-ink font-medium">{m.muscle}</td>
+                  <td className="py-2 pr-3 text-teal-600">{m.diseaseCount}</td>
+                  <td className="py-2 pr-3 text-ink-mute">{m.diseases}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* 身体区域速查 */}
+      <section className="card p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <Layers className="h-4 w-4 text-teal-500" />
+          <h2 className="section-title">身体区域速查</h2>
+          <span className="text-2xs text-ink-mute">按区域快速定位肌肉与常见损伤</span>
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {REGION_SUMMARY.map((r, idx) => (
+            <div key={idx} className="rounded border border-line bg-surface p-3">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm font-medium text-ink">{r.region}</span>
+                <span className="chip text-2xs">{r.muscleCount} 块肌肉</span>
+              </div>
+              <p className="text-2xs text-ink-mute mt-1">主要功能：{r.mainFunction}</p>
+              <p className="text-2xs text-ink-mute mt-1">常见损伤：{r.commonInjury}</p>
+              <div className="mt-2 rounded bg-coral-soft/10 px-2 py-1 text-2xs text-coral-dark">
+                红旗征：{r.redFlag}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 肌肉快速参考 */}
+      <section className="card p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <BookOpen className="h-4 w-4 text-teal-500" />
+          <h2 className="section-title">肌肉快速参考</h2>
+          <span className="text-2xs text-ink-mute">关键评估、紧急处理与重返标准</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-2xs">
+            <thead>
+              <tr className="border-b border-line text-left text-ink-mute">
+                <th className="py-2 pr-3 font-medium">肌肉</th>
+                <th className="py-2 pr-3 font-medium">区域</th>
+                <th className="py-2 pr-3 font-medium">常见损伤</th>
+                <th className="py-2 pr-3 font-medium">关键评估</th>
+                <th className="py-2 pr-3 font-medium">紧急处理</th>
+                <th className="py-2 pr-3 font-medium">重返标准</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {QUICK_REF.map((q, i) => (
+                <tr key={i} className="hover:bg-cream-50/60">
+                  <td className="py-2 pr-3 text-ink font-medium">{q.muscle}</td>
+                  <td className="py-2 pr-3 text-ink-mute">{q.region}</td>
+                  <td className="py-2 pr-3 text-ink-mute">{q.commonInjury}</td>
+                  <td className="py-2 pr-3 text-teal-600">{q.keyAssessment}</td>
+                  <td className="py-2 pr-3 text-ink-mute">{q.emergency}</td>
+                  <td className="py-2 pr-3 text-ink-mute">{q.returnStandard}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* 循证更新提示 */}
+      <section className="card p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <Zap className="h-4 w-4 text-amber-dark" />
+          <h2 className="section-title">重点肌肉循证更新</h2>
+          <span className="text-2xs text-ink-mute">最新指南与研究要点</span>
+        </div>
+        <div className="grid md:grid-cols-2 gap-3">
+          {EVIDENCE_UPDATES.map((ev, idx) => (
+            <div key={idx} className="rounded border border-line bg-surface p-3">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm font-medium text-ink">{ev.muscleGroup}</span>
+                <span className="chip text-2xs">{ev.keyMuscle}</span>
+              </div>
+              <p className="text-2xs text-teal-600 mt-1">{ev.keyUpdate}</p>
+              <div className="mt-2 rounded bg-teal-50 px-2 py-1 text-2xs text-teal-600">
+                推荐：{ev.recommendation}
+              </div>
+              <p className="text-2xs text-ink-faint mt-1.5">{ev.reference}</p>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
