@@ -398,7 +398,7 @@ export default function TreatmentPlanPage() {
                                   <div key={idx} className="flex items-center gap-2 text-sm">
                                     <Sparkles className="h-3 w-3 text-amber-dark shrink-0" />
                                     <span className="flex-1 text-ink-soft truncate">
-                                      {ex?.name || entry.exerciseId}
+                                      {ex?.title || entry.exerciseId}
                                     </span>
                                     <input
                                       type="number"

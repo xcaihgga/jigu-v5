@@ -18,6 +18,8 @@ import PatientDetail from "@/pages/PatientDetail";
 import Profile from "@/pages/Profile";
 import QuizPage from "@/pages/QuizPage";
 import DocsPage from "@/pages/DocsPage";
+import PainConditionsPage from "@/pages/PainConditionsPage";
+import NeuroExtrasPage from "@/pages/NeuroExtrasPage";
 
 export default function App() {
   const init = useAuthStore((s) => s.init);
@@ -45,6 +47,8 @@ export default function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/quiz" element={<QuizPage />} />
             <Route path="/docs" element={<DocsPage />} />
+            <Route path="/pain" element={<PainConditionsPage />} />
+            <Route path="/neuro-extras" element={<NeuroExtrasPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

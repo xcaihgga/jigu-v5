@@ -2,6 +2,8 @@
 // 6 阶段康复路径 / 干针疗法 / 循证医学 / 临床案例 / 急性期处理 / 重返运动
 // 题型：single（单选）/ multi（多选）/ case（临床案例）
 import { Q_ACUTE, Q_RETURN, Q_DRYNEEDLE, Q_REGION, Q_MUSDIS, Q_EVIDENCE_UPDATE, Q_EVIDENCE_LEVEL } from "./quiz-bank-deep";
+import { Q_PAIN } from "./quiz-bank-pain";
+import { Q_MET } from "./quiz-bank-met";
 
 export type QuizCategory =
   | "anatomy"        // 解剖学
@@ -21,6 +23,8 @@ export type QuizCategory =
   | "acute"          // 急性期处理
   | "return"         // 重返运动
   | "dryneedle"      // 干针疗法
+  | "pain"           // 21 种疼痛治疗
+  | "met"            // MET 肌肉能量技术
   ;
 
 export type QuizDifficulty = "easy" | "medium" | "hard";
@@ -61,6 +65,8 @@ export const QUIZ_CATEGORIES: { id: QuizCategory; name: string; en: string; colo
   { id: "acute", name: "急性期处理", en: "Acute Care", color: "text-coral" },
   { id: "return", name: "重返运动", en: "Return to Sport", color: "text-teal-600" },
   { id: "dryneedle", name: "干针疗法", en: "Dry Needling", color: "text-amber-dark" },
+  { id: "pain", name: "21种疼痛", en: "21 Pains", color: "text-coral" },
+  { id: "met", name: "MET技术", en: "Muscle Energy Tech", color: "text-teal-500" },
 ];
 
 // ============================================================================
@@ -742,4 +748,6 @@ export const QUIZ_BANK: QuizQuestion[] = [
   ...Q_MUSDIS,
   ...Q_EVIDENCE_UPDATE,
   ...Q_EVIDENCE_LEVEL,
+  ...Q_PAIN,
+  ...Q_MET,
 ];

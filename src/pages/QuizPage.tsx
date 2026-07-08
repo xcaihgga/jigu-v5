@@ -669,7 +669,7 @@ function ExamRunner({
   result,
 }: {
   list: QuizQuestion[];
-  answers: Record<string, "A" | "B" | "C" | "D">;
+  answers: Record<string, "A" | "B" | "C" | "D" | ("A" | "B" | "C" | "D" | "E")[]>;
   seconds: number;
   active: boolean;
   finished: boolean;

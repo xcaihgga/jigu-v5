@@ -102,6 +102,9 @@ export interface Plan {
   durationWeeks: number;
   createdAt: number;
   active: boolean;
+  status?: "draft" | "active" | "paused" | "completed";
+  notes?: string;
+  updatedAt?: number;
 }
 
 export interface CheckinEntry {
