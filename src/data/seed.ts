@@ -1,0 +1,442 @@
+import type {
+  Category,
+  Exercise,
+  Pathway,
+  Patient,
+  Scale,
+  User,
+} from "@/lib/types";
+
+export const CATEGORIES: { id: Category; name: string; en: string; desc: string; icon: string }[] = [
+  { id: "musculo", name: "肌骨康复", en: "Musculoskeletal", desc: "骨关节、软组织、术后与慢性疼痛", icon: "bone" },
+  { id: "neuro", name: "神经康复", en: "Neurological", desc: "脑卒中、颅脑损伤、脊髓与周围神经", icon: "brain" },
+  { id: "cardio", name: "心肺康复", en: "Cardiopulmonary", desc: "COPD、冠心病、术后心肺功能重建", icon: "heart" },
+  { id: "pediatric", name: "儿童康复", en: "Pediatric", desc: "发育迟缓、脑性瘫痪、运动障碍", icon: "baby" },
+];
+
+export const LEVELS: { id: "screening" | "intermediate" | "specialty"; name: string; desc: string }[] = [
+  { id: "screening", name: "筛查级", desc: "快速识别，3–5 分钟" },
+  { id: "intermediate", name: "进阶级", desc: "量化分级，8–15 分钟" },
+  { id: "specialty", name: "专科级", desc: "精细评估，含多维报告" },
+];
+
+// 辅助：生成 0..n 的等距评分选项
+const opt = (labels: string[]): { label: string; score: number }[] =>
+  labels.map((label, i) => ({ label, score: i }));
+
+export const SCALES: Scale[] = [
+  // ============ 肌骨 ============
+  {
+    id: "ms_quick",
+    category: "musculo",
+    level: "screening",
+    title: "疼痛与功能快速筛查",
+    abbr: "PFS",
+    subtitle: "适用于首诊快速分流",
+    scenario: "门诊首诊、社区筛查",
+    estMinutes: 3,
+    dimensions: ["疼痛", "日常功能", "心理"],
+    grading: { max: 12, grades: [
+      { label: "轻度影响", min: 0, tone: "good" },
+      { label: "中度影响", min: 5, tone: "warn" },
+      { label: "重度影响", min: 9, tone: "bad" },
+    ] },
+    questions: [
+      { id: "q1", dimension: "疼痛", text: "过去一周疼痛平均程度（0 无痛 → 10 极痛）", options: opt(["0–2 轻度","3–4 轻中度","5–6 中度","7–8 重度","9–10 极重度"]) },
+      { id: "q2", dimension: "疼痛", text: "疼痛是否影响夜间睡眠？", options: opt(["不影响","偶尔","经常"]) },
+      { id: "q3", dimension: "日常功能", text: "能否独立完成穿衣洗漱？", options: opt(["完全独立","稍费力","需帮助"]) },
+      { id: "q4", dimension: "日常功能", text: "步行超过 500 米是否困难？", options: opt(["不困难","稍困难","很困难/不能"]) },
+      { id: "q5", dimension: "心理", text: "是否因疼痛感到焦虑或低落？", options: opt(["几乎没有","有时","经常"]) },
+    ],
+  },
+  {
+    id: "joa_lbp",
+    category: "musculo",
+    level: "intermediate",
+    title: "JOA 下腰痛评估",
+    abbr: "JOA-LBP",
+    subtitle: "日本骨科协会腰痛评分",
+    scenario: "下腰痛疗效追踪",
+    estMinutes: 8,
+    dimensions: ["主观症状", "客观体征", "日常生活"],
+    grading: { max: 29, grades: [
+      { label: "优", min: 26, tone: "good" },
+      { label: "良", min: 20, tone: "good" },
+      { label: "中", min: 13, tone: "warn" },
+      { label: "差", min: 0, tone: "bad" },
+    ] },
+    questions: [
+      { id: "q1", dimension: "主观症状", text: "腰痛（0 无 → 3 剧烈）", options: opt(["3 无","2 轻度","1 中度","0 重度"]) },
+      { id: "q2", dimension: "主观症状", text: "下肢痛/麻木", options: opt(["3 无","2 偶有","1 常有","0 持续"]) },
+      { id: "q3", dimension: "主观症状", text: "步行能力", options: opt(["3 正常","2 能走500m+","1 困难","0 不能"]) },
+      { id: "q4", dimension: "客观体征", text: "直腿抬高试验", options: opt(["2 阴性","1 30–70°","0 <30°"]) },
+      { id: "q5", dimension: "客观体征", text: "感觉障碍", options: opt(["2 无","1 轻度","0 明显"]) },
+      { id: "q6", dimension: "客观体征", text: "肌力下降", options: opt(["2 无","1 轻度","0 明显"]) },
+      { id: "q7", dimension: "日常生活", text: "弯腰（洗漱）", options: opt(["2 容易","1 困难","0 不能"]) },
+      { id: "q8", dimension: "日常生活", text: "长时间坐（1h）", options: opt(["2 容易","1 困难","0 不能"]) },
+      { id: "q9", dimension: "日常生活", text: "提重物", options: opt(["2 容易","1 困难","0 不能"]) },
+    ],
+  },
+  {
+    id: "constant_shoulder",
+    category: "musculo",
+    level: "specialty",
+    title: "Constant-Murley 肩关节评估",
+    abbr: "Constant",
+    subtitle: "肩关节功能综合评分（0–100）",
+    scenario: "肩袖损伤、肩周炎、术后",
+    estMinutes: 12,
+    dimensions: ["疼痛", "日常活动", "关节活动度", "肌力"],
+    grading: { max: 100, grades: [
+      { label: "优", min: 90, tone: "good" },
+      { label: "良", min: 70, tone: "good" },
+      { label: "中", min: 50, tone: "warn" },
+      { label: "差", min: 0, tone: "bad" },
+    ] },
+    questions: [
+      { id: "q1", dimension: "疼痛", text: "肩部疼痛（15 无痛 → 0 剧烈）", options: opt(["15 无痛","10 轻度","5 中度","0 重度"]) },
+      { id: "q2", dimension: "日常活动", text: "工作与娱乐受限", options: opt(["4 无","3 轻","2 中","0 重"]) },
+      { id: "q3", dimension: "日常活动", text: "手能到达位置", options: opt(["4 头顶","3 颈部","2 胸部","0 腰部"]) },
+      { id: "q4", dimension: "关节活动度", text: "前屈活动度（0–10）", options: opt(["10 ≥180°","7 150°","4 120°","0 <90°"]) },
+      { id: "q5", dimension: "关节活动度", text: "外展活动度", options: opt(["10 ≥180°","7 150°","4 120°","0 <90°"]) },
+      { id: "q6", dimension: "关节活动度", text: "外旋活动度", options: opt(["10 ≥60°","6 30°","2 15°","0 <0°"]) },
+      { id: "q7", dimension: "关节活动度", text: "内旋活动度", options: opt(["10 达腰骶","6 达腰","2 达坐骨","0 <坐骨"]) },
+      { id: "q8", dimension: "肌力", text: "患侧外展肌力（0–25）", options: opt(["25 5级","15 4级","8 3级","0 ≤2级"]) },
+    ],
+  },
+
+  // ============ 神经 ============
+  {
+    id: "mmse",
+    category: "neuro",
+    level: "screening",
+    title: "MMSE 简易精神状态筛查",
+    abbr: "MMSE",
+    subtitle: "认知功能快速筛查（0–30）",
+    scenario: "脑卒中、痴呆早期筛查",
+    estMinutes: 5,
+    dimensions: ["定向", "记忆", "注意计算", "语言"],
+    grading: { max: 30, grades: [
+      { label: "正常", min: 27, tone: "good" },
+      { label: "轻度受损", min: 21, tone: "warn" },
+      { label: "中度受损", min: 11, tone: "warn" },
+      { label: "重度受损", min: 0, tone: "bad" },
+    ] },
+    questions: [
+      { id: "q1", dimension: "定向", text: "时间定向（年/月/日/星期/季节）", options: opt(["5 全对","3 部分对","0 全错"]) },
+      { id: "q2", dimension: "定向", text: "地点定向（省/市/院/层/房）", options: opt(["5 全对","3 部分对","0 全错"]) },
+      { id: "q3", dimension: "记忆", text: "即刻记忆 3 词", options: opt(["3 全对","2 部分对","0 全错"]) },
+      { id: "q4", dimension: "注意计算", text: "100 连续减 7（5 次）", options: opt(["5 全对","3 部分对","0 全错"]) },
+      { id: "q5", dimension: "记忆", text: "短时回忆 3 词", options: opt(["3 全对","1 部分对","0 全错"]) },
+      { id: "q6", dimension: "语言", text: "命名与复述", options: opt(["2 全对","1 部分对","0 全错"]) },
+      { id: "q7", dimension: "语言", text: "阅读理解与书写", options: opt(["3 全对","1 部分对","0 全错"]) },
+      { id: "q8", dimension: "语言", text: "图形描摹", options: opt(["1 正确","0 错误"]) },
+    ],
+  },
+  {
+    id: "berg",
+    category: "neuro",
+    level: "intermediate",
+    title: "Berg 平衡量表",
+    abbr: "BBS",
+    subtitle: "静态与动态平衡（0–56）",
+    scenario: "跌倒风险、卒中平衡评估",
+    estMinutes: 10,
+    dimensions: ["坐位平衡", "转移", "站立平衡", "动态平衡"],
+    grading: { max: 56, grades: [
+      { label: "平衡良好", min: 41, tone: "good" },
+      { label: "跌倒风险中", min: 21, tone: "warn" },
+      { label: "跌倒风险高", min: 0, tone: "bad" },
+    ] },
+    questions: [
+      { id: "q1", dimension: "坐位平衡", text: "无支撑坐位", options: opt(["4 稳定2分钟","3 监督下","2 双支撑","0 不能"]) },
+      { id: "q2", dimension: "转移", text: "由坐到站", options: opt(["4 独立","3 手扶","2 监督","0 不能"]) },
+      { id: "q3", dimension: "转移", text: "坐↔站转移", options: opt(["4 独立","3 少量帮助","2 监督","0 不能"]) },
+      { id: "q4", dimension: "站立平衡", text: "无支撑站立", options: opt(["4 ≥2分钟","3 30s","2 短暂","0 不能"]) },
+      { id: "q5", dimension: "站立平衡", text: "闭眼站立", options: opt(["4 ≥10s","3 5s","2 3s","0 不能"]) },
+      { id: "q6", dimension: "动态平衡", text: "双足并拢站立", options: opt(["4 独立","3 手扶","2 监督","0 不能"]) },
+      { id: "q7", dimension: "动态平衡", text: "向前伸手", options: opt(["4 >25cm","3 12cm","2 5cm","0 不能"]) },
+      { id: "q8", dimension: "动态平衡", text: "原地转身 360°", options: opt(["4 两侧<4s","3 一侧","2 监督","0 不能"]) },
+    ],
+  },
+  {
+    id: "fma_arm",
+    category: "neuro",
+    level: "specialty",
+    title: "Fugl-Meyer 上肢运动评估",
+    abbr: "FMA-UE",
+    subtitle: "卒中偏瘫上肢运动功能（0–66）",
+    scenario: "偏瘫上肢精细量化",
+    estMinutes: 15,
+    dimensions: ["反射与屈伸协同", "协同分离", "腕", "手", "协调速度"],
+    grading: { max: 66, grades: [
+      { label: "轻度运动障碍", min: 50, tone: "good" },
+      { label: "中度", min: 25, tone: "warn" },
+      { label: "重度", min: 0, tone: "bad" },
+    ] },
+    questions: [
+      { id: "q1", dimension: "反射与屈伸协同", text: "肱二头肌/肱三头肌反射", options: opt(["2 可引出","0 无"]) },
+      { id: "q2", dimension: "反射与屈伸协同", text: "屈肌协同（肩肘前臂）", options: opt(["3 完全","2 部分","0 无"]) },
+      { id: "q3", dimension: "协同分离", text: "手触腰椎（肩内旋伸后）", options: opt(["3 完全","2 部分","0 无"]) },
+      { id: "q4", dimension: "协同分离", text: "肩屈 90° 肘伸直", options: opt(["3 完全","2 部分","0 无"]) },
+      { id: "q5", dimension: "协同分离", text: "肩外展 90° 肘伸前臂旋前", options: opt(["3 完全","2 部分","0 无"]) },
+      { id: "q6", dimension: "腕", text: "腕背伸（肘屈 90°）", options: opt(["3 完全","2 部分","0 无"]) },
+      { id: "q7", dimension: "腕", text: "腕环转运动", options: opt(["3 完全","2 部分","0 无"]) },
+      { id: "q8", dimension: "手", text: "手指集团屈曲", options: opt(["3 完全","2 部分","0 无"]) },
+      { id: "q9", dimension: "手", text: "抓握与对指", options: opt(["3 完全","2 部分","0 无"]) },
+      { id: "q10", dimension: "协调速度", text: "指鼻试验（震颤/速度）", options: opt(["2 正常","1 轻度","0 明显"]) },
+    ],
+  },
+
+  // ============ 心肺 ============
+  {
+    id: "mmrc",
+    category: "cardio",
+    level: "screening",
+    title: "mMRC 呼吸困难分级",
+    abbr: "mMRC",
+    subtitle: "改良英国医学研究理事会呼吸困难",
+    scenario: "COPD、心衰呼吸困难筛查",
+    estMinutes: 2,
+    dimensions: ["呼吸困难"],
+    grading: { max: 4, grades: [
+      { label: "无明显受限", min: 0, tone: "good" },
+      { label: "轻度受限", min: 2, tone: "warn" },
+      { label: "重度受限", min: 3, tone: "bad" },
+    ] },
+    questions: [
+      { id: "q1", dimension: "呼吸困难", text: "呼吸困难程度（0–4 级）", options: opt(["0 仅剧烈活动喘","1 平路快走喘","2 平路慢走喘或停步","3 步行百米内停步","4 不能离家/穿衣喘"]) },
+    ],
+  },
+  {
+    id: "6mwt",
+    category: "cardio",
+    level: "intermediate",
+    title: "六分钟步行试验",
+    abbr: "6MWT",
+    subtitle: "亚极量运动耐量评估",
+    scenario: "心肺功能、康复疗效",
+    estMinutes: 10,
+    dimensions: ["运动耐量", "症状", "生命体征"],
+    grading: { max: 100, grades: [
+      { label: "耐量良好", min: 80, tone: "good" },
+      { label: "耐量中等", min: 50, tone: "warn" },
+      { label: "耐量差", min: 0, tone: "bad" },
+    ] },
+    questions: [
+      { id: "q1", dimension: "运动耐量", text: "6 分钟步行距离", options: opt(["40 ≥500m","30 400–499m","20 300–399m","10 200–299m","0 <200m"]) },
+      { id: "q2", dimension: "症状", text: "Borg 呼吸困难（0–10）", options: opt(["30 0–1","20 2–3","10 4–5","0 ≥6"]) },
+      { id: "q3", dimension: "症状", text: "Borg 下肢疲劳", options: opt(["20 0–1","12 2–3","4 4–5","0 ≥6"]) },
+      { id: "q4", dimension: "生命体征", text: "试验后 SpO₂ 下降幅度", options: opt(["10 <4%","6 4–8%","0 >8%或<88%"]) },
+    ],
+  },
+  {
+    id: "nyha",
+    category: "cardio",
+    level: "specialty",
+    title: "NYHA 心功能分级评估",
+    abbr: "NYHA",
+    subtitle: "心功能综合评估（含 6MWT 联动）",
+    scenario: "心力衰竭、心脏术后",
+    estMinutes: 8,
+    dimensions: ["活动耐量", "症状", "体征", "生活质量"],
+    grading: { max: 100, grades: [
+      { label: "Ⅰ 级（代偿）", min: 80, tone: "good" },
+      { label: "Ⅱ 级（轻度）", min: 60, tone: "warn" },
+      { label: "Ⅲ 级（明显）", min: 30, tone: "warn" },
+      { label: "Ⅳ 级（重度）", min: 0, tone: "bad" },
+    ] },
+    questions: [
+      { id: "q1", dimension: "活动耐量", text: "日常活动是否引起症状", options: opt(["30 无","20 重体力有","10 一般活动有","0 静息有"]) },
+      { id: "q2", dimension: "症状", text: "气促/心悸频次", options: opt(["25 罕见","15 偶发","5 频发","0 持续"]) },
+      { id: "q3", dimension: "体征", text: "水肿/肺部啰音", options: opt(["20 无","12 轻度","4 中度","0 重度"]) },
+      { id: "q4", dimension: "生活质量", text: "明尼苏达心衰生活质量（自评）", options: opt(["25 影响<21","15 21–40","5 41–60","0 >60"]) },
+      { id: "q5", dimension: "活动耐量", text: "6MWT 联动距离", options: opt(["0 ≥450m"]) },
+    ],
+  },
+
+  // ============ 儿童 ============
+  {
+    id: "alberta",
+    category: "pediatric",
+    level: "screening",
+    title: "Alberta 婴儿运动筛查",
+    abbr: "AIMS",
+    subtitle: "0–18 月婴儿运动发育",
+    scenario: "高危儿发育随访",
+    estMinutes: 5,
+    dimensions: ["俯卧", "仰卧", "坐位", "立位"],
+    grading: { max: 58, grades: [
+      { label: "发育正常", min: 41, tone: "good" },
+      { label: "需随访", min: 21, tone: "warn" },
+      { label: "明显落后", min: 0, tone: "bad" },
+    ] },
+    questions: [
+      { id: "q1", dimension: "俯卧", text: "俯卧抬头与支撑", options: opt(["15 充分","10 部分","5 勉强","0 不能"]) },
+      { id: "q2", dimension: "仰卧", text: "仰卧位控制与翻转", options: opt(["15 充分","10 部分","5 勉强","0 不能"]) },
+      { id: "q3", dimension: "坐位", text: "独立坐位维持", options: opt(["15 充分","10 部分","5 勉强","0 不能"]) },
+      { id: "q4", dimension: "立位", text: "站立与负重", options: opt(["13 充分","8 部分","3 勉强","0 不能"]) },
+    ],
+  },
+  {
+    id: "gmfcs",
+    category: "pediatric",
+    level: "intermediate",
+    title: "GMFCS 脑瘫粗大运动分级",
+    abbr: "GMFCS",
+    subtitle: "脑性瘫痪功能分级（Ⅰ–Ⅴ）",
+    scenario: "脑瘫功能评估与干预",
+    estMinutes: 6,
+    dimensions: ["移动能力", "步行", "辅助需求"],
+    grading: { max: 12, grades: [
+      { label: "Ⅰ 级（独立）", min: 10, tone: "good" },
+      { label: "Ⅱ 级（多数独立）", min: 7, tone: "good" },
+      { label: "Ⅲ 级（需辅助）", min: 4, tone: "warn" },
+      { label: "Ⅳ–Ⅴ 级（严重受限）", min: 0, tone: "bad" },
+    ] },
+    questions: [
+      { id: "q1", dimension: "移动能力", text: "室内外移动能力", options: opt(["4 完全独立","3 多数独立","2 需辅助","0 严重受限"]) },
+      { id: "q2", dimension: "步行", text: "长距离与户外步行", options: opt(["4 无需辅助","3 平地独立","2 需助行器","0 轮椅为主"]) },
+      { id: "q3", dimension: "辅助需求", text: "上下楼梯/地面转移", options: opt(["4 独立","3 扶栏杆","2 监督/辅助","0 完全依赖"]) },
+    ],
+  },
+  {
+    id: "gmfm",
+    category: "pediatric",
+    level: "specialty",
+    title: "GMFM 粗大运动功能评估",
+    abbr: "GMFM-66",
+    subtitle: "脑瘫粗大运动量化（0–100）",
+    scenario: "康复疗效精细追踪",
+    estMinutes: 18,
+    dimensions: ["卧位翻身", "坐位", "爬行跪位", "站立", "行走跑跳"],
+    grading: { max: 100, grades: [
+      { label: "运动良好", min: 75, tone: "good" },
+      { label: "运动中等", min: 40, tone: "warn" },
+      { label: "运动受限", min: 0, tone: "bad" },
+    ] },
+    questions: [
+      { id: "q1", dimension: "卧位翻身", text: "仰卧→俯卧翻身", options: opt(["4 完成","3 部分","1 启动","0 不能"]) },
+      { id: "q2", dimension: "卧位翻身", text: "俯卧抬头控制", options: opt(["4 完成","3 部分","1 启动","0 不能"]) },
+      { id: "q3", dimension: "坐位", text: "独立坐位维持", options: opt(["4 完成","3 部分","1 启动","0 不能"]) },
+      { id: "q4", dimension: "坐位", text: "坐位前/侧方保护", options: opt(["4 完成","3 部分","1 启动","0 不能"]) },
+      { id: "q5", dimension: "爬行跪位", text: "四点跪位爬行", options: opt(["4 完成","3 部分","1 启动","0 不能"]) },
+      { id: "q6", dimension: "爬行跪位", text: "半跪→站立", options: opt(["4 完成","3 部分","1 启动","0 不能"]) },
+      { id: "q7", dimension: "站立", text: "独立站立维持", options: opt(["4 完成","3 部分","1 启动","0 不能"]) },
+      { id: "q8", dimension: "行走跑跳", text: "独立行走 10 步", options: opt(["4 完成","3 部分","1 启动","0 不能"]) },
+      { id: "q9", dimension: "行走跑跳", text: "跑/双脚跳", options: opt(["4 完成","3 部分","1 启动","0 不能"]) },
+    ],
+  },
+];
+
+export const EXERCISES: Exercise[] = [
+  // 肩
+  { id: "ex_sh_pend", title: "Codman 钟摆运动", bodyPart: "肩", goal: "关节松动", cue: "弯腰垂臂，利用惯性小幅画圈", defaultSets: 2, defaultReps: 15 },
+  { id: "ex_sh_flex", title: "肩前屈助动", bodyPart: "肩", goal: "活动度", cue: "健手带动患侧上举至最大无痛范围", defaultSets: 3, defaultReps: 10 },
+  { id: "ex_sh_ext", title: "弹力带外旋", bodyPart: "肩", goal: "肌力", cue: "肘贴体侧，外旋至 60° 缓慢回收", defaultSets: 3, defaultReps: 12 },
+  // 肘/腕
+  { id: "ex_el_flex", title: "肘屈伸抗阻", bodyPart: "肘", goal: "肌力", cue: "坐位哑铃屈肘 2s 起 3s 落", defaultSets: 3, defaultReps: 12 },
+  { id: "ex_wr_dev", title: "腕桡偏尺偏", bodyPart: "腕", goal: "活动度", cue: "前臂固定，手向桡/尺侧偏", defaultSets: 2, defaultReps: 15 },
+  // 颈
+  { id: "ex_neck_rom", title: "颈部分向运动", bodyPart: "颈", goal: "活动度", cue: "缓慢前后左右侧屈，末端停留 3s", defaultSets: 2, defaultReps: 8 },
+  { id: "ex_neck_chin", title: "收下巴等长", bodyPart: "颈", goal: "稳定", cue: "收下巴，手抵额/侧/后各 5s 等长", defaultSets: 3, defaultReps: 5 },
+  // 腰
+  { id: "ex_lumbar_bridge", title: "臀桥", bodyPart: "腰", goal: "核心稳定", cue: "仰卧屈膝抬臀，膝髋肩成线", defaultSets: 3, defaultReps: 12 },
+  { id: "ex_lumbar_bird", title: "鸟狗式", bodyPart: "腰", goal: "核心稳定", cue: "四点跪对侧手脚伸展，保持骨盆中立", defaultSets: 3, defaultReps: 10 },
+  { id: "ex_lumbar_cat", title: "猫牛式", bodyPart: "腰", goal: "活动度", cue: "四点跪交替弓背与塌腰", defaultSets: 2, defaultReps: 12 },
+  // 膝
+  { id: "ex_knee_squat", title: "靠墙静蹲", bodyPart: "膝", goal: "肌力", cue: "背靠墙下蹲至膝 60°，保持 30s", defaultSets: 3, defaultReps: 8 },
+  { id: "ex_knee_slr", title: "直腿抬高", bodyPart: "膝", goal: "肌力", cue: "仰卧伸膝抬腿 45° 缓落", defaultSets: 3, defaultReps: 15 },
+  { id: "ex_knee_tke", title: "终末伸膝", bodyPart: "膝", goal: "肌力", cue: "膝下垫卷，伸膝末端抗阻", defaultSets: 3, defaultReps: 15 },
+  // 踝
+  { id: "ex_ankle_pump", title: "踝泵运动", bodyPart: "踝", goal: "消肿/活动度", cue: "全力跖屈背伸交替", defaultSets: 3, defaultReps: 20 },
+  { id: "ex_ankle_band", title: "弹力带抗阻", bodyPart: "踝", goal: "肌力", cue: "内/外翻各方向抗阻", defaultSets: 3, defaultReps: 12 },
+  // 核心
+  { id: "ex_core_deadbug", title: "死虫式", bodyPart: "核心", goal: "核心稳定", cue: "仰卧对侧手脚下放，腰部贴地", defaultSets: 3, defaultReps: 12 },
+  { id: "ex_core_plank", title: "侧平板", bodyPart: "核心", goal: "稳定", cue: "侧撑髋离地，保持 20s", defaultSets: 3, defaultReps: 6 },
+  // 平衡/步态
+  { id: "ex_bal_tandem", title: "串联站立", bodyPart: "平衡", goal: "静态平衡", cue: "足跟贴足尖站立 30s", defaultSets: 3, defaultReps: 4 },
+  { id: "ex_bal_reach", title: "多方向够物", bodyPart: "平衡", goal: "动态平衡", cue: "单腿站立各方向触物", defaultSets: 3, defaultReps: 8 },
+  { id: "ex_gait_weight", title: "重心转移迈步", bodyPart: "步态", goal: "步态训练", cue: "前后/左右重心转移后迈步", defaultSets: 2, defaultReps: 12 },
+  { id: "ex_gait_stair", title: "上下阶梯", bodyPart: "步态", goal: "功能", cue: "健侧先上患侧先下，扶栏", defaultSets: 2, defaultReps: 10 },
+  // 心肺
+  { id: "ex_cardio_walk", title: "间歇快走", bodyPart: "心肺", goal: "耐力", cue: "快走 3min + 慢走 2min 交替", defaultSets: 5, defaultReps: 1 },
+  { id: "ex_cardio_bike", title: "功率车", bodyPart: "心肺", goal: "耐力", cue: "RPE 控制在 11–13，转速 60rpm", defaultSets: 1, defaultReps: 1 },
+  { id: "ex_cardio_breath", title: "缩唇腹式呼吸", bodyPart: "心肺", goal: "呼吸训练", cue: "鼻吸 2s 缩唇呼 4s，腹部起伏", defaultSets: 3, defaultReps: 10 },
+  // 上肢/精细（神经）
+  { id: "ex_hand_grip", title: "握力球训练", bodyPart: "手", goal: "精细/肌力", cue: "握 3s 松 3s，避免屏气", defaultSets: 3, defaultReps: 15 },
+  { id: "ex_hand_pinch", title: "对指夹豆", bodyPart: "手", goal: "精细", cue: "拇对指夹豆入碗，计时 30s", defaultSets: 2, defaultReps: 3 },
+];
+
+export const PATHWAYS: Pathway[] = [
+  {
+    id: "pw_stroke",
+    category: "neuro",
+    title: "脑卒中后偏瘫康复路径",
+    summary: "基于 Brunnstrom 分期与循证指南的阶段性康复路径",
+    indication: "脑卒中;偏瘫;上肢运动障碍;平衡障碍",
+    stages: [
+      { index: 0, title: "急性期卧床", window: "发病 0–2 周", goal: "预防并发症、维持关节活动度", keyActions: ["良肢位摆放", "被动 ROM", "关节松动"], milestone: "生命体征稳定，可床边坐位 30 分钟", referral: "出现颅内压增高须转神经外科" },
+      { index: 1, title: "亚急性期早期", window: "2–6 周", goal: "诱发主动运动、坐位平衡", keyActions: ["床边坐位训练", "桥式运动", "患肢负重"], milestone: "独立坐位平衡 Ⅲ 级，可站立架辅助" },
+      { index: 2, title: "恢复期", window: "6 周–6 月", goal: "站立与步行、上肢功能", keyActions: ["站立平衡", "步态训练", "FMA 上肢任务"], milestone: "FMA-UE ≥36 或独立步行 10m", referral: "6 月仍无步行须评估辅具" },
+      { index: 3, title: "后遗症期", window: ">6 月", goal: "代偿与社区参与", keyActions: ["居家环境改造", "ADL 代偿策略", "社区康复"], milestone: "mRS ≤3 或达成个体化目标" },
+    ],
+  },
+  {
+    id: "pw_acl",
+    category: "musculo",
+    title: "前交叉韧带重建术后路径",
+    summary: "术后循证分期康复，强调肌力与重返运动",
+    indication: "ACL重建术后;膝关节;运动损伤",
+    stages: [
+      { index: 0, title: "术后保护期", window: "0–2 周", goal: "消肿、屈膝 90°、避免伸膝受限", keyActions: ["踝泵", "股四头肌等长", "被动屈膝"], milestone: "伸膝 0°，屈膝 ≥90°，无伸膝滞后" },
+      { index: 1, title: "早期负重期", window: "2–6 周", goal: "逐步负重、闭链肌力", keyActions: ["部分→全负重", "靠墙静蹲", "本体感觉"], milestone: "全负重无跛行，屈膝 ≥120°" },
+      { index: 2, title: "肌力强化期", window: "6 周–3 月", goal: "肌力与功能恢复", keyActions: ["终末伸膝", "单腿蹲", "功率车"], milestone: "患侧股四头肌肌力达健侧 80%" },
+      { index: 3, title: "重返运动期", window: "3–9 月", goal: "专项训练与回归赛场", keyActions: ["变向训练", "跳跃落地控制", "单腿跳测试"], milestone: "单腿跳对称性 ≥90%，无恐惧感", referral: "残余松弛须复查韧带" },
+    ],
+  },
+  {
+    id: "pw_lbp",
+    category: "musculo",
+    title: "慢性下腰痛循证路径",
+    summary: "基于疼痛分型与红黄旗的非手术路径",
+    indication: "慢性下腰痛;非特异性腰痛;腰椎术后稳定",
+    stages: [
+      { index: 0, title: "评估与红旗筛查", window: "首诊", goal: "排查严重病理、识别黄旗", keyActions: ["红旗问卷", "JOA 评估", "疼痛教育"], milestone: "无红旗，建立自我管理认知", referral: "红旗阳性须影像与专科转介" },
+      { index: 1, title: "症状控制期", window: "1–4 周", goal: "减轻疼痛、恢复日常活动", keyActions: ["手法松动", "核心激活", "逐步活动"], milestone: "VAS 下降 ≥50%，JOA 提升 ≥4 分" },
+      { index: 2, title: "功能强化期", window: "4–12 周", goal: "核心肌力与运动控制", keyActions: ["鸟狗/死虫", "渐进负重", "工效学"], milestone: "Oswestry <20%，可胜任工作姿势" },
+      { index: 3, title: "预防复发期", window: ">12 周", goal: "长期管理、预防复发", keyActions: ["规律运动习惯", "定期复评", "心理调适"], milestone: "6 月内复发 <1 次" },
+    ],
+  },
+  {
+    id: "pw_copd",
+    category: "cardio",
+    title: "COPD 肺康复路径",
+    summary: "运动训练 + 呼吸训练 + 教育的综合路径",
+    indication: "COPD;呼吸困难;肺功能下降",
+    stages: [
+      { index: 0, title: "基线评估", window: "第 1 周", goal: "确立基线与目标", keyActions: ["6MWT", "mMRC", "吸入器教育"], milestone: "完成基线，明确个体目标" },
+      { index: 1, title: "呼吸训练期", window: "1–4 周", goal: "改善通气与排痰", keyActions: ["缩唇腹式呼吸", "体位引流", "咳嗽训练"], milestone: "mMRC 改善 ≥1 级，SpO₂ 稳定" },
+      { index: 2, title: "运动训练期", window: "4–8 周", goal: "提升运动耐量", keyActions: ["间歇快走", "功率车", "上肢抗阻"], milestone: "6MWT 距离提升 ≥30m" },
+      { index: 3, title: "维持期", window: ">8 周", goal: "居家长期维持", keyActions: ["居家运动处方", "自我监测", "随访"], milestone: "维持耐量，年急性加重 <1 次", referral: "急性加重须转呼吸科" },
+    ],
+  },
+];
+
+export const DEMO_THERAPIST: User = {
+  id: "u_therapist_demo",
+  email: "therapist@rh.com",
+  password: "123456",
+  role: "therapist",
+  name: "陈语桐",
+  license: "PT-2021-0387",
+  createdAt: Date.now() - 1000 * 60 * 60 * 24 * 120,
+};
+
+export const DEMO_PATIENTS: Patient[] = [
+  { id: "p_demo_1", therapistId: "u_therapist_demo", name: "李建国", age: 58, sex: "男", diagnosis: "右侧脑梗死后偏瘫", category: "neuro", tags: ["偏瘫","上肢功能障碍","高血压"], createdAt: Date.now() - 1000 * 60 * 60 * 24 * 60 },
+  { id: "p_demo_2", therapistId: "u_therapist_demo", name: "王晓蕾", age: 27, sex: "女", diagnosis: "左膝 ACL 重建术后", category: "musculo", tags: ["术后","运动员","运动损伤"], createdAt: Date.now() - 1000 * 60 * 60 * 24 * 28 },
+  { id: "p_demo_3", therapistId: "u_therapist_demo", name: "张德海", age: 45, sex: "男", diagnosis: "慢性非特异性下腰痛", category: "musculo", tags: ["慢性疼痛","久坐"], createdAt: Date.now() - 1000 * 60 * 60 * 24 * 45 },
+  { id: "p_demo_4", therapistId: "u_therapist_demo", name: "刘淑芬", age: 71, sex: "女", diagnosis: "COPD Ⅲ 级", category: "cardio", tags: ["COPD","呼吸困难"], createdAt: Date.now() - 1000 * 60 * 60 * 24 * 80 },
+  { id: "p_demo_5", therapistId: "u_therapist_demo", name: "周小宇", age: 4, sex: "男", diagnosis: "痉挛型双瘫脑性瘫痪", category: "pediatric", tags: ["脑瘫","GMFCS Ⅲ"], createdAt: Date.now() - 1000 * 60 * 60 * 24 * 100 },
+];

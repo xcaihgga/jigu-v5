@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f5f1e8;
+  --surface: #fbf9f3;
+  --ink: #1a1a1a;
+  --line: #e4dfd0;
+  --teal: #0f4c4a;
+  --coral: #e8654a;
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: "IBM Plex Sans", "PingFang SC", "Noto Sans SC", sans-serif;
+  background-color: var(--bg);
+  color: var(--ink);
+  line-height: 1.55;
+  font-feature-settings: "ss01", "cv01";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* 细微纸纹背景，营造期刊质感 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: radial-gradient(rgba(15, 76, 74, 0.035) 1px, transparent 1px);
+  background-size: 22px 22px;
+  opacity: 0.6;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+::selection {
+  background: rgba(232, 101, 74, 0.22);
+  color: #1a1a1a;
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(15, 76, 74, 0.18);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 76, 74, 0.32);
+  background-clip: content-box;
+}
+
+@layer components {
+  .card {
+    @apply rounded bg-surface border border-line shadow-soft;
+    background-color: var(--surface);
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded font-medium transition-all duration-200 select-none whitespace-nowrap;
+  }
+  .btn-primary {
+    @apply btn bg-teal-500 text-cream-50 px-4 py-2 text-sm hover:bg-teal-600 hover:-translate-y-0.5 hover:shadow-lift active:translate-y-0;
+  }
+  .btn-coral {
+    @apply btn bg-coral text-white px-4 py-2 text-sm hover:bg-coral-dark hover:-translate-y-0.5 hover:shadow-lift active:translate-y-0;
+  }
+  .btn-ghost {
+    @apply btn border border-line text-ink-soft bg-surface px-4 py-2 text-sm hover:border-teal-400 hover:text-teal-500;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-2xs;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-1 text-2xs font-medium text-ink-soft;
+  }
+  .chip-active {
+    @apply border-teal-500 bg-teal-500 text-cream-50;
+  }
+  .input {
+    @apply w-full rounded border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-faint outline-none transition-colors focus:border-teal-500 focus:ring-2 focus:ring-teal-500/15;
+  }
+  .label-text {
+    @apply block text-2xs font-medium uppercase tracking-[0.14em] text-ink-mute mb-1.5;
+  }
+  .section-title {
+    @apply font-display text-[1.35rem] leading-tight text-ink;
+  }
+  .stat-num {
+    @apply font-mono font-medium tabular-nums;
+  }
+}
+
+@layer utilities {
+  .stagger > * {
+    opacity: 0;
+    animation: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .stagger > *:nth-child(1) { animation-delay: 0.04s; }
+  .stagger > *:nth-child(2) { animation-delay: 0.10s; }
+  .stagger > *:nth-child(3) { animation-delay: 0.16s; }
+  .stagger > *:nth-child(4) { animation-delay: 0.22s; }
+  .stagger > *:nth-child(5) { animation-delay: 0.28s; }
+  .stagger > *:nth-child(6) { animation-delay: 0.34s; }
+  .stagger > *:nth-child(7) { animation-delay: 0.40s; }
+  .stagger > *:nth-child(8) { animation-delay: 0.46s; }
+  .text-balance {
+    text-wrap: balance;
+  }
+}
