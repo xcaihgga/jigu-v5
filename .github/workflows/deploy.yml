@@ -18,15 +18,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
-      - run: pnpm install
-      - run: BASE_PATH=/jigu-v5/ pnpm run build
+          cache: npm
+      - run: npm install
+      - run: BASE_PATH=/jigu-v5/ npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
