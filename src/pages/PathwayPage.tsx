@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Route, Users, ArrowRight, Check, Flag, ChevronRight, Sparkles, AlertTriangle, Map, BookOpen, Layers, Zap, ClipboardPaste, Wand2 } from "lucide-react";
+import { Route, Users, ArrowRight, Check, Flag, ChevronRight, Sparkles, AlertTriangle, Map, BookOpen, Layers, Zap, ClipboardPaste, Wand2, Brain, Heart, Activity, Pill, Stethoscope } from "lucide-react";
 import { pathway, patient, assess } from "@/services";
 import { toast } from "@/store/ui";
 import { fmtDate } from "@/lib/storage";
@@ -414,6 +414,109 @@ export default function PathwayPage() {
               <p className="text-2xs text-ink-faint mt-1.5">{ev.reference}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* 神经康复数据 */}
+      <section className="card p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <Brain className="h-4 w-4 text-teal-500" />
+          <h2 className="section-title">神经康复数据</h2>
+          <span className="text-2xs text-ink-mute">SOAP评估框架、SCI分级、痉挛管理与卒中路径</span>
+        </div>
+
+        <div className="mb-5">
+          <h3 className="text-sm font-medium text-ink mb-3 flex items-center gap-2"><ClipboardPaste className="h-3.5 w-3.5 text-teal-500" /> SOAP评估框架</h3>
+          <div className="grid md:grid-cols-4 gap-3">
+            <div className="rounded border border-line bg-surface p-3">
+              <p className="text-2xs text-ink-mute mb-1">Subjective 主观</p>
+              <p className="text-sm text-ink">患者主诉、疼痛、功能受限、病史</p>
+            </div>
+            <div className="rounded border border-line bg-surface p-3">
+              <p className="text-2xs text-ink-mute mb-1">Objective 客观</p>
+              <p className="text-sm text-ink">体征、测量数据、评估量表得分、影像学结果</p>
+            </div>
+            <div className="rounded border border-line bg-surface p-3">
+              <p className="text-2xs text-ink-mute mb-1">Assessment 评估</p>
+              <p className="text-sm text-ink">综合分析、诊断判断、功能分级、预后判断</p>
+            </div>
+            <div className="rounded border border-line bg-surface p-3">
+              <p className="text-2xs text-ink-mute mb-1">Plan 计划</p>
+              <p className="text-sm text-ink">治疗目标、干预方案、训练计划、随访安排</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-5">
+          <h3 className="text-sm font-medium text-ink mb-3 flex items-center gap-2"><Activity className="h-3.5 w-3.5 text-coral" /> SCI损伤分级康复目标</h3>
+          <div className="grid md:grid-cols-5 gap-3">
+            {["C1-C3", "C4-C5", "C6-C7", "T1-T12", "L1-L5"].map((level, idx) => (
+              <div key={level} className="rounded border border-line bg-surface p-3">
+                <p className="text-2xs text-teal-600 font-medium mb-1">{level}</p>
+                <p className="text-2xs text-ink-mute">
+                  {idx === 0 && "完全依赖，呼吸支持，电动轮椅"}
+                  {idx === 1 && "辅助呼吸，电动轮椅，辅助转移"}
+                  {idx === 2 && "手动轮椅，独立转移，部分自理"}
+                  {idx === 3 && "步行训练，独立转移，完全自理"}
+                  {idx === 4 && "独立步行，上下楼梯，重返社区"}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-5">
+          <h3 className="text-sm font-medium text-ink mb-3 flex items-center gap-2"><Pill className="h-3.5 w-3.5 text-amber-dark" /> 痉挛管理方案</h3>
+          <div className="grid md:grid-cols-3 gap-3">
+            <div className="rounded border border-line bg-surface p-3">
+              <p className="text-2xs text-ink-mute mb-1">物理治疗</p>
+              <p className="text-sm text-ink">牵伸训练、冷热疗法、振动刺激、功能性活动</p>
+            </div>
+            <div className="rounded border border-line bg-surface p-3">
+              <p className="text-2xs text-ink-mute mb-1">药物治疗</p>
+              <p className="text-sm text-ink">巴氯芬、替扎尼定、丹曲林、肉毒毒素注射</p>
+            </div>
+            <div className="rounded border border-line bg-surface p-3">
+              <p className="text-2xs text-ink-mute mb-1">手术治疗</p>
+              <p className="text-sm text-ink">肌腱延长、神经切断、选择性脊神经后根切断</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-5">
+          <h3 className="text-sm font-medium text-ink mb-3 flex items-center gap-2"><Heart className="h-3.5 w-3.5 text-coral" /> 脑卒中关键路径</h3>
+          <div className="grid md:grid-cols-4 gap-3">
+            {["急性期(1-2周)", "恢复期(2-8周)", "恢复期(2-6月)", "后遗症期(>6月)"].map((phase, idx) => (
+              <div key={phase} className="rounded border border-line bg-surface p-3">
+                <p className="text-2xs text-coral font-medium mb-1">{phase}</p>
+                <p className="text-2xs text-ink-mute">
+                  {idx === 0 && "生命体征稳定，良肢位摆放，早期被动活动"}
+                  {idx === 1 && "主动训练，平衡训练，ADL训练，言语治疗"}
+                  {idx === 2 && "步态训练，精细运动，认知康复，心理支持"}
+                  {idx === 3 && "维持性训练，辅助器具，社区适应，家庭指导"}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-sm font-medium text-ink mb-3 flex items-center gap-2"><Stethoscope className="h-3.5 w-3.5 text-teal-500" /> Brunnstrom偏瘫恢复分期</h3>
+          <div className="grid md:grid-cols-6 gap-3">
+            {["Ⅰ期", "Ⅱ期", "Ⅲ期", "Ⅳ期", "Ⅴ期", "Ⅵ期"].map((stage, idx) => (
+              <div key={stage} className="rounded border border-line bg-surface p-3">
+                <p className="text-2xs text-teal-600 font-medium mb-1">{stage}</p>
+                <p className="text-2xs text-ink-mute">
+                  {idx === 0 && "无随意运动"}
+                  {idx === 1 && "出现联合反应"}
+                  {idx === 2 && "共同运动达到高峰"}
+                  {idx === 3 && "出现分离运动"}
+                  {idx === 4 && "分离运动增强"}
+                  {idx === 5 && "接近正常"}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </div>

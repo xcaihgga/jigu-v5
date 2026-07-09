@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   ClipboardCheck,
   CalendarRange,
-  LineChart as LineChartIcon,
   Route,
   Users,
   Settings,
@@ -12,8 +11,6 @@ import {
   ChevronRight,
   Brain,
   BookOpen,
-  ListChecks,
-  Stethoscope,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import { toast } from "@/store/ui";
@@ -23,15 +20,11 @@ import { useEffect, useState } from "react";
 const NAV = [
   { to: "/", label: "工作台", icon: LayoutDashboard, end: true },
   { to: "/assess", label: "评估中心", icon: ClipboardCheck },
+  { to: "/treatment", label: "治疗方案", icon: BookOpen },
   { to: "/plan", label: "康复计划", icon: CalendarRange },
-  { to: "/plan/hub", label: "治疗计划汇总", icon: ListChecks },
-  { to: "/progress", label: "进度追踪", icon: LineChartIcon },
   { to: "/pathway", label: "临床路径", icon: Route },
-  { to: "/pain", label: "21种疼痛", icon: Stethoscope },
-  { to: "/neuro-extras", label: "神经数据", icon: Brain },
   { to: "/patients", label: "患者档案", icon: Users },
   { to: "/quiz", label: "进修中心", icon: Brain },
-  { to: "/docs", label: "使用文档", icon: BookOpen },
   { to: "/profile", label: "个人中心", icon: Settings },
 ];
 

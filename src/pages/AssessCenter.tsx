@@ -9,7 +9,6 @@ import {
   Bone,
   Brain,
   Baby,
-  HeartPulse,
   Stethoscope,
   Clock,
   Info,
@@ -28,13 +27,11 @@ const CATEGORY_META: Record<
   ScaleCategory,
   { name: string; en: string; desc: string; icon: typeof Activity }
 > = {
-  "疼痛评估": { name: "疼痛评估", en: "Pain Assessment", desc: "VAS、NRS、SF-MPQ 等多维度疼痛量化工具", icon: Activity },
-  "功能评估": { name: "功能评估", en: "Functional Assessment", desc: "ADL、步行、肌力与日常活动能力评定", icon: ListChecks },
+  "功能评估": { name: "功能评估", en: "Functional Assessment", desc: "ADL、步行、肌力、疼痛评估与日常活动能力评定", icon: ListChecks },
   "关节评估": { name: "关节评估", en: "Joint Assessment", desc: "肩、肘、腕、髋、膝、踝各关节专项量表", icon: Bone },
   "神经评估": { name: "神经评估", en: "Neurological Assessment", desc: "卒中分期、平衡、认知与痉挛评估", icon: Brain },
   "儿童评估": { name: "儿童评估", en: "Pediatric Assessment", desc: "婴儿运动、脑瘫分级与发育随访", icon: Baby },
-  "心肺评估": { name: "心肺评估", en: "Cardiopulmonary Assessment", desc: "步行试验、呼吸困难与心功能分级", icon: HeartPulse },
-  "特殊评估": { name: "特殊评估", en: "Special Assessment", desc: "吞咽、构音、焦虑抑郁与意识评估", icon: Stethoscope },
+  "特殊评估": { name: "特殊评估", en: "Special Assessment", desc: "心肺功能、吞咽、构音、焦虑抑郁与意识评估", icon: Stethoscope },
 };
 
 export default function AssessCenter() {
@@ -68,7 +65,7 @@ export default function AssessCenter() {
             评估量表库
           </h1>
           <p className="text-sm text-ink-mute mt-1 max-w-xl">
-            覆盖疼痛、功能、关节、神经、儿童、心肺、特殊七大类，共 {EXTENDED_SCALES.length} 个常用量表，支持互动式评估与快速查阅。
+            覆盖功能、关节、神经、儿童、特殊五大类，共 {EXTENDED_SCALES.length} 个常用量表，支持互动式评估与快速查阅。
           </p>
         </header>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -119,9 +116,9 @@ export default function AssessCenter() {
         <div>
           <button
             onClick={() => setCat(null)}
-            className="inline-flex items-center gap-1 text-2xs text-ink-mute hover:text-teal-500 mb-2"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-500 text-white rounded text-sm font-medium hover:bg-teal-600 transition-colors mb-2 shadow-sm"
           >
-            <ArrowLeft className="h-3 w-3" /> 返回分类
+            <ArrowLeft className="h-3.5 w-3.5" /> 返回分类
           </button>
           <h1 className="font-display text-[1.7rem] leading-tight text-ink flex items-center gap-2.5">
             {CATEGORY_META[cat].name}
@@ -229,12 +226,8 @@ export default function AssessCenter() {
   );
 }
 
-// 简单 toast 辅助（避免额外引入）
 const toast = {
   info: (msg: string) => {
-    // 使用页面内轻提示，避免引入 store 循环依赖
-    // 这里通过 alert 替代，实际项目中可替换为 ui store
-    // eslint-disable-next-line no-alert
     alert(msg);
   },
 };

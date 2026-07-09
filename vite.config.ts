@@ -5,7 +5,7 @@ import { traeBadgePlugin } from 'vite-plugin-trae-solo-badge';
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/jigu-v5/',
+  base: process.env.BASE_PATH || '/',
   build: {
     sourcemap: 'hidden',
   },

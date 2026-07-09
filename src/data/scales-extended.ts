@@ -1,10 +1,8 @@
 export type ScaleCategory =
-  | "疼痛评估"
   | "功能评估"
   | "关节评估"
   | "神经评估"
   | "儿童评估"
-  | "心肺评估"
   | "特殊评估";
 
 export interface ScaleMeta {
@@ -16,22 +14,19 @@ export interface ScaleMeta {
   dimensions: string;
   scoring: string;
   category: ScaleCategory;
-  /** 是否已接入互动式评估（questions） */
   interactive?: boolean;
 }
 
 export const SCALE_CATEGORIES: { id: ScaleCategory; icon: string }[] = [
-  { id: "疼痛评估", icon: "activity" },
   { id: "功能评估", icon: "list-checks" },
   { id: "关节评估", icon: "bone" },
   { id: "神经评估", icon: "brain" },
   { id: "儿童评估", icon: "baby" },
-  { id: "心肺评估", icon: "heart-pulse" },
   { id: "特殊评估", icon: "stethoscope" },
 ];
 
 export const EXTENDED_SCALES: ScaleMeta[] = [
-  // ========== 疼痛评估 ==========
+  // ========== 功能评估（含疼痛评估） ==========
   {
     id: "vas",
     name: "视觉模拟疼痛评分",
@@ -40,7 +35,7 @@ export const EXTENDED_SCALES: ScaleMeta[] = [
     population: "成人、有表达能力的患者",
     dimensions: "一条10cm直线，两端为“无痛”和“最剧烈的疼痛”",
     scoring: "患者标记位置，测量距离换算为0-10分",
-    category: "疼痛评估",
+    category: "功能评估",
   },
   {
     id: "nrs",
@@ -50,7 +45,7 @@ export const EXTENDED_SCALES: ScaleMeta[] = [
     population: "广泛用于成人及青少年",
     dimensions: "0-10数字代表疼痛程度，0=无痛，10=最剧烈",
     scoring: "患者选择数字，1-3轻度，4-6中度，7-10重度",
-    category: "疼痛评估",
+    category: "功能评估",
   },
   {
     id: "p4",
@@ -60,7 +55,7 @@ export const EXTENDED_SCALES: ScaleMeta[] = [
     population: "成人",
     dimensions: "4个问题（过去24小时最痛、最轻、平均、现在）",
     scoring: "每个0-10分，总分0-40",
-    category: "疼痛评估",
+    category: "功能评估",
   },
   {
     id: "sf-mpq",
@@ -70,7 +65,7 @@ export const EXTENDED_SCALES: ScaleMeta[] = [
     population: "需详细评估疼痛性质的患者",
     dimensions: "15个描述词（感觉、情感、评估维度）",
     scoring: "每个词0-3分，总分0-45",
-    category: "疼痛评估",
+    category: "功能评估",
   },
   {
     id: "wong-baker",
@@ -80,10 +75,8 @@ export const EXTENDED_SCALES: ScaleMeta[] = [
     population: "儿童、语言障碍者、老年人",
     dimensions: "6种面部表情（微笑到哭泣）",
     scoring: "选择对应表情，0-10分",
-    category: "疼痛评估",
+    category: "功能评估",
   },
-
-  // ========== 功能评估 ==========
   {
     id: "odi",
     name: "Oswestry功能障碍指数",
@@ -690,7 +683,7 @@ export const EXTENDED_SCALES: ScaleMeta[] = [
     interactive: true,
   },
 
-  // ========== 心肺评估 ==========
+  // ========== 特殊评估（含心肺评估） ==========
   {
     id: "6mwt",
     name: "六分钟步行试验",
@@ -699,7 +692,7 @@ export const EXTENDED_SCALES: ScaleMeta[] = [
     population: "心肺功能、康复疗效",
     dimensions: "运动耐量、症状、生命体征",
     scoring: "步行距离分级",
-    category: "心肺评估",
+    category: "特殊评估",
     interactive: true,
   },
   {
@@ -710,7 +703,7 @@ export const EXTENDED_SCALES: ScaleMeta[] = [
     population: "COPD、心衰呼吸困难筛查",
     dimensions: "呼吸困难",
     scoring: "0-4级",
-    category: "心肺评估",
+    category: "特殊评估",
     interactive: true,
   },
   {
@@ -721,11 +714,9 @@ export const EXTENDED_SCALES: ScaleMeta[] = [
     population: "心力衰竭、心脏术后",
     dimensions: "活动耐量、症状、体征、生活质量",
     scoring: "Ⅰ-Ⅳ级",
-    category: "心肺评估",
+    category: "特殊评估",
     interactive: true,
   },
-
-  // ========== 特殊评估 ==========
   {
     id: "sf-12",
     name: "SF-12生活质量量表",
