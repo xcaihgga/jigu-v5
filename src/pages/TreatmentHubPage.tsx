@@ -141,7 +141,7 @@ export default function TreatmentHubPage() {
         <div>
           <p className="label-text">Treatment Hub</p>
           <h1 className="font-display text-[1.7rem] leading-tight text-ink">治疗方案</h1>
-          <p className="text-sm text-ink-mute mt-1">整合21种肌骨疼痛治疗方案与康复训练计划，支持搜索、筛选与查看详情</p>
+          <p className="text-sm text-ink-mute mt-1">整合肌骨疼痛与骨科术后康复治疗方案，支持搜索、筛选与查看详情</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => navigate("/assess")} className="btn-primary">
@@ -176,11 +176,11 @@ export default function TreatmentHubPage() {
                 <div className="h-10 w-10 rounded-xl bg-coral-100 text-coral flex items-center justify-center">
                   <Stethoscope className="h-5 w-5" />
                 </div>
-                <h2 className="text-xl font-bold text-ink-main">21 种肌骨疼痛治疗方案</h2>
+                <h2 className="text-xl font-bold text-ink-main">肌骨疼痛与骨科术后康复方案</h2>
               </div>
               <p className="text-sm text-ink-soft leading-relaxed max-w-3xl">
-                覆盖足踝、膝、髋、腰、肩、肘、颈 7 大区域，
-                每种疼痛包含 <span className="text-coral font-semibold">病因 / 临床表现 / 评估 / 治疗 / 预防</span> 五大维度。
+                覆盖足踝、膝、髋、腰、肩、肘、颈及骨科术后康复，
+                每种方案包含 <span className="text-coral font-semibold">病因 / 病理分期 / 临床表现 / 评估 / 治疗 / 预防</span> 六大维度。
               </p>
             </div>
           </div>

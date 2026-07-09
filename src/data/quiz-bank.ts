@@ -4,6 +4,7 @@
 import { Q_ACUTE, Q_RETURN, Q_DRYNEEDLE, Q_REGION, Q_MUSDIS, Q_EVIDENCE_UPDATE, Q_EVIDENCE_LEVEL } from "./quiz-bank-deep";
 import { Q_PAIN } from "./quiz-bank-pain";
 import { Q_MET } from "./quiz-bank-met";
+import { Q_YIZHI } from "./quiz-bank-yizhi";
 
 export type QuizCategory =
   | "anatomy"        // 解剖学
@@ -750,4 +751,5 @@ export const QUIZ_BANK: QuizQuestion[] = [
   ...Q_EVIDENCE_LEVEL,
   ...Q_PAIN,
   ...Q_MET,
+  ...Q_YIZHI,
 ];

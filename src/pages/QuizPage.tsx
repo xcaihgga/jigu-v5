@@ -26,7 +26,7 @@ import { load, save, dayKey } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import EmptyState from "@/components/ui/EmptyState";
 
-type Mode = "sequence" | "random" | "wrong" | "exam" | "favorites" | "list";
+type Mode = "sequence" | "random" | "wrong" | "exam" | "favorites" | "list" | "daily";
 
 interface Stats {
   total: number;
@@ -136,6 +136,18 @@ export default function QuizPage() {
       setCurrentList(filteredBank);
     } else if (mode === "exam") {
       setCurrentList([...QUIZ_BANK].sort(() => Math.random() - 0.5).slice(0, 20));
+    } else if (mode === "daily") {
+      const today = dayKey();
+      const dailyData = load<{ date: string; questions: string[] }>(DAILY_KEY, { date: "", questions: [] });
+      let dailyQuestions: QuizQuestion[];
+      if (dailyData.date === today && dailyData.questions.length > 0) {
+        dailyQuestions = QUIZ_BANK.filter((q) => dailyData.questions.includes(q.id));
+      } else {
+        const shuffled = [...QUIZ_BANK].sort(() => Math.random() - 0.5);
+        dailyQuestions = shuffled.slice(0, 10);
+        save(DAILY_KEY, { date: today, questions: dailyQuestions.map((q) => q.id) });
+      }
+      setCurrentList(dailyQuestions);
     }
     setIdx(0);
     setPicked(null);
@@ -314,6 +326,7 @@ export default function QuizPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           {[
+            { id: "daily" as Mode, label: "每日一练", Icon: Calendar },
             { id: "sequence" as Mode, label: "顺序模式", Icon: BookOpen },
             { id: "random" as Mode, label: "随机模式", Icon: Shuffle },
             { id: "wrong" as Mode, label: `错题本${wrongIds.length > 0 ? ` (${wrongIds.length})` : ""}`, Icon: RotateCcw },
@@ -404,8 +417,8 @@ export default function QuizPage() {
         <div className="card">
           <EmptyState
             icon={<BookOpen className="h-10 w-10" />}
-            title={mode === "wrong" ? "暂无错题" : mode === "favorites" ? "暂无收藏" : "暂无题目"}
-            desc={mode === "wrong" ? "继续保持，遇到错题会自动收录" : mode === "favorites" ? "点击题目右上角的星标即可收藏" : "尝试调整筛选或更换模式"}
+            title={mode === "wrong" ? "暂无错题" : mode === "favorites" ? "暂无收藏" : mode === "daily" ? "今日题目已完成" : "暂无题目"}
+            desc={mode === "wrong" ? "继续保持，遇到错题会自动收录" : mode === "favorites" ? "点击题目右上角的星标即可收藏" : mode === "daily" ? "明天再来挑战新题目吧！" : "尝试调整筛选或更换模式"}
             action={
               <div className="flex gap-2">
                 <button onClick={() => setMode("sequence")} className="btn-primary btn-sm">开始顺序刷题</button>

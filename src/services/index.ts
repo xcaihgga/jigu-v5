@@ -19,6 +19,7 @@ import {
   PATHWAYS,
   SCALES,
 } from "@/data/seed";
+import { EXTENDED_SCALES } from "@/data/scales-extended";
 
 const KEYS = {
   users: "users",
