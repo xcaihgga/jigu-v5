@@ -21,7 +21,6 @@ import {
   SCALE_CATEGORIES,
   type ScaleCategory,
 } from "@/data/scales-extended";
-import { SCALES } from "@/data/seed";
 
 const CATEGORY_META: Record<
   ScaleCategory,
@@ -40,10 +39,8 @@ export default function AssessCenter() {
   const [q, setQ] = useState("");
 
   const interactiveIds = useMemo(() => {
-    const ids = new Set(SCALES.map((s) => s.id));
-    EXTENDED_SCALES.forEach((s) => {
-      if (s.interactive) ids.add(s.id);
-    });
+    const ids = new Set<string>();
+    EXTENDED_SCALES.forEach((s) => ids.add(s.id));
     return ids;
   }, []);
 

@@ -96,12 +96,82 @@ export const auth = {
 };
 
 // ============ 评估 ============
+const CATEGORY_MAP: Record<string, "musculo" | "neuro" | "cardio" | "pediatric"> = {
+  "功能评估": "musculo",
+  "关节评估": "musculo",
+  "神经评估": "neuro",
+  "儿童评估": "pediatric",
+  "特殊评估": "cardio",
+};
+
+function buildScaleFromMeta(meta: typeof EXTENDED_SCALES[number]): Scale {
+  const dims = meta.dimensions.split(/[、,，]/).filter(Boolean);
+  const dimList = dims.length > 0 ? dims : ["总体评估"];
+  const numDims = dimList.length;
+
+  const questionsPerDim = Math.max(1, Math.min(5, Math.ceil(10 / numDims)));
+  const questions: Scale["questions"] = [];
+  let qIdx = 1;
+
+  for (const dim of dimList) {
+    for (let i = 0; i < questionsPerDim; i++) {
+      questions.push({
+        id: `q${qIdx}`,
+        dimension: dim,
+        text: `${dim} - 问题 ${i + 1}：请根据您的${dim}情况选择`,
+        options: [
+          { label: "完全没有/正常", score: 0 },
+          { label: "轻微", score: 1 },
+          { label: "中度", score: 2 },
+          { label: "明显", score: 3 },
+          { label: "严重/完全不能", score: 4 },
+        ],
+      });
+      qIdx++;
+    }
+  }
+
+  const maxScore = questions.length * 4;
+
+  return {
+    id: meta.id,
+    category: CATEGORY_MAP[meta.category] ?? "musculo",
+    level: meta.interactive ? "intermediate" : "screening",
+    title: meta.name,
+    abbr: meta.enName.split(" ")[0].replace(/[()]/g, ""),
+    subtitle: meta.purpose,
+    scenario: meta.population,
+    estMinutes: questions.length * 0.5 + 2,
+    dimensions: dimList,
+    grading: {
+      max: maxScore,
+      grades: [
+        { label: "正常/轻度", min: 0, tone: "good" },
+        { label: "中度", min: Math.round(maxScore * 0.3), tone: "warn" },
+        { label: "重度", min: Math.round(maxScore * 0.7), tone: "bad" },
+      ],
+    },
+    questions,
+  };
+}
+
+const ALL_SCALES: Scale[] = [...SCALES];
+const extendedScaleMap = new Map<string, Scale>();
+
+for (const meta of EXTENDED_SCALES) {
+  if (!ALL_SCALES.find((s) => s.id === meta.id)) {
+    const built = buildScaleFromMeta(meta);
+    ALL_SCALES.push(built);
+    extendedScaleMap.set(meta.id, built);
+  }
+}
+
 export const assess = {
   listScales(category?: string): Scale[] {
-    return SCALES.filter((s) => !category || s.category === category);
+    return ALL_SCALES.filter((s) => !category || s.category === category);
   },
   getScale(id: string): Scale | undefined {
-    return SCALES.find((s) => s.id === id);
+    return ALL_SCALES.find((s) => s.id === id);
   },
   submit(scaleId: string, patientId: string, therapistId: string, answers: Record<string, number>): AssessmentRecord {
     const scale = this.getScale(scaleId);
