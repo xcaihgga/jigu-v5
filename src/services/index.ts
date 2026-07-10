@@ -20,6 +20,7 @@ import {
   SCALES,
 } from "@/data/seed";
 import { EXTENDED_SCALES } from "@/data/scales-extended";
+import { SCALE_QUESTIONS_MAP } from "@/data/scales-questions";
 
 const KEYS = {
   users: "users",
@@ -105,6 +106,33 @@ const CATEGORY_MAP: Record<string, "musculo" | "neuro" | "cardio" | "pediatric">
 };
 
 function buildScaleFromMeta(meta: typeof EXTENDED_SCALES[number]): Scale {
+  const customQuestions = SCALE_QUESTIONS_MAP[meta.id];
+  
+  if (customQuestions) {
+    const maxScore = customQuestions.grading?.max ?? customQuestions.questions.reduce((sum, q) => sum + Math.max(...q.options.map(o => o.score)), 0);
+    
+    return {
+      id: meta.id,
+      category: CATEGORY_MAP[meta.category] ?? "musculo",
+      level: meta.interactive ? "intermediate" : "screening",
+      title: meta.name,
+      abbr: meta.enName.split(" ")[0].replace(/[()]/g, ""),
+      subtitle: meta.purpose,
+      scenario: meta.population,
+      estMinutes: customQuestions.questions.length * 0.5 + 2,
+      dimensions: [...new Set(customQuestions.questions.map(q => q.dimension))],
+      grading: customQuestions.grading ?? {
+        max: maxScore,
+        grades: [
+          { label: "正常/轻度", min: 0, tone: "good" },
+          { label: "中度", min: Math.round(maxScore * 0.3), tone: "warn" },
+          { label: "重度", min: Math.round(maxScore * 0.7), tone: "bad" },
+        ],
+      },
+      questions: customQuestions.questions,
+    };
+  }
+
   const dims = meta.dimensions.split(/[、,，]/).filter(Boolean);
   const dimList = dims.length > 0 ? dims : ["总体评估"];
   const numDims = dimList.length;
