@@ -41,7 +41,7 @@ export const PAIN_CONDITIONS: PainCondition[] = [
     ],
     "prevention": "控制体重，足弓支撑鞋，避免长时间站立",
     "evidenceLevel": "B",
-    "source": "《21种疼痛治疗方案》"
+    "source": "《疼痛治疗方案》"
   },
   {
     "name": "跟腱炎",
@@ -71,7 +71,7 @@ export const PAIN_CONDITIONS: PainCondition[] = [
     ],
     "prevention": "训练前充分热身、训练后充分拉伸、避免突然增加训练量",
     "evidenceLevel": "A",
-    "source": "《21种疼痛治疗方案》"
+    "source": "《疼痛治疗方案》"
   },
   {
     "name": "踝关节韧带扭伤",
@@ -98,7 +98,7 @@ export const PAIN_CONDITIONS: PainCondition[] = [
     ],
     "prevention": "运动前充分热身、本体感觉训练、外翻肌群强化",
     "evidenceLevel": "A",
-    "source": "《21种疼痛治疗方案》"
+    "source": "《疼痛治疗方案》"
   },
   {
     "name": "扁平足",
@@ -122,7 +122,7 @@ export const PAIN_CONDITIONS: PainCondition[] = [
     ],
     "prevention": "避免长时间穿平底鞋，足弓训练纳入日常",
     "evidenceLevel": "B",
-    "source": "《21种疼痛治疗方案》"
+    "source": "《疼痛治疗方案》"
   },
   {
     "name": "高足弓",
@@ -144,7 +144,7 @@ export const PAIN_CONDITIONS: PainCondition[] = [
     ],
     "prevention": "避免长时间穿硬底鞋，足底放松",
     "evidenceLevel": "C",
-    "source": "《21种疼痛治疗方案》"
+    "source": "《疼痛治疗方案》"
   },
   {
     "name": "足背屈受限",
@@ -166,7 +166,7 @@ export const PAIN_CONDITIONS: PainCondition[] = [
     ],
     "prevention": "训练后充分拉伸小腿、避免长时间高跟鞋",
     "evidenceLevel": "B",
-    "source": "《21种疼痛治疗方案》"
+    "source": "《疼痛治疗方案》"
   },
   {
     "name": "髌骨关节痛（PFPS）",
@@ -192,7 +192,7 @@ export const PAIN_CONDITIONS: PainCondition[] = [
     ],
     "prevention": "股四头肌离心训练、髋外展强化、足弓支撑",
     "evidenceLevel": "A",
-    "source": "《21种疼痛治疗方案》"
+    "source": "《疼痛治疗方案》"
   },
   {
     "name": "膝关节韧带扭伤",
@@ -217,7 +217,7 @@ export const PAIN_CONDITIONS: PainCondition[] = [
     ],
     "prevention": "运动模式纠正、核心稳定、本体感觉训练",
     "evidenceLevel": "A",
-    "source": "《21种疼痛治疗方案》"
+    "source": "《疼痛治疗方案》"
   },
   {
     "name": "半月板损伤",
@@ -243,7 +243,7 @@ export const PAIN_CONDITIONS: PainCondition[] = [
     ],
     "prevention": "运动前热身、避免负重扭转动作、控制体重",
     "evidenceLevel": "A",
-    "source": "《21种疼痛治疗方案》"
+    "source": "《疼痛治疗方案》"
   },
   {
     "name": "非关节炎性髋关节痛",
@@ -269,7 +269,7 @@ export const PAIN_CONDITIONS: PainCondition[] = [
     ],
     "prevention": "维持髋关节活动度、髋外旋肌强化、骨盆稳定",
     "evidenceLevel": "B",
-    "source": "《21种疼痛治疗方案》"
+    "source": "《疼痛治疗方案》"
   },
   {
     "name": "腰痛伴牵涉痛（骶髂关节）",
@@ -294,7 +294,7 @@ export const PAIN_CONDITIONS: PainCondition[] = [
     ],
     "prevention": "核心稳定训练、不对称负荷管理",
     "evidenceLevel": "B",
-    "source": "《21种疼痛治疗方案》"
+    "source": "《疼痛治疗方案》"
   },
   {
     "name": "腰痛伴全身痛（中枢敏化）",
@@ -321,7 +321,7 @@ export const PAIN_CONDITIONS: PainCondition[] = [
     ],
     "prevention": "心理健康维护、及时处理急性疼痛",
     "evidenceLevel": "A",
-    "source": "《21种疼痛治疗方案》"
+    "source": "《疼痛治疗方案》"
   },
   {
     "name": "腰痛伴活动度不足",
@@ -352,7 +352,7 @@ export const PAIN_CONDITIONS: PainCondition[] = [
     ],
     "prevention": "维持胸椎、髋关节活动度、核心稳定",
     "evidenceLevel": "A",
-    "source": "《21种疼痛治疗方案》"
+    "source": "《疼痛治疗方案》"
   },
   {
     "name": "腰痛伴协调性障碍（腰椎不稳）",
@@ -379,7 +379,7 @@ export const PAIN_CONDITIONS: PainCondition[] = [
     ],
     "prevention": "核心稳定训练、节段性运动控制",
     "evidenceLevel": "A",
-    "source": "《21种疼痛治疗方案》"
+    "source": "《疼痛治疗方案》"
   },
   {
     "name": "腰痛伴放射痛（神经根性）",
@@ -404,7 +404,7 @@ export const PAIN_CONDITIONS: PainCondition[] = [
     ],
     "prevention": "避免久坐、正确搬物姿势、核心训练",
     "evidenceLevel": "A",
-    "source": "《21种疼痛治疗方案》"
+    "source": "《疼痛治疗方案》"
   },
   {
     "name": "肩峰下撞击综合征（肱二头肌长头肌腱炎）",
@@ -433,7 +433,7 @@ export const PAIN_CONDITIONS: PainCondition[] = [
     ],
     "prevention": "肩胛骨稳定训练、肩袖肌群强化",
     "evidenceLevel": "B",
-    "source": "《21种疼痛治疗方案》"
+    "source": "《疼痛治疗方案》"
   },
   {
     "name": "肩峰下撞击综合征（冈上肌肌腱炎）",
@@ -459,7 +459,7 @@ export const PAIN_CONDITIONS: PainCondition[] = [
     ],
     "prevention": "肩袖训练、避免长时间过头动作",
     "evidenceLevel": "B",
-    "source": "《21种疼痛治疗方案》"
+    "source": "《疼痛治疗方案》"
   },
   {
     "name": "网球肘（外上髁炎）",
@@ -487,7 +487,7 @@ export const PAIN_CONDITIONS: PainCondition[] = [
     ],
     "prevention": "腕伸肌离心训练、运动前热身",
     "evidenceLevel": "A",
-    "source": "《21种疼痛治疗方案》"
+    "source": "《疼痛治疗方案》"
   },
   {
     "name": "高尔夫球肘（内上髁炎）",
@@ -513,7 +513,7 @@ export const PAIN_CONDITIONS: PainCondition[] = [
     ],
     "prevention": "腕屈肌离心训练、运动前热身",
     "evidenceLevel": "B",
-    "source": "《21种疼痛治疗方案》"
+    "source": "《疼痛治疗方案》"
   },
   {
     "name": "颈痛伴放射痛（神经根性）",
@@ -538,7 +538,7 @@ export const PAIN_CONDITIONS: PainCondition[] = [
     ],
     "prevention": "姿势矫正、颈深屈肌训练、避免长时间低头",
     "evidenceLevel": "A",
-    "source": "《21种疼痛治疗方案》"
+    "source": "《疼痛治疗方案》"
   },
   {
     "name": "颈痛伴活动度不足",
@@ -564,7 +564,7 @@ export const PAIN_CONDITIONS: PainCondition[] = [
     ],
     "prevention": "姿势矫正、呼吸训练、颈深屈肌训练",
     "evidenceLevel": "A",
-    "source": "《21种疼痛治疗方案》"
+    "source": "《疼痛治疗方案》"
   },
   {
     "name": "全髋关节置换术后康复",
@@ -1001,7 +1001,7 @@ export const PAIN_CATEGORIES = [
   { id: "骨科", name: "骨科术后", color: "text-teal-600", count: 12 },
 ];
 
-// 21 种疼痛的快速索引（按区域）
+// 疼痛治疗方案快速索引（按区域）
 export const PAIN_BY_REGION: Record<string, PainCondition[]> = PAIN_CONDITIONS.reduce((acc, c) => {
   if (!acc[c.region]) acc[c.region] = [];
   acc[c.region].push(c);

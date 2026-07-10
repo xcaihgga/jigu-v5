@@ -49,16 +49,16 @@ export default function PainConditionsPage() {
             <div className="h-10 w-10 rounded-xl bg-coral-100 text-coral flex items-center justify-center">
               <Stethoscope className="h-5 w-5" />
             </div>
-            <h1 className="text-2xl font-bold text-ink-main">21 种肌骨疼痛治疗方案</h1>
+            <h1 className="text-2xl font-bold text-ink-main">疼痛与骨科康复治疗方案</h1>
           </div>
           <p className="text-sm text-ink-soft leading-relaxed max-w-3xl">
-            来自《21 种疼痛治疗方案》完整数据集，覆盖足踝、膝、髋、腰、肩、肘、颈 7 大区域，
+            完整数据集，覆盖足踝、膝、髋、腰、肩、肘、颈 7 大区域及骨科术后康复，
             每种疼痛包含 <span className="text-coral font-semibold">病因 / 临床表现 / 评估 / 治疗 / 预防</span> 五大维度，
             深度融入临床路径、康复方案与进修中心题库。
           </p>
           <div className="mt-3 flex flex-wrap gap-2 text-xs">
             <span className="px-2 py-1 rounded bg-teal-50 text-teal-700 border border-teal-200">
-              共 21 种
+              共 {list.length} 种
             </span>
             <span className="px-2 py-1 rounded bg-amber-50 text-amber-700 border border-amber-200">
               {Object.keys(grouped).length} 个区域
@@ -67,7 +67,7 @@ export default function PainConditionsPage() {
               49+ 道相关题目
             </span>
             <span className="px-2 py-1 rounded bg-cream-200 text-ink-soft border border-line">
-              数据源：21种疼痛治疗方案.xlsx
+              数据源：疼痛治疗方案.xlsx
             </span>
           </div>
         </div>

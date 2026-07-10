@@ -1,4 +1,4 @@
-// 21 种疼痛治疗方案题库 — 来源：《21种疼痛治疗方案.xlsx》
+// 疼痛治疗方案题库 — 来源：《疼痛治疗方案.xlsx》
 // 覆盖：足底筋膜炎 / 跟腱炎 / 踝扭伤 / 髌股关节痛 / 半月板 / 髋痛 / 腰痛（5 种）/ 肩（2 种）/ 肘（2 种）/ 颈（2 种）
 
 export const Q_PAIN: any[] = [
@@ -17,7 +17,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-足底筋膜炎",
     "difficulty": "easy",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "足底筋膜炎"
     ]
@@ -41,7 +41,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-足底筋膜炎",
     "difficulty": "easy",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "足底筋膜炎"
     ]
@@ -61,7 +61,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-跟腱炎",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "跟腱炎"
     ]
@@ -85,7 +85,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-跟腱炎",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "跟腱炎"
     ]
@@ -105,7 +105,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-踝扭伤",
     "difficulty": "easy",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "踝扭伤"
     ]
@@ -129,7 +129,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-踝扭伤",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "踝扭伤"
     ]
@@ -149,7 +149,7 @@ export const Q_PAIN: any[] = [
     "category": "sports",
     "subCategory": "疼痛-踝扭伤",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "踝扭伤",
       "RTS"
@@ -170,7 +170,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-PFPS",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "PFPS"
     ]
@@ -195,7 +195,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-PFPS",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "PFPS"
     ]
@@ -215,7 +215,7 @@ export const Q_PAIN: any[] = [
     "category": "anatomy",
     "subCategory": "疼痛-半月板",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "半月板"
     ]
@@ -235,7 +235,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-髋",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "髋痛"
     ]
@@ -259,7 +259,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-髋",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "髋痛"
     ]
@@ -283,7 +283,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-腰",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "腰痛",
       "骶髂"
@@ -304,7 +304,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-腰",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "腰痛",
       "中枢敏化"
@@ -329,7 +329,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-腰",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "腰痛",
       "中枢敏化"
@@ -350,7 +350,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-腰",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "腰痛",
       "不稳"
@@ -371,7 +371,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-腰",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "腰痛",
       "硬脊膜"
@@ -396,7 +396,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-腰",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "腰痛",
       "椎间盘"
@@ -417,7 +417,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-肩",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "肩",
       "肱二头肌"
@@ -438,7 +438,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-肩",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "肩",
       "冈上肌"
@@ -463,7 +463,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-肩",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "肩",
       "撞击"
@@ -484,7 +484,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-肘",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "肘",
       "网球肘"
@@ -509,7 +509,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-肘",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "肘",
       "网球肘"
@@ -530,7 +530,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-肘",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "肘",
       "高尔夫球肘"
@@ -555,7 +555,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-颈",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "颈",
       "放射痛"
@@ -576,7 +576,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-颈",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "颈"
     ]
@@ -626,7 +626,7 @@ export const Q_PAIN: any[] = [
   {
     "id": "pain-029",
     "type": "multi",
-    "question": "21 种疼痛治疗方案的核心原则是？",
+    "question": "疼痛治疗方案的核心原则是？",
     "options": {
       "A": "评估 → 治疗 → 预防",
       "B": "精准评估（找准疼痛原因）",
@@ -639,13 +639,13 @@ export const Q_PAIN: any[] = [
       "C",
       "D"
     ],
-    "explanation": "21 种疼痛方案核心：评估→治疗→预防；精准评估、整体观、个性化。",
+    "explanation": "疼痛方案核心：评估→治疗→预防；精准评估、整体观、个性化。",
     "category": "rehab",
     "subCategory": "疼痛-整体",
     "difficulty": "easy",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
-      "21种疼痛"
+      "疼痛治疗"
     ]
   },
   {
@@ -663,7 +663,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-鉴别",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "鉴别诊断"
     ]
@@ -691,7 +691,7 @@ export const Q_PAIN: any[] = [
   {
     "id": "pain-032",
     "type": "multi",
-    "question": "常见 21 种疼痛中，哪些与足弓异常相关？",
+    "question": "常见疼痛中，哪些与足弓异常相关？",
     "options": {
       "A": "足底筋膜炎",
       "B": "跟腱炎",
@@ -707,7 +707,7 @@ export const Q_PAIN: any[] = [
     "category": "musculo",
     "subCategory": "疼痛-足弓",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "足弓",
       "下肢链"
@@ -762,7 +762,7 @@ export const Q_PAIN: any[] = [
   {
     "id": "pain-035",
     "type": "multi",
-    "question": "针对 21 种疼痛的『运动模式』评估包括？",
+    "question": "针对疼痛的『运动模式』评估包括？",
     "options": {
       "A": "下蹲（评估下肢链）",
       "B": "过头动作（评估肩链）",
@@ -774,11 +774,11 @@ export const Q_PAIN: any[] = [
       "B",
       "C"
     ],
-    "explanation": "21 种疼痛的运动模式评估：下蹲、过头动作、体前屈等动态评估。",
+    "explanation": "疼痛的运动模式评估：下蹲、过头动作、体前屈等动态评估。",
     "category": "assessment",
     "subCategory": "疼痛-评估",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "运动模式",
       "评估"
@@ -824,7 +824,7 @@ export const Q_PAIN: any[] = [
     "category": "rehab",
     "subCategory": "疼痛-腰",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "腰痛",
       "动作模式"
@@ -870,7 +870,7 @@ export const Q_PAIN: any[] = [
     "category": "rehab",
     "subCategory": "疼痛-颈",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "颈",
       "神经"
@@ -899,7 +899,7 @@ export const Q_PAIN: any[] = [
   {
     "id": "pain-041",
     "type": "multi",
-    "question": "21 种疼痛中『膝关节』相关包括？",
+    "question": "疼痛中『膝关节』相关包括？",
     "options": {
       "A": "髌股关节痛",
       "B": "膝关节韧带扭伤",
@@ -911,11 +911,11 @@ export const Q_PAIN: any[] = [
       "B",
       "C"
     ],
-    "explanation": "21 种中膝部相关 3 种：PFPS、韧带扭伤、半月板损伤。",
+    "explanation": "膝部相关 3 种：PFPS、韧带扭伤、半月板损伤。",
     "category": "musculo",
     "subCategory": "疼痛-膝",
     "difficulty": "easy",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "膝"
     ]
@@ -923,7 +923,7 @@ export const Q_PAIN: any[] = [
   {
     "id": "pain-042",
     "type": "multi",
-    "question": "21 种疼痛中『腰部』相关包括？",
+    "question": "疼痛中『腰部』相关包括？",
     "options": {
       "A": "牵涉痛（骶髂）",
       "B": "全身痛（中枢敏化）",
@@ -936,11 +936,11 @@ export const Q_PAIN: any[] = [
       "C",
       "D"
     ],
-    "explanation": "21 种中腰部 5 种：骶髂牵涉痛、中枢敏化、活动度不足、不稳、放射痛。",
+    "explanation": "腰部 5 种：骶髂牵涉痛、中枢敏化、活动度不足、不稳、放射痛。",
     "category": "musculo",
     "subCategory": "疼痛-腰",
     "difficulty": "easy",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "腰痛"
     ]
@@ -948,7 +948,7 @@ export const Q_PAIN: any[] = [
   {
     "id": "pain-043",
     "type": "multi",
-    "question": "21 种疼痛中『颈部』相关包括？",
+    "question": "疼痛中『颈部』相关包括？",
     "options": {
       "A": "颈痛伴放射痛",
       "B": "颈痛伴活动度不足",
@@ -959,11 +959,11 @@ export const Q_PAIN: any[] = [
       "A",
       "B"
     ],
-    "explanation": "21 种中颈部 2 种：放射痛 + 活动度不足；颈源性头痛常见但未单列。",
+    "explanation": "颈部 2 种：放射痛 + 活动度不足；颈源性头痛常见但未单列。",
     "category": "musculo",
     "subCategory": "疼痛-颈",
     "difficulty": "easy",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "颈"
     ]
@@ -971,7 +971,7 @@ export const Q_PAIN: any[] = [
   {
     "id": "pain-044",
     "type": "single",
-    "question": "21 种疼痛中『肩部』相关包括？",
+    "question": "疼痛中『肩部』相关包括？",
     "options": {
       "A": "肩峰下撞击（肱二头肌长头）",
       "B": "肩峰下撞击（冈上肌）",
@@ -979,11 +979,11 @@ export const Q_PAIN: any[] = [
       "D": "A 和 B 都对"
     },
     "answer": "D",
-    "explanation": "21 种肩部 2 种：撞击（肱二头长头）+ 撞击（冈上肌）。",
+    "explanation": "肩部 2 种：撞击（肱二头长头）+ 撞击（冈上肌）。",
     "category": "musculo",
     "subCategory": "疼痛-肩",
     "difficulty": "easy",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "肩"
     ]
@@ -991,7 +991,7 @@ export const Q_PAIN: any[] = [
   {
     "id": "pain-045",
     "type": "multi",
-    "question": "21 种疼痛中『肘部』相关包括？",
+    "question": "疼痛中『肘部』相关包括？",
     "options": {
       "A": "网球肘（外上髁炎）",
       "B": "高尔夫球肘（内上髁炎）",
@@ -1002,11 +1002,11 @@ export const Q_PAIN: any[] = [
       "A",
       "B"
     ],
-    "explanation": "21 种肘部 2 种：网球肘 + 高尔夫球肘。",
+    "explanation": "肘部 2 种：网球肘 + 高尔夫球肘。",
     "category": "musculo",
     "subCategory": "疼痛-肘",
     "difficulty": "easy",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "肘"
     ]
@@ -1014,7 +1014,7 @@ export const Q_PAIN: any[] = [
   {
     "id": "pain-046",
     "type": "multi",
-    "question": "21 种疼痛中『足踝』相关包括？",
+    "question": "疼痛中『足踝』相关包括？",
     "options": {
       "A": "足底筋膜炎",
       "B": "跟腱炎",
@@ -1027,11 +1027,11 @@ export const Q_PAIN: any[] = [
       "C",
       "D"
     ],
-    "explanation": "21 种足踝 5 种：足底筋膜炎、跟腱炎、踝扭伤、扁平足、高足弓（加足背屈受限共 6 种，足底+高足弓+背屈+内外翻细分）。",
+    "explanation": "足踝 5 种：足底筋膜炎、跟腱炎、踝扭伤、扁平足、高足弓（加足背屈受限共 6 种，足底+高足弓+背屈+内外翻细分）。",
     "category": "musculo",
     "subCategory": "疼痛-足踝",
     "difficulty": "easy",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "足踝"
     ]
@@ -1051,7 +1051,7 @@ export const Q_PAIN: any[] = [
     "category": "redflag",
     "subCategory": "疼痛-安全",
     "difficulty": "easy",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "红旗征"
     ]
@@ -1076,7 +1076,7 @@ export const Q_PAIN: any[] = [
     "category": "redflag",
     "subCategory": "疼痛-腰",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "红旗征",
       "腰痛"
@@ -1102,7 +1102,7 @@ export const Q_PAIN: any[] = [
     "category": "redflag",
     "subCategory": "疼痛-颈",
     "difficulty": "medium",
-    "source": "《21种疼痛治疗方案》",
+    "source": "《疼痛治疗方案》",
     "tags": [
       "红旗征",
       "颈"
