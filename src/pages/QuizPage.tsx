@@ -42,6 +42,7 @@ const WRONG_KEY = "quiz_wrong_ids";
 const FAV_KEY = "quiz_favorites";
 const TARGET_KEY = "quiz_daily_target";
 const DAILY_KEY = "quiz_daily";
+const SESSION_KEY = "quiz_session";
 
 function loadStats(): Stats {
   return load<Stats>(STATS_KEY, {
@@ -102,6 +103,16 @@ export default function QuizPage() {
   const [search, setSearch] = useState("");
   const [currentList, setCurrentList] = useState<QuizQuestion[]>([]);
   const [idx, setIdx] = useState(0);
+  // 选项随机化映射：questionId -> 原始key顺序
+  const [shuffleMap, setShuffleMap] = useState<Record<string, ("A" | "B" | "C" | "D" | "E")[]>>({});
+  // 会话恢复
+  const [savedSession, setSavedSession] = useState<{ mode: Mode; idx: number; total: number } | null>(() => {
+    const s = load<{ mode: Mode; idx: number; ids: string[] } | null>(SESSION_KEY, null);
+    if (s && s.ids && s.ids.length > 0 && s.idx < s.ids.length) {
+      return { mode: s.mode, idx: s.idx, total: s.ids.length };
+    }
+    return null;
+  });
   const [picked, setPicked] = useState<"A" | "B" | "C" | "D" | "E" | null>(null);
   const [pickedList, setPickedList] = useState<("A" | "B" | "C" | "D" | "E")[]>([]);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -157,6 +168,19 @@ export default function QuizPage() {
     setExamFinished(false);
     setExamActive(false);
     setExamSeconds(20 * 60);
+    // 选项随机化：random/daily/wrong 模式打乱选项顺序
+    const shouldShuffle = mode === "random" || mode === "daily" || mode === "wrong";
+    if (shouldShuffle) {
+      const list = mode === "random" ? filteredBank : mode === "wrong" ? QUIZ_BANK.filter((q) => wrongIds.includes(q.id)) : QUIZ_BANK;
+      const newMap: Record<string, ("A" | "B" | "C" | "D" | "E")[]> = {};
+      for (const q of list) {
+        const keys = (["A", "B", "C", "D", "E"] as const).filter((k) => q.options[k]);
+        newMap[q.id] = [...keys].sort(() => Math.random() - 0.5);
+      }
+      setShuffleMap(newMap);
+    } else {
+      setShuffleMap({});
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 
@@ -175,6 +199,36 @@ export default function QuizPage() {
   useEffect(() => {
     save(TARGET_KEY, dailyTarget);
   }, [dailyTarget]);
+
+  // 会话持久化：自动保存当前进度（非考试模式）
+  useEffect(() => {
+    if (currentList.length > 0 && mode !== "exam" && mode !== "list") {
+      save(SESSION_KEY, {
+        mode,
+        idx,
+        ids: currentList.map((q) => q.id),
+      });
+    }
+  }, [mode, idx, currentList]);
+
+  // 恢复会话
+  const resumeSession = () => {
+    const s = load<{ mode: Mode; idx: number; ids: string[] } | null>(SESSION_KEY, null);
+    if (!s || !s.ids) return;
+    const questions = s.ids.map((id) => QUIZ_BANK.find((q) => q.id === id)).filter(Boolean) as QuizQuestion[];
+    if (questions.length === 0) return;
+    setMode(s.mode);
+    setCurrentList(questions);
+    setIdx(Math.min(s.idx, questions.length - 1));
+    setPicked(null);
+    setShowAnswer(false);
+    setSavedSession(null);
+  };
+
+  const dismissSession = () => {
+    save(SESSION_KEY, null);
+    setSavedSession(null);
+  };
 
   const q = currentList[idx];
   const total = currentList.length;
@@ -346,6 +400,23 @@ export default function QuizPage() {
         </div>
       </header>
 
+      {/* 会话恢复提示 */}
+      {savedSession && (
+        <div className="card p-3 flex items-center justify-between border-teal-300 bg-teal-50/40">
+          <div className="flex items-center gap-2">
+            <RotateCcw className="h-4 w-4 text-teal-600" />
+            <span className="text-sm text-ink-soft">
+              上次进度：{savedSession.mode === "daily" ? "每日一练" : savedSession.mode === "random" ? "随机模式" : savedSession.mode === "wrong" ? "错题本" : savedSession.mode === "favorites" ? "收藏" : "顺序模式"}
+              ，第 {savedSession.idx + 1}/{savedSession.total} 题
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={resumeSession} className="btn-primary btn-sm">继续答题</button>
+            <button onClick={dismissSession} className="btn-ghost btn-sm">放弃</button>
+          </div>
+        </div>
+      )}
+
       {/* 统计卡 */}
       <section className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         <StatTile icon={Trophy} label="累计答题" value={`${stats.total}`} suffix="题" color="text-teal-500" />
@@ -382,6 +453,72 @@ export default function QuizPage() {
           <div className="h-full bg-gradient-to-r from-teal-500 to-coral transition-all" style={{ width: `${todayProgress}%` }} />
         </div>
       </section>
+
+      {/* 弱项分析 */}
+      {stats.total >= 5 && (
+        <section className="card p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <BarChart3 className="h-4 w-4 text-coral" />
+            <span className="text-sm text-ink font-medium">弱项分析</span>
+            <span className="text-2xs text-ink-mute">按分类正确率，红色为薄弱领域</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+            {QUIZ_CATEGORIES
+              .filter((c) => stats.byCategory[c.id] && stats.byCategory[c.id].total >= 2)
+              .map((c) => {
+                const cat = stats.byCategory[c.id];
+                const rate = cat.total > 0 ? Math.round((cat.correct / cat.total) * 100) : 0;
+                const tone = rate >= 80 ? "good" : rate >= 60 ? "warn" : "bad";
+                const barColor = tone === "good" ? "bg-teal-500" : tone === "warn" ? "bg-amber-400" : "bg-coral";
+                return (
+                  <div key={c.id} className="rounded-lg border border-line p-2.5 bg-surface">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-2xs text-ink-soft font-medium">{c.name}</span>
+                      <span className={cn("text-2xs font-bold", tone === "good" ? "text-teal-600" : tone === "warn" ? "text-amber-dark" : "text-coral")}>
+                        {rate}%
+                      </span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-cream-200 overflow-hidden">
+                      <div className={cn("h-full transition-all", barColor)} style={{ width: `${rate}%` }} />
+                    </div>
+                    <div className="text-2xs text-ink-faint mt-1">{cat.correct}/{cat.total} 题</div>
+                  </div>
+                );
+              })}
+          </div>
+          {(() => {
+            const weak = QUIZ_CATEGORIES
+              .map((c) => {
+                const cat = stats.byCategory[c.id];
+                if (!cat || cat.total < 2) return null;
+                const rate = cat.total > 0 ? (cat.correct / cat.total) * 100 : 100;
+                return { name: c.name, id: c.id, rate, total: cat.total };
+              })
+              .filter((x): x is { name: string; id: QuizCategory; rate: number; total: number } => x !== null && x.rate < 60)
+              .sort((a, b) => a.rate - b.rate);
+            if (weak.length === 0) return null;
+            return (
+              <div className="mt-3 p-2.5 rounded-lg bg-coral/10 border border-coral/20">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Lightbulb className="h-3.5 w-3.5 text-coral" />
+                  <span className="text-2xs font-medium text-coral">建议加强以下领域</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {weak.slice(0, 5).map((w) => (
+                    <button
+                      key={w.id}
+                      onClick={() => { setFilterCategory(w.id as QuizCategory); setMode("sequence"); }}
+                      className="chip text-2xs border-coral/30 text-coral hover:bg-coral/10"
+                    >
+                      {w.name} {Math.round(w.rate)}%
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+        </section>
+      )}
 
       {/* 主体 */}
       {mode === "list" ? (
@@ -501,7 +638,7 @@ export default function QuizPage() {
               {q.evidenceLevel && <span className="chip text-2xs bg-teal-50 border-teal-300 text-teal-700">证据 {q.evidenceLevel}</span>}
             </div>
             <div className="space-y-2.5">
-              {(["A", "B", "C", "D", "E"] as const).filter((k) => q.options[k]).map((k) => {
+              {(shuffleMap[q.id] || (["A", "B", "C", "D", "E"] as const)).filter((k) => q.options[k]).map((k) => {
                 const selectedMulti = pickedList.includes(k);
                 const selectedSingle = picked === k;
                 const selected = (q.type === "multi" ? selectedMulti : selectedSingle);
