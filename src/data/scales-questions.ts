@@ -1028,8 +1028,8 @@ export const SCALE_QUESTIONS_MAP: Record<string, ScaleQuestions> = {
     },
   },
 
-  phq9: {
-    id: "phq9",
+  "phq-9": {
+    id: "phq-9",
     questions: [
       {
         id: "q1",
@@ -1145,8 +1145,8 @@ export const SCALE_QUESTIONS_MAP: Record<string, ScaleQuestions> = {
     },
   },
 
-  gad7: {
-    id: "gad7",
+  "gad-7": {
+    id: "gad-7",
     questions: [
       {
         id: "q1",
@@ -1196,6 +1196,28 @@ export const SCALE_QUESTIONS_MAP: Record<string, ScaleQuestions> = {
         id: "q5",
         dimension: "心跳加速",
         text: "过去两周内，您是否感到心跳加速或心悸？",
+        options: [
+          { label: "完全没有", score: 0 },
+          { label: "几天", score: 1 },
+          { label: "一半以上天数", score: 2 },
+          { label: "几乎每天", score: 3 },
+        ],
+      },
+      {
+        id: "q6",
+        dimension: "烦躁易怒",
+        text: "过去两周内，您是否感到烦躁易怒？",
+        options: [
+          { label: "完全没有", score: 0 },
+          { label: "几天", score: 1 },
+          { label: "一半以上天数", score: 2 },
+          { label: "几乎每天", score: 3 },
+        ],
+      },
+      {
+        id: "q7",
+        dimension: "恐惧感",
+        text: "过去两周内，您是否感到恐惧，好像会发生可怕的事情？",
         options: [
           { label: "完全没有", score: 0 },
           { label: "几天", score: 1 },
@@ -2262,6 +2284,799 @@ export const SCALE_QUESTIONS_MAP: Record<string, ScaleQuestions> = {
         { label: "正常(2级)", min: 2, tone: "good" },
         { label: "轻度异常(1级)", min: 1, tone: "warn" },
         { label: "明显异常(0级)", min: 0, tone: "bad" },
+      ],
+    },
+  },
+
+  // ========== 新增量表 ==========
+
+  "ucla-shoulder": {
+    id: "ucla-shoulder",
+    questions: [
+      { id: "q1", dimension: "疼痛", text: "肩关节疼痛程度", options: [
+        { label: "持续疼痛，无法忍受", score: 1 },
+        { label: "严重疼痛，但能忍受", score: 2 },
+        { label: "运动时中度疼痛", score: 4 },
+        { label: "轻度疼痛", score: 6 },
+        { label: "无痛", score: 10 },
+      ]},
+      { id: "q2", dimension: "功能", text: "肩关节功能水平", options: [
+        { label: "不能使用上肢", score: 1 },
+        { label: "仅能轻微活动", score: 2 },
+        { label: "能做轻家务及举手过肩", score: 4 },
+        { label: "能做大部分家务及过头工作", score: 6 },
+        { label: "正常使用上肢", score: 10 },
+      ]},
+      { id: "q3", dimension: "主动前屈", text: "肩关节主动前屈活动度", options: [
+        { label: "<30°", score: 1 },
+        { label: "30°-45°", score: 2 },
+        { label: "45°-90°", score: 3 },
+        { label: "90°-120°", score: 4 },
+        { label: ">120°", score: 5 },
+      ]},
+      { id: "q4", dimension: "前屈肌力", text: "肩关节前屈肌力", options: [
+        { label: "1级", score: 1 },
+        { label: "2级", score: 2 },
+        { label: "3级", score: 3 },
+        { label: "4级", score: 4 },
+        { label: "5级（正常）", score: 5 },
+      ]},
+      { id: "q5", dimension: "满意度", text: "患者对肩关节功能的满意度", options: [
+        { label: "不满意", score: 0 },
+        { label: "较满意", score: 3 },
+        { label: "满意", score: 5 },
+      ]},
+    ],
+    grading: {
+      max: 35,
+      grades: [
+        { label: "优(≥34)", min: 34, tone: "good" },
+        { label: "良(29-33)", min: 29, tone: "good" },
+        { label: "差(<29)", min: 0, tone: "bad" },
+      ],
+    },
+  },
+
+  "mayo-elbow": {
+    id: "mayo-elbow",
+    questions: [
+      { id: "q1", dimension: "疼痛", text: "肘关节疼痛程度", options: [
+        { label: "无疼痛", score: 45 },
+        { label: "轻度疼痛，无需用药", score: 30 },
+        { label: "中度疼痛，需用药", score: 15 },
+        { label: "严重疼痛，功能受限", score: 0 },
+      ]},
+      { id: "q2", dimension: "运动幅度", text: "肘关节屈伸活动范围", options: [
+        { label: "≥100°", score: 20 },
+        { label: "50°-100°", score: 15 },
+        { label: "<50°", score: 5 },
+      ]},
+      { id: "q3", dimension: "稳定性", text: "肘关节稳定性", options: [
+        { label: "稳定（无明显侧方松弛）", score: 10 },
+        { label: "轻度不稳（侧方松弛<10°）", score: 5 },
+        { label: "明显不稳（侧方松弛≥10°）", score: 0 },
+      ]},
+      { id: "q4", dimension: "日常功能", text: "梳头", options: [
+        { label: "能独立完成", score: 5 },
+        { label: "不能完成", score: 0 },
+      ]},
+      { id: "q5", dimension: "日常功能", text: "自己吃饭", options: [
+        { label: "能独立完成", score: 5 },
+        { label: "不能完成", score: 0 },
+      ]},
+      { id: "q6", dimension: "日常功能", text: "个人卫生（洗对侧腋窝等）", options: [
+        { label: "能独立完成", score: 5 },
+        { label: "不能完成", score: 0 },
+      ]},
+      { id: "q7", dimension: "日常功能", text: "穿鞋（系鞋带）", options: [
+        { label: "能独立完成", score: 5 },
+        { label: "不能完成", score: 0 },
+      ]},
+      { id: "q8", dimension: "日常功能", text: "穿衣服", options: [
+        { label: "能独立完成", score: 5 },
+        { label: "不能完成", score: 0 },
+      ]},
+    ],
+    grading: {
+      max: 100,
+      grades: [
+        { label: "优(90-100)", min: 90, tone: "good" },
+        { label: "良(75-89)", min: 75, tone: "good" },
+        { label: "可(60-74)", min: 60, tone: "warn" },
+        { label: "差(<60)", min: 0, tone: "bad" },
+      ],
+    },
+  },
+
+  "cooney-wrist": {
+    id: "cooney-wrist",
+    questions: [
+      { id: "q1", dimension: "疼痛", text: "腕关节疼痛程度", options: [
+        { label: "无疼痛", score: 25 },
+        { label: "轻度疼痛，活动时偶有", score: 20 },
+        { label: "中度疼痛，活动受限", score: 15 },
+        { label: "严重疼痛，持续存在", score: 0 },
+      ]},
+      { id: "q2", dimension: "功能", text: "腕关节功能状况", options: [
+        { label: "恢复正常工作", score: 25 },
+        { label: "工作受限但仍可工作", score: 20 },
+        { label: "工作受限且不能工作", score: 10 },
+      ]},
+      { id: "q3", dimension: "活动度", text: "腕关节屈伸总活动度", options: [
+        { label: "≥120°", score: 25 },
+        { label: "91°-120°", score: 20 },
+        { label: "61°-90°", score: 15 },
+        { label: "30°-60°", score: 10 },
+        { label: "<30°", score: 5 },
+      ]},
+      { id: "q4", dimension: "握力", text: "患手握力与健侧比较", options: [
+        { label: "正常", score: 25 },
+        { label: "轻度减弱（≥75%）", score: 20 },
+        { label: "中度减弱（50%-74%）", score: 10 },
+        { label: "严重减弱（<50%）", score: 0 },
+      ]},
+    ],
+    grading: {
+      max: 100,
+      grades: [
+        { label: "优(>90)", min: 91, tone: "good" },
+        { label: "良(80-89)", min: 80, tone: "good" },
+        { label: "可(65-79)", min: 65, tone: "warn" },
+        { label: "差(<65)", min: 0, tone: "bad" },
+      ],
+    },
+  },
+
+  "oxford-knee": {
+    id: "oxford-knee",
+    questions: [
+      { id: "q1", dimension: "疼痛", text: "您的膝关节疼痛有多严重？", options: [
+        { label: "无疼痛", score: 1 },
+        { label: "很轻微", score: 2 },
+        { label: "轻微", score: 3 },
+        { label: "中度", score: 4 },
+        { label: "严重", score: 5 },
+      ]},
+      { id: "q2", dimension: "功能", text: "膝痛是否影响您洗干身体（洗澡后擦干）？", options: [
+        { label: "无困难", score: 1 },
+        { label: "很少困难", score: 2 },
+        { label: "有些困难", score: 3 },
+        { label: "很困难", score: 4 },
+        { label: "无法完成", score: 5 },
+      ]},
+      { id: "q3", dimension: "功能", text: "上下楼梯是否困难？", options: [
+        { label: "无困难", score: 1 },
+        { label: "很少困难", score: 2 },
+        { label: "有些困难", score: 3 },
+        { label: "很困难", score: 4 },
+        { label: "无法完成", score: 5 },
+      ]},
+      { id: "q4", dimension: "疼痛", text: "走路是否疼痛？", options: [
+        { label: "无疼痛", score: 1 },
+        { label: "很少疼痛", score: 2 },
+        { label: "有时疼痛", score: 3 },
+        { label: "经常疼痛", score: 4 },
+        { label: "一直疼痛", score: 5 },
+      ]},
+      { id: "q5", dimension: "功能", text: "从椅子上站起是否困难？", options: [
+        { label: "无困难", score: 1 },
+        { label: "很少困难", score: 2 },
+        { label: "有些困难", score: 3 },
+        { label: "很困难", score: 4 },
+        { label: "无法完成", score: 5 },
+      ]},
+      { id: "q6", dimension: "功能", text: "是否跛行？", options: [
+        { label: "无跛行", score: 1 },
+        { label: "很少跛行", score: 2 },
+        { label: "有时跛行", score: 3 },
+        { label: "经常跛行", score: 4 },
+        { label: "一直跛行", score: 5 },
+      ]},
+      { id: "q7", dimension: "功能", text: "是否需要跪下或下蹲？", options: [
+        { label: "可以跪/蹲无困难", score: 1 },
+        { label: "可以但有很少困难", score: 2 },
+        { label: "可以但有些困难", score: 3 },
+        { label: "可以但很困难", score: 4 },
+        { label: "无法跪/蹲", score: 5 },
+      ]},
+      { id: "q8", dimension: "疼痛", text: "在床上是否因膝痛而困扰？", options: [
+        { label: "没有", score: 1 },
+        { label: "仅1-2晚", score: 2 },
+        { label: "有些晚上", score: 3 },
+        { label: "很多晚上", score: 4 },
+        { label: "每天晚上", score: 5 },
+      ]},
+      { id: "q9", dimension: "功能", text: "膝痛是否影响日常活动？", options: [
+        { label: "完全不影响", score: 1 },
+        { label: "很少影响", score: 2 },
+        { label: "有些影响", score: 3 },
+        { label: "很大程度上影响", score: 4 },
+        { label: "完全影响", score: 5 },
+      ]},
+      { id: "q10", dimension: "功能", text: "是否感觉膝部\u201c打软\u201d或不稳？", options: [
+        { label: "从没有", score: 1 },
+        { label: "很少", score: 2 },
+        { label: "有时", score: 3 },
+        { label: "经常", score: 4 },
+        { label: "一直", score: 5 },
+      ]},
+      { id: "q11", dimension: "功能", text: "能否从住所走到商店？", options: [
+        { label: "无困难", score: 1 },
+        { label: "很少困难", score: 2 },
+        { label: "有些困难", score: 3 },
+        { label: "很困难", score: 4 },
+        { label: "无法完成", score: 5 },
+      ]},
+      { id: "q12", dimension: "功能", text: "能否走下陡峭的楼梯？", options: [
+        { label: "无困难", score: 1 },
+        { label: "很少困难", score: 2 },
+        { label: "有些困难", score: 3 },
+        { label: "很困难", score: 4 },
+        { label: "无法完成", score: 5 },
+      ]},
+    ],
+    grading: {
+      max: 60,
+      grades: [
+        { label: "优(<20)", min: 0, tone: "good" },
+        { label: "良(20-29)", min: 20, tone: "good" },
+        { label: "差(>29)", min: 30, tone: "bad" },
+      ],
+    },
+  },
+
+  "fma-ue": {
+    id: "fma-ue",
+    questions: [
+      { id: "q1", dimension: "肩关节", text: "肩关节屈曲90°", options: [
+        { label: "不能完成", score: 0 },
+        { label: "协同运动模式完成", score: 1 },
+        { label: "部分脱离协同运动", score: 2 },
+      ]},
+      { id: "q2", dimension: "肩关节", text: "肩关节外展90°", options: [
+        { label: "不能完成", score: 0 },
+        { label: "协同运动模式完成", score: 1 },
+        { label: "部分脱离协同运动", score: 2 },
+      ]},
+      { id: "q3", dimension: "肘关节", text: "肘关节屈曲", options: [
+        { label: "不能完成", score: 0 },
+        { label: "协同运动模式完成", score: 1 },
+        { label: "部分脱离协同运动", score: 2 },
+      ]},
+      { id: "q4", dimension: "肘关节", text: "肘关节伸展", options: [
+        { label: "不能完成", score: 0 },
+        { label: "协同运动模式完成", score: 1 },
+        { label: "部分脱离协同运动", score: 2 },
+      ]},
+      { id: "q5", dimension: "腕关节", text: "腕关节背伸", options: [
+        { label: "不能完成", score: 0 },
+        { label: "部分完成", score: 1 },
+        { label: "正常完成", score: 2 },
+      ]},
+      { id: "q6", dimension: "腕关节", text: "腕关节掌屈", options: [
+        { label: "不能完成", score: 0 },
+        { label: "部分完成", score: 1 },
+        { label: "正常完成", score: 2 },
+      ]},
+      { id: "q7", dimension: "手指", text: "手指屈曲", options: [
+        { label: "不能完成", score: 0 },
+        { label: "部分完成", score: 1 },
+        { label: "正常完成", score: 2 },
+      ]},
+      { id: "q8", dimension: "手指", text: "手指伸展", options: [
+        { label: "不能完成", score: 0 },
+        { label: "部分完成", score: 1 },
+        { label: "正常完成", score: 2 },
+      ]},
+      { id: "q9", dimension: "手指", text: "拇指对指", options: [
+        { label: "不能完成", score: 0 },
+        { label: "部分完成", score: 1 },
+        { label: "正常完成", score: 2 },
+      ]},
+      { id: "q10", dimension: "手指", text: "手抓握（圆柱体）", options: [
+        { label: "不能完成", score: 0 },
+        { label: "部分完成", score: 1 },
+        { label: "正常完成", score: 2 },
+      ]},
+    ],
+    grading: {
+      max: 66,
+      grades: [
+        { label: "轻度障碍(≥50)", min: 50, tone: "good" },
+        { label: "中度障碍(30-49)", min: 30, tone: "warn" },
+        { label: "严重障碍(<30)", min: 0, tone: "bad" },
+      ],
+    },
+  },
+
+  "fma-le": {
+    id: "fma-le",
+    questions: [
+      { id: "q1", dimension: "髋关节", text: "髋关节屈曲", options: [
+        { label: "不能完成", score: 0 },
+        { label: "协同运动模式完成", score: 1 },
+        { label: "独立完成", score: 2 },
+      ]},
+      { id: "q2", dimension: "髋关节", text: "髋关节外展", options: [
+        { label: "不能完成", score: 0 },
+        { label: "协同运动模式完成", score: 1 },
+        { label: "独立完成", score: 2 },
+      ]},
+      { id: "q3", dimension: "膝关节", text: "膝关节屈曲", options: [
+        { label: "不能完成", score: 0 },
+        { label: "协同运动模式完成", score: 1 },
+        { label: "独立完成", score: 2 },
+      ]},
+      { id: "q4", dimension: "膝关节", text: "膝关节伸展", options: [
+        { label: "不能完成", score: 0 },
+        { label: "协同运动模式完成", score: 1 },
+        { label: "独立完成", score: 2 },
+      ]},
+      { id: "q5", dimension: "踝关节", text: "踝关节背伸", options: [
+        { label: "不能完成", score: 0 },
+        { label: "部分完成", score: 1 },
+        { label: "正常完成", score: 2 },
+      ]},
+      { id: "q6", dimension: "踝关节", text: "踝关节跖屈", options: [
+        { label: "不能完成", score: 0 },
+        { label: "部分完成", score: 1 },
+        { label: "正常完成", score: 2 },
+      ]},
+    ],
+    grading: {
+      max: 34,
+      grades: [
+        { label: "轻度障碍(≥24)", min: 24, tone: "good" },
+        { label: "中度障碍(14-23)", min: 14, tone: "warn" },
+        { label: "严重障碍(<14)", min: 0, tone: "bad" },
+      ],
+    },
+  },
+
+  brunnstrom: {
+    id: "brunnstrom",
+    questions: [
+      { id: "q1", dimension: "上肢分期", text: "上肢Brunnstrom分期", options: [
+        { label: "I期 - 弛缓，无随意运动", score: 1 },
+        { label: "II期 - 痉挛出现，出现协同运动模式", score: 2 },
+        { label: "III期 - 可随意发起协同运动", score: 3 },
+        { label: "IV期 - 可部分脱离协同运动", score: 4 },
+        { label: "V期 - 可脱离协同运动，独立完成复杂运动", score: 5 },
+        { label: "VI期 - 运动正常或接近正常", score: 6 },
+      ]},
+      { id: "q2", dimension: "下肢分期", text: "下肢Brunnstrom分期", options: [
+        { label: "I期 - 弛缓，无随意运动", score: 1 },
+        { label: "II期 - 痉挛出现，出现协同运动模式", score: 2 },
+        { label: "III期 - 可随意发起协同运动", score: 3 },
+        { label: "IV期 - 可部分脱离协同运动", score: 4 },
+        { label: "V期 - 可脱离协同运动，独立完成复杂运动", score: 5 },
+        { label: "VI期 - 运动正常或接近正常", score: 6 },
+      ]},
+      { id: "q3", dimension: "手分期", text: "手Brunnstrom分期", options: [
+        { label: "I期 - 弛缓，无随意运动", score: 1 },
+        { label: "II期 - 痉挛出现，出现协同运动模式", score: 2 },
+        { label: "III期 - 可随意发起协同运动", score: 3 },
+        { label: "IV期 - 可部分脱离协同运动", score: 4 },
+        { label: "V期 - 可脱离协同运动，独立完成复杂运动", score: 5 },
+        { label: "VI期 - 运动正常或接近正常", score: 6 },
+      ]},
+    ],
+    grading: {
+      max: 18,
+      grades: [
+        { label: "恢复良好(15-18)", min: 15, tone: "good" },
+        { label: "部分恢复(9-14)", min: 9, tone: "warn" },
+        { label: "恢复较差(3-8)", min: 3, tone: "bad" },
+      ],
+    },
+  },
+
+  mas: {
+    id: "mas",
+    questions: [
+      { id: "q1", dimension: "仰卧→侧卧", text: "从仰卧位翻向侧卧位", options: [
+        { label: "0分 - 不能完成", score: 0 }, { label: "1分 - 需极大帮助", score: 1 },
+        { label: "2分 - 需大量帮助", score: 2 }, { label: "3分 - 需中度帮助", score: 3 },
+        { label: "4分 - 需少量帮助", score: 4 }, { label: "5分 - 需监护", score: 5 },
+        { label: "6分 - 独立完成", score: 6 },
+      ]},
+      { id: "q2", dimension: "仰卧→坐位", text: "从仰卧位到坐位", options: [
+        { label: "0分 - 不能完成", score: 0 }, { label: "1分 - 需极大帮助", score: 1 },
+        { label: "2分 - 需大量帮助", score: 2 }, { label: "3分 - 需中度帮助", score: 3 },
+        { label: "4分 - 需少量帮助", score: 4 }, { label: "5分 - 需监护", score: 5 },
+        { label: "6分 - 独立完成", score: 6 },
+      ]},
+      { id: "q3", dimension: "坐位平衡", text: "坐位平衡", options: [
+        { label: "0分 - 不能完成", score: 0 }, { label: "1分 - 需极大帮助", score: 1 },
+        { label: "2分 - 需大量帮助", score: 2 }, { label: "3分 - 需中度帮助", score: 3 },
+        { label: "4分 - 需少量帮助", score: 4 }, { label: "5分 - 需监护", score: 5 },
+        { label: "6分 - 独立完成", score: 6 },
+      ]},
+      { id: "q4", dimension: "坐→站立", text: "从坐位到站立", options: [
+        { label: "0分 - 不能完成", score: 0 }, { label: "1分 - 需极大帮助", score: 1 },
+        { label: "2分 - 需大量帮助", score: 2 }, { label: "3分 - 需中度帮助", score: 3 },
+        { label: "4分 - 需少量帮助", score: 4 }, { label: "5分 - 需监护", score: 5 },
+        { label: "6分 - 独立完成", score: 6 },
+      ]},
+      { id: "q5", dimension: "步行", text: "步行", options: [
+        { label: "0分 - 不能完成", score: 0 }, { label: "1分 - 需极大帮助", score: 1 },
+        { label: "2分 - 需大量帮助", score: 2 }, { label: "3分 - 需中度帮助", score: 3 },
+        { label: "4分 - 需少量帮助", score: 4 }, { label: "5分 - 需监护", score: 5 },
+        { label: "6分 - 独立完成", score: 6 },
+      ]},
+      { id: "q6", dimension: "上肢功能", text: "上肢功能", options: [
+        { label: "0分 - 不能完成", score: 0 }, { label: "1分 - 需极大帮助", score: 1 },
+        { label: "2分 - 需大量帮助", score: 2 }, { label: "3分 - 需中度帮助", score: 3 },
+        { label: "4分 - 需少量帮助", score: 4 }, { label: "5分 - 需监护", score: 5 },
+        { label: "6分 - 独立完成", score: 6 },
+      ]},
+      { id: "q7", dimension: "手部运动", text: "手部运动", options: [
+        { label: "0分 - 不能完成", score: 0 }, { label: "1分 - 需极大帮助", score: 1 },
+        { label: "2分 - 需大量帮助", score: 2 }, { label: "3分 - 需中度帮助", score: 3 },
+        { label: "4分 - 需少量帮助", score: 4 }, { label: "5分 - 需监护", score: 5 },
+        { label: "6分 - 独立完成", score: 6 },
+      ]},
+      { id: "q8", dimension: "手部精细活动", text: "手部精细活动", options: [
+        { label: "0分 - 不能完成", score: 0 }, { label: "1分 - 需极大帮助", score: 1 },
+        { label: "2分 - 需大量帮助", score: 2 }, { label: "3分 - 需中度帮助", score: 3 },
+        { label: "4分 - 需少量帮助", score: 4 }, { label: "5分 - 需监护", score: 5 },
+        { label: "6分 - 独立完成", score: 6 },
+      ]},
+    ],
+    grading: {
+      max: 48,
+      grades: [
+        { label: "功能良好(36-48)", min: 36, tone: "good" },
+        { label: "中度障碍(18-35)", min: 18, tone: "warn" },
+        { label: "严重障碍(0-17)", min: 0, tone: "bad" },
+      ],
+    },
+  },
+
+  rivermead: {
+    id: "rivermead",
+    questions: [
+      { id: "q1", dimension: "基本活动", text: "翻身（从仰卧翻向侧卧）", options: [
+        { label: "能独立完成", score: 1 }, { label: "不能完成", score: 0 },
+      ]},
+      { id: "q2", dimension: "基本活动", text: "坐位（无支撑下坐位≥10秒）", options: [
+        { label: "能独立完成", score: 1 }, { label: "不能完成", score: 0 },
+      ]},
+      { id: "q3", dimension: "基本活动", text: "坐位平衡（无支撑下双臂前伸）", options: [
+        { label: "能独立完成", score: 1 }, { label: "不能完成", score: 0 },
+      ]},
+      { id: "q4", dimension: "基本活动", text: "站立（无支撑站立≥10秒）", options: [
+        { label: "能独立完成", score: 1 }, { label: "不能完成", score: 0 },
+      ]},
+      { id: "q5", dimension: "基本活动", text: "站立平衡（无支撑下转移重心）", options: [
+        { label: "能独立完成", score: 1 }, { label: "不能完成", score: 0 },
+      ]},
+      { id: "q6", dimension: "转移", text: "转移（从床到椅，无帮助）", options: [
+        { label: "能独立完成", score: 1 }, { label: "不能完成", score: 0 },
+      ]},
+      { id: "q7", dimension: "步行", text: "室内步行（无人帮助，可用器具）", options: [
+        { label: "能独立完成", score: 1 }, { label: "不能完成", score: 0 },
+      ]},
+      { id: "q8", dimension: "步行", text: "室外步行（在户外平地行走）", options: [
+        { label: "能独立完成", score: 1 }, { label: "不能完成", score: 0 },
+      ]},
+      { id: "q9", dimension: "步行", text: "上下楼梯（无需他人帮助）", options: [
+        { label: "能独立完成", score: 1 }, { label: "不能完成", score: 0 },
+      ]},
+      { id: "q10", dimension: "高级活动", text: "室外不平地面行走", options: [
+        { label: "能独立完成", score: 1 }, { label: "不能完成", score: 0 },
+      ]},
+      { id: "q11", dimension: "高级活动", text: "地上拾物", options: [
+        { label: "能独立完成", score: 1 }, { label: "不能完成", score: 0 },
+      ]},
+      { id: "q12", dimension: "高级活动", text: "跨越台阶", options: [
+        { label: "能独立完成", score: 1 }, { label: "不能完成", score: 0 },
+      ]},
+      { id: "q13", dimension: "高级活动", text: "上下浴缸", options: [
+        { label: "能独立完成", score: 1 }, { label: "不能完成", score: 0 },
+      ]},
+      { id: "q14", dimension: "高级活动", text: "坐地板站起", options: [
+        { label: "能独立完成", score: 1 }, { label: "不能完成", score: 0 },
+      ]},
+      { id: "q15", dimension: "高级活动", text: "跑步（10米内不跛行）", options: [
+        { label: "能独立完成", score: 1 }, { label: "不能完成", score: 0 },
+      ]},
+    ],
+    grading: {
+      max: 15,
+      grades: [
+        { label: "活动能力良好(12-15)", min: 12, tone: "good" },
+        { label: "活动能力中等(7-11)", min: 7, tone: "warn" },
+        { label: "活动能力差(0-6)", min: 0, tone: "bad" },
+      ],
+    },
+  },
+
+  penn: {
+    id: "penn",
+    questions: [
+      { id: "q1", dimension: "痉挛频率", text: "痉挛发作频率", options: [
+        { label: "0级 - 无痉挛", score: 0 },
+        { label: "1级 - 少于每天1次", score: 1 },
+        { label: "2级 - 每天超过1次", score: 2 },
+        { label: "3级 - 每小时超过1次", score: 3 },
+        { label: "4级 - 每小时超过10次", score: 4 },
+      ]},
+    ],
+    grading: {
+      max: 4,
+      grades: [
+        { label: "无痉挛(0级)", min: 0, tone: "good" },
+        { label: "轻度痉挛(1-2级)", min: 1, tone: "warn" },
+        { label: "重度痉挛(3-4级)", min: 3, tone: "bad" },
+      ],
+    },
+  },
+
+  clonus: {
+    id: "clonus",
+    questions: [
+      { id: "q1", dimension: "阵挛", text: "踝阵挛分级", options: [
+        { label: "0级 - 无阵挛", score: 0 },
+        { label: "1级 - 阵挛持续<10秒", score: 1 },
+        { label: "2级 - 阵挛持续>10秒", score: 2 },
+        { label: "3级 - 持续阵挛，需干预才能停止", score: 3 },
+        { label: "4级 - 固定挛缩", score: 4 },
+      ]},
+    ],
+    grading: {
+      max: 4,
+      grades: [
+        { label: "无阵挛(0级)", min: 0, tone: "good" },
+        { label: "轻度阵挛(1-2级)", min: 1, tone: "warn" },
+        { label: "重度阵挛(3-4级)", min: 3, tone: "bad" },
+      ],
+    },
+  },
+
+  guss: {
+    id: "guss",
+    questions: [
+      { id: "q1", dimension: "间接吞咽", text: "口唇闭合（能否保持嘴唇闭合5秒）", options: [
+        { label: "正常闭合", score: 2 },
+        { label: "部分闭合", score: 1 },
+        { label: "不能闭合", score: 0 },
+      ]},
+      { id: "q2", dimension: "间接吞咽", text: "咽反射", options: [
+        { label: "正常", score: 2 },
+        { label: "减弱", score: 1 },
+        { label: "消失", score: 0 },
+      ]},
+      { id: "q3", dimension: "间接吞咽", text: "自主咳嗽", options: [
+        { label: "正常", score: 2 },
+        { label: "减弱", score: 1 },
+        { label: "不能", score: 0 },
+      ]},
+      { id: "q4", dimension: "间接吞咽", text: "吞咽（空咽）", options: [
+        { label: "正常", score: 2 },
+        { label: "减弱", score: 1 },
+        { label: "不能", score: 0 },
+      ]},
+      { id: "q5", dimension: "间接吞咽", text: "流口水", options: [
+        { label: "无流口水", score: 2 },
+        { label: "偶尔流口水", score: 1 },
+        { label: "持续流口水", score: 0 },
+      ]},
+      { id: "q6", dimension: "直接吞咽", text: "半固体吞咽（布丁/酸奶）", options: [
+        { label: "安全吞咽，无呛咳", score: 5 },
+        { label: "吞咽但有咳嗽/清嗓", score: 3 },
+        { label: "不能安全吞咽", score: 0 },
+      ]},
+      { id: "q7", dimension: "直接吞咽", text: "液体吞咽（水/茶）", options: [
+        { label: "安全吞咽，无呛咳", score: 5 },
+        { label: "吞咽但有咳嗽/清嗓", score: 3 },
+        { label: "不能安全吞咽", score: 0 },
+      ]},
+    ],
+    grading: {
+      max: 20,
+      grades: [
+        { label: "正常(19-20)", min: 19, tone: "good" },
+        { label: "轻度障碍(15-18)", min: 15, tone: "good" },
+        { label: "中度障碍(10-14)", min: 10, tone: "warn" },
+        { label: "严重障碍(0-9)", min: 0, tone: "bad" },
+      ],
+    },
+  },
+
+  "frenchay-dysarthria": {
+    id: "frenchay-dysarthria",
+    questions: [
+      { id: "q1", dimension: "反射", text: "反射（咳嗽、吞咽、流涎反射）", options: [
+        { label: "正常", score: 4 }, { label: "轻度异常", score: 3 },
+        { label: "中度异常", score: 2 }, { label: "严重异常", score: 1 },
+        { label: "完全丧失", score: 0 },
+      ]},
+      { id: "q2", dimension: "呼吸", text: "呼吸（呼吸模式、呼吸控制）", options: [
+        { label: "正常", score: 4 }, { label: "轻度异常", score: 3 },
+        { label: "中度异常", score: 2 }, { label: "严重异常", score: 1 },
+        { label: "完全丧失", score: 0 },
+      ]},
+      { id: "q3", dimension: "唇", text: "唇运动（闭唇、撅唇、唇力度）", options: [
+        { label: "正常", score: 4 }, { label: "轻度异常", score: 3 },
+        { label: "中度异常", score: 2 }, { label: "严重异常", score: 1 },
+        { label: "完全丧失", score: 0 },
+      ]},
+      { id: "q4", dimension: "颌", text: "颌运动（张口、闭合、侧移）", options: [
+        { label: "正常", score: 4 }, { label: "轻度异常", score: 3 },
+        { label: "中度异常", score: 2 }, { label: "严重异常", score: 1 },
+        { label: "完全丧失", score: 0 },
+      ]},
+      { id: "q5", dimension: "软腭", text: "软腭运动（发\u201c啊\u201d时软腭上抬）", options: [
+        { label: "正常", score: 4 }, { label: "轻度异常", score: 3 },
+        { label: "中度异常", score: 2 }, { label: "严重异常", score: 1 },
+        { label: "完全丧失", score: 0 },
+      ]},
+      { id: "q6", dimension: "喉", text: "喉功能（发音时长、音调、音量）", options: [
+        { label: "正常", score: 4 }, { label: "轻度异常", score: 3 },
+        { label: "中度异常", score: 2 }, { label: "严重异常", score: 1 },
+        { label: "完全丧失", score: 0 },
+      ]},
+      { id: "q7", dimension: "舌", text: "舌运动（伸舌、上抬、侧移、交替运动）", options: [
+        { label: "正常", score: 4 }, { label: "轻度异常", score: 3 },
+        { label: "中度异常", score: 2 }, { label: "严重异常", score: 1 },
+        { label: "完全丧失", score: 0 },
+      ]},
+      { id: "q8", dimension: "构音", text: "构音（语速、清晰度、韵律）", options: [
+        { label: "正常", score: 4 }, { label: "轻度异常", score: 3 },
+        { label: "中度异常", score: 2 }, { label: "严重异常", score: 1 },
+        { label: "完全丧失", score: 0 },
+      ]},
+    ],
+    grading: {
+      max: 32,
+      grades: [
+        { label: "正常(28-32)", min: 28, tone: "good" },
+        { label: "轻度构音障碍(20-27)", min: 20, tone: "warn" },
+        { label: "中度构音障碍(10-19)", min: 10, tone: "warn" },
+        { label: "重度构音障碍(0-9)", min: 0, tone: "bad" },
+      ],
+    },
+  },
+
+  "frenchay-ai": {
+    id: "frenchay-ai",
+    questions: [
+      { id: "q1", dimension: "日常生活", text: "做饭", options: [
+        { label: "每天/几乎每天", score: 3 }, { label: "每周1-2次", score: 2 },
+        { label: "每月1-2次", score: 1 }, { label: "从不/极少", score: 0 },
+      ]},
+      { id: "q2", dimension: "日常生活", text: "洗碗", options: [
+        { label: "每天/几乎每天", score: 3 }, { label: "每周1-2次", score: 2 },
+        { label: "每月1-2次", score: 1 }, { label: "从不/极少", score: 0 },
+      ]},
+      { id: "q3", dimension: "日常生活", text: "洗衣", options: [
+        { label: "每天/几乎每天", score: 3 }, { label: "每周1-2次", score: 2 },
+        { label: "每月1-2次", score: 1 }, { label: "从不/极少", score: 0 },
+      ]},
+      { id: "q4", dimension: "日常生活", text: "打扫房间", options: [
+        { label: "每天/几乎每天", score: 3 }, { label: "每周1-2次", score: 2 },
+        { label: "每月1-2次", score: 1 }, { label: "从不/极少", score: 0 },
+      ]},
+      { id: "q5", dimension: "休闲活动", text: "阅读", options: [
+        { label: "每天/几乎每天", score: 3 }, { label: "每周1-2次", score: 2 },
+        { label: "每月1-2次", score: 1 }, { label: "从不/极少", score: 0 },
+      ]},
+      { id: "q6", dimension: "社交活动", text: "写信/写邮件", options: [
+        { label: "每周/几乎每周", score: 3 }, { label: "每月1-2次", score: 2 },
+        { label: "每3个月1次", score: 1 }, { label: "从不/极少", score: 0 },
+      ]},
+      { id: "q7", dimension: "社交活动", text: "打电话", options: [
+        { label: "每天/几乎每天", score: 3 }, { label: "每周1-2次", score: 2 },
+        { label: "每月1-2次", score: 1 }, { label: "从不/极少", score: 0 },
+      ]},
+      { id: "q8", dimension: "户外活动", text: "走路>15分钟", options: [
+        { label: "每天/几乎每天", score: 3 }, { label: "每周1-2次", score: 2 },
+        { label: "每月1-2次", score: 1 }, { label: "从不/极少", score: 0 },
+      ]},
+      { id: "q9", dimension: "户外活动", text: "户外走路>15分钟", options: [
+        { label: "每天/几乎每天", score: 3 }, { label: "每周1-2次", score: 2 },
+        { label: "每月1-2次", score: 1 }, { label: "从不/极少", score: 0 },
+      ]},
+      { id: "q10", dimension: "户外活动", text: "乘公共交通出行", options: [
+        { label: "每天/几乎每天", score: 3 }, { label: "每周1-2次", score: 2 },
+        { label: "每月1-2次", score: 1 }, { label: "从不/极少", score: 0 },
+      ]},
+      { id: "q11", dimension: "社交活动", text: "购物", options: [
+        { label: "每天/几乎每天", score: 3 }, { label: "每周1-2次", score: 2 },
+        { label: "每月1-2次", score: 1 }, { label: "从不/极少", score: 0 },
+      ]},
+      { id: "q12", dimension: "社交活动", text: "社交活动（走亲访友）", options: [
+        { label: "每周/几乎每周", score: 3 }, { label: "每月1-2次", score: 2 },
+        { label: "每3个月1次", score: 1 }, { label: "从不/极少", score: 0 },
+      ]},
+      { id: "q13", dimension: "休闲活动", text: "园艺", options: [
+        { label: "每周/几乎每周", score: 3 }, { label: "每月1-2次", score: 2 },
+        { label: "每3个月1次", score: 1 }, { label: "从不/极少", score: 0 },
+      ]},
+      { id: "q14", dimension: "户外活动", text: "开车/骑车", options: [
+        { label: "每周/几乎每周", score: 3 }, { label: "每月1-2次", score: 2 },
+        { label: "每3个月1次", score: 1 }, { label: "从不/极少", score: 0 },
+      ]},
+      { id: "q15", dimension: "户外活动", text: "旅行（外出过夜）", options: [
+        { label: "每月/几乎每月", score: 3 }, { label: "每3个月1次", score: 2 },
+        { label: "每6个月1次", score: 1 }, { label: "从不/极少", score: 0 },
+      ]},
+    ],
+    grading: {
+      max: 45,
+      grades: [
+        { label: "活动参与良好(30-45)", min: 30, tone: "good" },
+        { label: "活动参与中等(15-29)", min: 15, tone: "warn" },
+        { label: "活动参与差(0-14)", min: 0, tone: "bad" },
+      ],
+    },
+  },
+
+  "sf-12": {
+    id: "sf-12",
+    questions: [
+      { id: "q1", dimension: "总体健康", text: "总体来说，您的健康状况如何？", options: [
+        { label: "极好", score: 5 }, { label: "很好", score: 4 },
+        { label: "好", score: 3 }, { label: "一般", score: 2 },
+        { label: "差", score: 1 },
+      ]},
+      { id: "q2", dimension: "躯体功能", text: "中等活动是否受限（如搬桌子、吸尘等）？", options: [
+        { label: "是，受限很多", score: 1 }, { label: "是，稍受限", score: 2 },
+        { label: "否，不受限", score: 3 },
+      ]},
+      { id: "q3", dimension: "躯体功能", text: "爬几层楼梯是否受限？", options: [
+        { label: "是，受限很多", score: 1 }, { label: "是，稍受限", score: 2 },
+        { label: "否，不受限", score: 3 },
+      ]},
+      { id: "q4", dimension: "心理健康", text: "过去4周，因情绪问题完成的工作或活动是否减少？", options: [
+        { label: "是", score: 1 }, { label: "否", score: 2 },
+      ]},
+      { id: "q5", dimension: "心理健康", text: "过去4周，因情绪问题做事不如平时仔细？", options: [
+        { label: "是", score: 1 }, { label: "否", score: 2 },
+      ]},
+      { id: "q6", dimension: "疼痛", text: "过去4周身体疼痛程度", options: [
+        { label: "无疼痛", score: 6 }, { label: "很轻微", score: 5 },
+        { label: "轻微", score: 4 }, { label: "中度", score: 3 },
+        { label: "严重", score: 2 }, { label: "极严重", score: 1 },
+      ]},
+      { id: "q7", dimension: "心理健康", text: "过去4周您是否感到安宁平静？", options: [
+        { label: "一直", score: 5 }, { label: "大部分时间", score: 4 },
+        { label: "相当多时间", score: 3 }, { label: "有时", score: 2 },
+        { label: "很少", score: 1 },
+      ]},
+      { id: "q8", dimension: "心理健康", text: "过去4周您是否精力充沛？", options: [
+        { label: "一直", score: 5 }, { label: "大部分时间", score: 4 },
+        { label: "相当多时间", score: 3 }, { label: "有时", score: 2 },
+        { label: "很少", score: 1 },
+      ]},
+      { id: "q9", dimension: "心理健康", text: "过去4周您是否感到消沉或沮丧？", options: [
+        { label: "一直", score: 1 }, { label: "大部分时间", score: 2 },
+        { label: "相当多时间", score: 3 }, { label: "有时", score: 4 },
+        { label: "很少", score: 5 },
+      ]},
+      { id: "q10", dimension: "健康总体评价", text: "过去4周健康是否限制了您的社会活动？", options: [
+        { label: "一直", score: 1 }, { label: "大部分时间", score: 2 },
+        { label: "相当多时间", score: 3 }, { label: "有时", score: 4 },
+        { label: "很少", score: 5 },
+      ]},
+      { id: "q11", dimension: "社会功能", text: "过去4周情绪问题是否干扰了您的社交活动？", options: [
+        { label: "一直", score: 1 }, { label: "大部分时间", score: 2 },
+        { label: "相当多时间", score: 3 }, { label: "有时", score: 4 },
+        { label: "很少", score: 5 },
+      ]},
+      { id: "q12", dimension: "健康总体评价", text: "过去4周健康问题是否影响您的日常活动？", options: [
+        { label: "一直", score: 1 }, { label: "大部分时间", score: 2 },
+        { label: "相当多时间", score: 3 }, { label: "有时", score: 4 },
+        { label: "很少", score: 5 },
+      ]},
+    ],
+    grading: {
+      max: 50,
+      grades: [
+        { label: "生活质量良好(35-50)", min: 35, tone: "good" },
+        { label: "生活质量中等(20-34)", min: 20, tone: "warn" },
+        { label: "生活质量差(0-19)", min: 0, tone: "bad" },
       ],
     },
   },
