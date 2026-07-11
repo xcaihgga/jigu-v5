@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   ClipboardCheck,
   CalendarRange,
-  Route,
   Users,
   Settings,
   Activity,
@@ -11,6 +10,7 @@ import {
   ChevronRight,
   Brain,
   BookOpen,
+  Stethoscope,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import { toast } from "@/store/ui";
@@ -22,7 +22,7 @@ const NAV = [
   { to: "/assess", label: "评估中心", icon: ClipboardCheck },
   { to: "/treatment", label: "治疗方案", icon: BookOpen },
   { to: "/plan", label: "康复计划", icon: CalendarRange },
-  { to: "/pathway", label: "临床路径", icon: Route },
+  { to: "/pathway", label: "临床参考", icon: Stethoscope },
   { to: "/patients", label: "患者档案", icon: Users },
   { to: "/quiz", label: "进修中心", icon: Brain },
   { to: "/profile", label: "个人中心", icon: Settings },
