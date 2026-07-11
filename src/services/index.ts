@@ -209,13 +209,21 @@ export const assess = {
     const patient = patients.find((p) => p.id === patientId);
     const therapist = users.find((u) => u.id === therapistId);
 
-    // 计分
+    // 计分（支持加权）
     let totalScore = 0;
     let maxScore = 0;
     const dimMap: Record<string, { score: number; max: number }> = {};
     for (const q of scale.questions) {
-      const score = answers[q.id] ?? 0;
-      const qMax = Math.max(...q.options.map((o) => o.score));
+      // 条件跳转：不满足条件的题目不计分
+      if (q.condition) {
+        const condScore = answers[q.condition.questionId];
+        if (condScore === undefined) continue;
+        if (q.condition.min !== undefined && condScore < q.condition.min) continue;
+        if (q.condition.max !== undefined && condScore > q.condition.max) continue;
+      }
+      const weight = q.weight ?? 1;
+      const score = (answers[q.id] ?? 0) * weight;
+      const qMax = Math.max(...q.options.map((o) => o.score)) * weight;
       totalScore += score;
       maxScore += qMax;
       if (!dimMap[q.dimension]) dimMap[q.dimension] = { score: 0, max: 0 };

@@ -30,10 +30,22 @@ export default function AssessRunner() {
     return <EmptyState icon={<ClipboardCheck className="h-10 w-10" />} title="量表不存在" desc="可能链接已失效" action={<button onClick={() => navigate("/assess")} className="btn-ghost btn-sm">返回评估中心</button>} />;
   }
 
-  const q = scale.questions[idx];
-  const total = scale.questions.length;
-  const answeredCount = Object.keys(answers).length;
-  const progress = (answeredCount / total) * 100;
+  // 条件跳转：过滤出满足条件的题目
+  const visibleQuestions = useMemo(() => {
+    return scale.questions.filter((question) => {
+      if (!question.condition) return true;
+      const condScore = answers[question.condition.questionId];
+      if (condScore === undefined) return false;
+      if (question.condition.min !== undefined && condScore < question.condition.min) return false;
+      if (question.condition.max !== undefined && condScore > question.condition.max) return false;
+      return true;
+    });
+  }, [scale.questions, answers]);
+
+  const q = visibleQuestions[idx] ?? scale.questions[idx];
+  const total = visibleQuestions.length;
+  const answeredCount = visibleQuestions.filter((qq) => answers[qq.id] !== undefined).length;
+  const progress = total > 0 ? (answeredCount / total) * 100 : 0;
 
   const choose = (qid: string, score: number) => {
     setAnswers((a) => ({ ...a, [qid]: score }));
@@ -190,7 +202,7 @@ export default function AssessRunner() {
           <ArrowLeft className="h-4 w-4" /> 上一题
         </button>
         <div className="flex items-center gap-1">
-          {scale.questions.map((qq, i) => (
+          {visibleQuestions.map((qq, i) => (
             <button
               key={qq.id}
               onClick={() => setIdx(i)}

@@ -38,6 +38,10 @@ export interface ScaleQuestion {
   text: string;
   dimension: string;
   options: ScaleOption[];
+  /** 加权系数，默认1.0 */
+  weight?: number;
+  /** 条件跳转：当指定题目的得分满足条件时才显示本题 */
+  condition?: { questionId: string; min?: number; max?: number };
 }
 
 export interface Scale {
