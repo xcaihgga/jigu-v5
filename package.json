@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "check": "tsc -b --noEmit"
+    "check": "tsc -b --noEmit",
+    "self-check": "bash scripts/self-check.sh",
+    "verify": "pnpm check && pnpm build"
   },
   "dependencies": {
     "clsx": "^2.1.1",
