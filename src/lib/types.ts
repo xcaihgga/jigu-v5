@@ -161,3 +161,79 @@ export interface PathwaySuggestion {
   reason: string;
   fit: number; // 匹配度 0-100
 }
+
+// ========== 脊柱侧弯相关类型 ==========
+
+export type ScoliosisType = "结构性" | "非结构性";
+
+export type CurveType = "C型" | "S型";
+
+export type CurveLocation = "胸椎" | "腰椎" | "胸腰椎" | "双弯";
+
+export interface ScoliosisPhotoRecord {
+  id: string;
+  patientId: string;
+  frontImage?: string; // base64
+  sideImage?: string; // base64
+  shoulderLevel: number; // 0-10，0=平齐，10=严重不等高
+  waistSymmetry: number; // 0-10，0=对称，10=严重不对称
+  hipLevel: number; // 0-10，0=平齐，10=严重不等高
+  bodyShift: number; // 0-10，0=居中，10=严重偏移
+  createdBy: string;
+  createdAt: number;
+}
+
+export interface CobbAngleMeasurement {
+  id: string;
+  patientId: string;
+  xrayImage?: string; // base64
+  primaryCurveAngle: number; // 主弯角度
+  primaryCurveLocation: CurveLocation;
+  secondaryCurveAngle?: number; // 次弯角度
+  secondaryCurveLocation?: CurveLocation;
+  curveType: CurveType;
+  measurementNotes?: string;
+  createdBy: string;
+  createdAt: number;
+}
+
+export type ScoliosisSeverity = "轻度" | "中度" | "重度" | "极重度";
+
+export interface ScoliosisRecord {
+  id: string;
+  patientId: string;
+  patientName: string;
+  photoRecordId?: string;
+  cobbRecordId?: string;
+  type: ScoliosisType;
+  curveType: CurveType;
+  primaryCurveAngle: number;
+  primaryCurveLocation: CurveLocation;
+  secondaryCurveAngle?: number;
+  secondaryCurveLocation?: CurveLocation;
+  severity: ScoliosisSeverity;
+  photoAssessment?: {
+    shoulderLevel: number;
+    waistSymmetry: number;
+    hipLevel: number;
+    bodyShift: number;
+  };
+  consensusId?: string;
+  planId?: string;
+  createdAt: number;
+  updatedAt?: number;
+}
+
+export interface ExpertConsensus {
+  id: string;
+  scoliosisRecordId: string;
+  patientId: string;
+  recommendations: string[];
+  bracingRecommendation: string;
+  surgicalIndicator: boolean;
+  observationFrequency: string;
+  exerciseRecommendation: string;
+  consensusLevel: "强烈推荐" | "推荐" | "建议";
+  expertNote?: string;
+  createdAt: number;
+}

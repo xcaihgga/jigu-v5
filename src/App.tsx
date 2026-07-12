@@ -16,6 +16,10 @@ import PatientDetail from "@/pages/PatientDetail";
 import Profile from "@/pages/Profile";
 import QuizPage from "@/pages/QuizPage";
 import TreatmentHubPage from "@/pages/TreatmentHubPage";
+import ScoliosisMainPage from "@/pages/ScoliosisMainPage";
+import ScoliosisPhotoPage from "@/pages/ScoliosisPhotoPage";
+import ScoliosisCobbPage from "@/pages/ScoliosisCobbPage";
+import ScoliosisConsensusPage from "@/pages/ScoliosisConsensusPage";
 
 export default function App() {
   const init = useAuthStore((s) => s.init);
@@ -41,6 +45,10 @@ export default function App() {
             <Route path="/patients/:patientId" element={<PatientDetail />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/quiz" element={<QuizPage />} />
+            <Route path="/scoliosis" element={<ScoliosisMainPage />} />
+            <Route path="/scoliosis/photo" element={<ScoliosisPhotoPage />} />
+            <Route path="/scoliosis/cobb" element={<ScoliosisCobbPage />} />
+            <Route path="/scoliosis/consensus" element={<ScoliosisConsensusPage />} />
             <Route path="/pain" element={<Navigate to="/treatment" replace />} />
             <Route path="/neuro-extras" element={<Navigate to="/pathway" replace />} />
             <Route path="/docs" element={<Navigate to="/profile" replace />} />

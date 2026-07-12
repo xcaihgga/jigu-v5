@@ -11,6 +11,7 @@ import {
   Brain,
   BookOpen,
   Stethoscope,
+  Bone,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import { toast } from "@/store/ui";
@@ -20,6 +21,7 @@ import { useEffect, useState } from "react";
 const NAV = [
   { to: "/", label: "工作台", icon: LayoutDashboard, end: true },
   { to: "/assess", label: "评估中心", icon: ClipboardCheck },
+  { to: "/scoliosis", label: "脊柱侧弯", icon: Bone },
   { to: "/treatment", label: "治疗方案", icon: BookOpen },
   { to: "/plan", label: "康复计划", icon: CalendarRange },
   { to: "/pathway", label: "临床参考", icon: Stethoscope },

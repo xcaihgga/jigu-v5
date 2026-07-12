@@ -1,7 +1,9 @@
 import type {
   AssessmentRecord,
   Checkin,
+  CobbAngleMeasurement,
   Exercise,
+  ExpertConsensus,
   Pathway,
   PathwayState,
   PathwaySuggestion,
@@ -9,6 +11,8 @@ import type {
   Plan,
   PlanEntry,
   Scale,
+  ScoliosisPhotoRecord,
+  ScoliosisRecord,
   User,
 } from "@/lib/types";
 import { dayKey, load, save, uid } from "@/lib/storage";
@@ -21,6 +25,7 @@ import {
 } from "@/data/seed";
 import { EXTENDED_SCALES } from "@/data/scales-extended";
 import { SCALE_QUESTIONS_MAP } from "@/data/scales-questions";
+import { SCOLIOSIS_EXERCISES, getSeverityLabel } from "@/data/scoliosis";
 
 const KEYS = {
   users: "users",
@@ -31,6 +36,10 @@ const KEYS = {
   checkins: "checkins",
   pwstates: "pathway_states",
   seeded: "seed_loaded",
+  scoliosisRecords: "scoliosis_records",
+  scoliosisPhotos: "scoliosis_photos",
+  cobbMeasurements: "cobb_measurements",
+  expertConsensuses: "expert_consensuses",
 } as const;
 
 // ============ 种子初始化 ============
@@ -533,5 +542,139 @@ export const pathway = {
       }
     }
     return suggestions.sort((a, b) => b.fit - a.fit);
+  },
+};
+
+// ============ 脊柱侧弯服务 ============
+export const scoliosis = {
+  listRecords(patientId?: string): ScoliosisRecord[] {
+    const all = load<ScoliosisRecord[]>(KEYS.scoliosisRecords, []);
+    return all
+      .filter((r) => !patientId || r.patientId === patientId)
+      .sort((a, b) => b.createdAt - a.createdAt);
+  },
+  getRecord(id: string): ScoliosisRecord | undefined {
+    return load<ScoliosisRecord[]>(KEYS.scoliosisRecords, []).find((r) => r.id === id);
+  },
+  createRecord(input: Omit<ScoliosisRecord, "id" | "createdAt">): ScoliosisRecord {
+    const all = load<ScoliosisRecord[]>(KEYS.scoliosisRecords, []);
+    const record: ScoliosisRecord = { ...input, id: uid("scol"), createdAt: Date.now() };
+    all.push(record);
+    save(KEYS.scoliosisRecords, all);
+    return record;
+  },
+  updateRecord(id: string, patch: Partial<ScoliosisRecord>): ScoliosisRecord | undefined {
+    const all = load<ScoliosisRecord[]>(KEYS.scoliosisRecords, []);
+    const idx = all.findIndex((r) => r.id === id);
+    if (idx < 0) return undefined;
+    all[idx] = { ...all[idx], ...patch, updatedAt: Date.now() };
+    save(KEYS.scoliosisRecords, all);
+    return all[idx];
+  },
+  deleteRecord(id: string): void {
+    const all = load<ScoliosisRecord[]>(KEYS.scoliosisRecords, []);
+    save(KEYS.scoliosisRecords, all.filter((r) => r.id !== id));
+  },
+
+  listPhotos(patientId?: string): ScoliosisPhotoRecord[] {
+    const all = load<ScoliosisPhotoRecord[]>(KEYS.scoliosisPhotos, []);
+    return all
+      .filter((r) => !patientId || r.patientId === patientId)
+      .sort((a, b) => b.createdAt - a.createdAt);
+  },
+  getPhoto(id: string): ScoliosisPhotoRecord | undefined {
+    return load<ScoliosisPhotoRecord[]>(KEYS.scoliosisPhotos, []).find((r) => r.id === id);
+  },
+  createPhoto(input: Omit<ScoliosisPhotoRecord, "id" | "createdAt">): ScoliosisPhotoRecord {
+    const all = load<ScoliosisPhotoRecord[]>(KEYS.scoliosisPhotos, []);
+    const record: ScoliosisPhotoRecord = { ...input, id: uid("photo"), createdAt: Date.now() };
+    all.push(record);
+    save(KEYS.scoliosisPhotos, all);
+    return record;
+  },
+
+  listCobbMeasurements(patientId?: string): CobbAngleMeasurement[] {
+    const all = load<CobbAngleMeasurement[]>(KEYS.cobbMeasurements, []);
+    return all
+      .filter((r) => !patientId || r.patientId === patientId)
+      .sort((a, b) => b.createdAt - a.createdAt);
+  },
+  getCobbMeasurement(id: string): CobbAngleMeasurement | undefined {
+    return load<CobbAngleMeasurement[]>(KEYS.cobbMeasurements, []).find((r) => r.id === id);
+  },
+  createCobbMeasurement(input: Omit<CobbAngleMeasurement, "id" | "createdAt">): CobbAngleMeasurement {
+    const all = load<CobbAngleMeasurement[]>(KEYS.cobbMeasurements, []);
+    const record: CobbAngleMeasurement = { ...input, id: uid("cobb"), createdAt: Date.now() };
+    all.push(record);
+    save(KEYS.cobbMeasurements, all);
+    return record;
+  },
+
+  listConsensuses(patientId?: string): ExpertConsensus[] {
+    const all = load<ExpertConsensus[]>(KEYS.expertConsensuses, []);
+    return all
+      .filter((r) => !patientId || r.patientId === patientId)
+      .sort((a, b) => b.createdAt - a.createdAt);
+  },
+  getConsensus(id: string): ExpertConsensus | undefined {
+    return load<ExpertConsensus[]>(KEYS.expertConsensuses, []).find((r) => r.id === id);
+  },
+  createConsensus(input: Omit<ExpertConsensus, "id" | "createdAt">): ExpertConsensus {
+    const all = load<ExpertConsensus[]>(KEYS.expertConsensuses, []);
+    const record: ExpertConsensus = { ...input, id: uid("cons"), createdAt: Date.now() };
+    all.push(record);
+    save(KEYS.expertConsensuses, all);
+    return record;
+  },
+
+  generatePlan(scoliosisRecordId: string, therapistId: string): Plan | undefined {
+    const record = this.getRecord(scoliosisRecordId);
+    if (!record) return undefined;
+    const p = patient.get(record.patientId);
+    if (!p) return undefined;
+
+    const toEntry = (e: Exercise) => ({ exerciseId: e.id, sets: e.defaultSets, reps: e.defaultReps });
+
+    let entries: { exerciseId: string; sets: number; reps: number }[] = [];
+
+    if (record.severity === "轻度") {
+      entries = SCOLIOSIS_EXERCISES.slice(0, 5).map(toEntry);
+    } else if (record.severity === "中度") {
+      entries = SCOLIOSIS_EXERCISES.slice(0, 8).map(toEntry);
+    } else {
+      entries = SCOLIOSIS_EXERCISES.map(toEntry);
+    }
+
+    const schedule = [1, 2, 3, 4, 5, 6, 7].map((day) => ({
+      day,
+      entries: day % 2 === 1 ? entries.map((e) => ({ ...e })) : entries.slice(0, 3).map((e) => ({ ...e })),
+    }));
+
+    const newPlan: Plan = {
+      id: uid("plan"),
+      patientId: p.id,
+      patientName: p.name,
+      title: `脊柱侧弯康复计划 - ${getSeverityLabel(record.primaryCurveAngle)}`,
+      goal: `Cobb角 ${record.primaryCurveAngle}°，${record.curveType}，${record.primaryCurveLocation}`,
+      schedule,
+      durationWeeks: 8,
+      createdAt: Date.now(),
+      active: true,
+    };
+
+    const all = load<Plan[]>(KEYS.plans, []);
+    all.push(newPlan);
+    save(KEYS.plans, all);
+
+    if (record.id) {
+      this.updateRecord(record.id, { planId: newPlan.id });
+    }
+
+    void therapistId;
+    return newPlan;
+  },
+
+  listExercises(): Exercise[] {
+    return SCOLIOSIS_EXERCISES;
   },
 };
