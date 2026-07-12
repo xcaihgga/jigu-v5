@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   CalendarRange, Plus, ArrowRight, CalendarClock, User,
   CalendarDays, TrendingUp, Check, ChevronLeft, ChevronRight, Activity,
-  Sparkles, Flag, Route, Users, ChevronRight as ChevronRightIcon
+  Flag, Route, Users, ChevronRight as ChevronRightIcon,
+  Filter, Grid3X3, LayoutList
 } from "lucide-react";
 import { assess, plan as planSvc, progress as progressSvc, pathway, patient as patientSvc } from "@/services";
 import { useAuthStore } from "@/store/auth";
@@ -13,8 +14,9 @@ import { cn } from "@/lib/utils";
 import EmptyState from "@/components/ui/EmptyState";
 import ProgressRing from "@/components/ui/ProgressRing";
 import LineChart from "@/components/ui/LineChart";
-import CategoryIcon from "@/components/CategoryIcon";
+import CategoryIcon, { CATEGORY_META } from "@/components/CategoryIcon";
 import type { Plan } from "@/lib/types";
+import type { Category } from "@/lib/types";
 import type { Point } from "@/components/ui/Sparkline";
 
 const DAY_LABEL_PLAN = ["", "周一", "周二", "周三", "周四", "周五", "周六", "周日"];
@@ -38,6 +40,16 @@ export default function PlanList() {
   const currentPatient = patients.find((p) => p.id === patientId);
 
   const suggestions = useMemo(() => (patientId ? pathway.recommend(patientId) : []), [patientId]);
+  const allPathways = useMemo(() => pathway.list(), []);
+  const [pwCategory, setPwCategory] = useState<string>("all");
+  const pathwayCategories = useMemo(() => {
+    const cats = new Set(allPathways.map((p) => p.category));
+    return ["all", ...Array.from(cats)];
+  }, [allPathways]);
+  const filteredPathways = useMemo(() => {
+    if (pwCategory === "all") return allPathways;
+    return allPathways.filter((p) => p.category === pwCategory);
+  }, [allPathways, pwCategory]);
   const states = useMemo(() => (patientId ? pathway.statesByPatient(patientId) : []), [patientId]);
   const pathwayRecords = useMemo(() => (patientId ? assess.listRecords(patientId) : []), [patientId]);
 
@@ -127,53 +139,63 @@ export default function PlanList() {
         </div>
       )}
 
-      {/* 推荐路径 */}
+      {/* 临床路径 */}
       <section>
-        <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="h-4 w-4 text-coral" />
-          <h2 className="section-title">推荐临床路径</h2>
-          <span className="text-2xs text-ink-mute">基于诊断与最近评估智能匹配</span>
+        <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Route className="h-4 w-4 text-teal-500" />
+            <h2 className="section-title">临床路径</h2>
+            <span className="text-2xs text-ink-mute">共 {allPathways.length} 条路径 · 可自主选择启用</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Filter className="h-3.5 w-3.5 text-ink-mute" />
+            <select value={pwCategory} onChange={(e) => setPwCategory(e.target.value)} className="input w-auto text-sm py-1.5">
+              {pathwayCategories.map((c) => (
+                <option key={c} value={c}>
+                  {c === "all" ? "全部分类" : CATEGORY_META[c as Category]?.name || c}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-        {suggestions.length === 0 ? (
-          <div className="card"><EmptyState title="暂无匹配路径" desc="为该患者完成评估后将生成个性化推荐" action={<button onClick={() => navigate("/assess")} className="btn-primary btn-sm">去评估</button>} /></div>
+        {filteredPathways.length === 0 ? (
+          <div className="card"><EmptyState title="暂无路径" desc="该分类下暂无临床路径" /></div>
         ) : (
-          <div className="grid md:grid-cols-2 gap-3 stagger">
-            {suggestions.map((s) => {
-              const st = pathway.state(patientId, s.pathway.id);
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 stagger">
+            {filteredPathways.map((pw) => {
+              const st = pathway.state(patientId, pw.id);
+              const sug = suggestions.find((s) => s.pathway.id === pw.id);
               return (
-                <div key={s.pathway.id} className="card p-5 flex flex-col">
+                <div key={pw.id} className="card p-4 flex flex-col hover:shadow-lift transition-all">
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="flex items-center gap-2">
-                      <CategoryIcon category={s.pathway.category} />
-                      <span className="chip text-2xs">{s.pathway.stages.length} 阶段</span>
+                      <CategoryIcon category={pw.category} />
+                      <span className="chip text-2xs">{pw.stages.length} 阶段</span>
                     </div>
-                    <div className="text-right">
-                      <p className="stat-num text-lg text-coral">{s.fit}<span className="text-2xs text-ink-faint">%</span></p>
-                      <p className="text-2xs text-ink-mute">匹配度</p>
-                    </div>
+                    {sug && (
+                      <div className="text-right">
+                        <p className="stat-num text-sm text-coral">{sug.fit}<span className="text-2xs text-ink-faint">%</span></p>
+                        <p className="text-2xs text-ink-mute">匹配</p>
+                      </div>
+                    )}
                   </div>
-                  <h3 className="font-display text-lg text-ink leading-tight">{s.pathway.title}</h3>
-                  <p className="text-sm text-ink-mute mt-1 leading-relaxed">{s.pathway.summary}</p>
-                  <p className="text-2xs text-teal-500 mt-2 leading-relaxed">{s.reason}</p>
+                  <h3 className="font-display text-base text-ink leading-tight">{pw.title}</h3>
+                  <p className="text-2xs text-ink-mute mt-1 leading-relaxed line-clamp-2">{pw.summary}</p>
 
-                  <div className="mt-3 h-1 rounded-full bg-cream-200 overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-teal-500 to-coral" style={{ width: `${s.fit}%` }} />
-                  </div>
-
-                  <div className="mt-auto pt-4 flex items-center gap-2">
+                  <div className="mt-auto pt-3 flex items-center gap-2">
                     {st ? (
                       <>
                         <span className="chip chip-active text-2xs">已启用 · 第 {st.currentStage + 1} 阶段</span>
-                        <button onClick={() => navigate(`/pathway?pw=${s.pathway.id}&p=${patientId}`)} className="btn-ghost btn-sm ml-auto">
-                          查看路径 <ArrowRight className="h-3.5 w-3.5" />
+                        <button onClick={() => navigate(`/pathway?pw=${pw.id}&p=${patientId}`)} className="btn-ghost btn-sm ml-auto">
+                          查看 <ArrowRight className="h-3.5 w-3.5" />
                         </button>
                       </>
                     ) : (
                       <button
-                        onClick={() => { pathway.start(patientId, s.pathway.id); toast.success(`已启用「${s.pathway.title}」`); }}
+                        onClick={() => { pathway.start(patientId, pw.id); toast.success(`已启用「${pw.title}」`); }}
                         className="btn-primary btn-sm ml-auto"
                       >
-                        <Route className="h-3.5 w-3.5" /> 启用此路径
+                        <Route className="h-3.5 w-3.5" /> 启用
                       </button>
                     )}
                   </div>
