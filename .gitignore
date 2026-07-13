@@ -7,3 +7,17 @@ dist/
 .DS_Store
 .vscode/
 .idea/
+
+# TRAE 工作目录
+.trae/
+
+# 备份和文档文件（不进代码仓库）
+*.zip
+*.bak
+*.backup
+评估量表.xlsx
+评估量表汇总.docx
+21种疼痛治疗方案.xlsx
+神经系统康复数据库_2.1.xlsx
+肌骨康复数据.xlsx
+骨科相关计划.pdf
