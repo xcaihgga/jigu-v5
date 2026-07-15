@@ -136,6 +136,7 @@ export interface PathwayStage {
   keyActions: string[];
   milestone: string; // 进入下一阶段的达标标志
   referral?: string; // 转介提示
+  techFeatures?: string[]; // 本阶段技术赋能
 }
 
 export interface Pathway {
@@ -145,6 +146,8 @@ export interface Pathway {
   summary: string;
   indication: string; // 适应症标签
   stages: PathwayStage[];
+  techFeatures?: string[]; // 路径整体技术赋能
+  track?: "conservative" | "surgical"; // 双轨标识：保守/术后
 }
 
 export interface PathwayState {

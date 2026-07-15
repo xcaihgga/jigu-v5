@@ -171,6 +171,11 @@ export default function PlanList() {
                     <div className="flex items-center gap-2">
                       <CategoryIcon category={pw.category} />
                       <span className="chip text-2xs">{pw.stages.length} 阶段</span>
+                      {pw.track && (
+                        <span className={cn("text-2xs px-2 py-0.5 rounded", pw.track === "conservative" ? "bg-green-50 text-green-600" : "bg-blue-50 text-blue-600")}>
+                          {pw.track === "conservative" ? "保守" : "术后"}
+                        </span>
+                      )}
                     </div>
                     {sug && (
                       <div className="text-right">
@@ -181,6 +186,16 @@ export default function PlanList() {
                   </div>
                   <h3 className="font-display text-base text-ink leading-tight">{pw.title}</h3>
                   <p className="text-2xs text-ink-mute mt-1 leading-relaxed line-clamp-2">{pw.summary}</p>
+                  {pw.techFeatures && pw.techFeatures.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {pw.techFeatures.slice(0, 3).map((tf, i) => (
+                        <span key={i} className="rounded bg-teal-50 px-2 py-0.5 text-2xs text-teal-600">{tf}</span>
+                      ))}
+                      {pw.techFeatures.length > 3 && (
+                        <span className="rounded bg-teal-50 px-2 py-0.5 text-2xs text-teal-600">+{pw.techFeatures.length - 3}</span>
+                      )}
+                    </div>
+                  )}
 
                   <div className="mt-auto pt-3 flex items-center gap-2">
                     {st ? (
@@ -219,6 +234,13 @@ export default function PlanList() {
                   <div>
                     <h3 className="font-display text-xl text-ink">{pw.title}</h3>
                     <p className="text-2xs text-ink-mute mt-0.5">启用于 {fmtDate(st.startedAt)} · 已推进 {st.history.length} 次</p>
+                    {pw.techFeatures && pw.techFeatures.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {pw.techFeatures.map((tf, i) => (
+                          <span key={i} className="rounded bg-teal-50 px-2 py-0.5 text-2xs text-teal-600">⚡ {tf}</span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   {st.currentStage < pw.stages.length - 1 && (
                     <button
@@ -256,6 +278,13 @@ export default function PlanList() {
                                 <span key={a} className="rounded bg-cream-100 px-2 py-0.5 text-2xs text-ink-soft">{a}</span>
                               ))}
                             </div>
+                            {stage.techFeatures && stage.techFeatures.length > 0 && (
+                              <div className="flex flex-wrap gap-1.5 mb-3">
+                                {stage.techFeatures.map((tf, i) => (
+                                  <span key={i} className="rounded bg-teal-50 px-2 py-0.5 text-2xs text-teal-600">⚡ {tf}</span>
+                                ))}
+                              </div>
+                            )}
                             <div className={cn("rounded px-3 py-2 text-2xs flex items-start gap-1.5", active ? "bg-teal-50 text-teal-600" : "bg-cream-100 text-ink-mute")}>
                               <Flag className="h-3 w-3 mt-0.5 shrink-0" />
                               <span>达标标志：{stage.milestone}</span>
