@@ -691,7 +691,7 @@ export default function QuizPage() {
             {showAnswer && (
               <div className="mt-5 rounded border border-line bg-cream-50/60 p-4 animate-fade-up">
                 <div className="flex items-center gap-2 mb-2">
-                  {isAnswerCorrect(q, q.type === "multi" ? pickedList : picked) ? (
+                  {isAnswerCorrect(q, q.type === "multi" ? pickedList : (picked ?? "A")) ? (
                     <span className="chip chip-active text-2xs"><Check className="h-3 w-3" /> 回答正确</span>
                   ) : (
                     <span className="chip text-2xs bg-coral-soft/40 border-coral-soft text-coral-dark">
