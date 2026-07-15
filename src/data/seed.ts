@@ -785,6 +785,975 @@ export const PATHWAYS: Pathway[] = [
       { index: 3, title: "青少年/成人期(>12岁)", window: ">12 岁", goal: "预防功能衰退、职业与社会参与", keyActions: ["规律运动习惯", "职业能力训练", "心理支持", "并发症监测(骨密度/关节挛缩)"], milestone: "维持GMFCS级别不退化，参与社会活动/就业", referral: "痉挛加重或髋关节半脱位须骨科评估" },
     ],
   },
+  {
+    id: "pw_cp_ms_004",
+    category: "musculo",
+    title: "肱二头肌肌腱损伤和断裂康复路径",
+    summary: "基于国家卫健委临床路径(2017版)的保守/术后康复路径",
+    indication: "S46.1-S46.2;肱二头肌肌腱损伤和断裂康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" },
+      { index: 3, title: "功能回归期", window: "术后3月后", goal: "全面功能恢复，重返运动/工作", keyActions: ["运动专项训练", "增强式训练", "耐力训练", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_005",
+    category: "musculo",
+    title: "冻结肩(肩周炎)分期康复路径",
+    summary: "基于2024 AAOS共识+2025中国肩关节康复专家共识的保守康复路径",
+    indication: "M75.0;冻结肩(肩周炎)分期康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "炎症期(冻结进行期)", window: "0-3个月", goal: "控制疼痛和炎症反应，维持现有关节活动度", keyActions: ["口服消炎镇痛药", "冰敷/热敷", "钟摆运动", "避免疼痛弧"], milestone: "达成本阶段目标" },
+      { index: 1, title: "冻结期(粘连期)", window: "3-9个月", goal: "逐步恢复关节活动度，关节松动术分级干预", keyActions: ["关节松动术", "被动拉伸", "主动辅助ROM", "肩胛稳定训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "解冻期(恢复期)", window: "9-15个月", goal: "全面恢复主动活动范围，强化肌力", keyActions: ["渐进抗阻训练", "功能性训练", "姿势矫正", "运动回归"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_007",
+    category: "musculo",
+    title: "肩关节不稳(脱位)术后康复路径",
+    summary: "基于2024 ASSET共识的术后康复路径",
+    indication: "S43.0;肩关节不稳(脱位)术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "严格保护期", window: "术后0-4周", goal: "保护修复结构，控制疼痛", keyActions: ["支具固定", "钟摆运动", "被动ROM(限制外旋)", "肘腕活动"], milestone: "达成本阶段目标" },
+      { index: 1, title: "中度保护期", window: "术后4-8周", goal: "逐步恢复ROM，启动肩胛稳定", keyActions: ["主动辅助ROM", "肩胛稳定训练", "等长收缩", "本体感觉训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后8-16周", goal: "肩袖及稳定肌群渐进强化", keyActions: ["弹力带抗阻", "闭链训练", "PNF技术", "功能性训练"], milestone: "达成本阶段目标" },
+      { index: 3, title: "重返运动期", window: "术后16周后", goal: "全面恢复运动能力，预防再脱位", keyActions: ["运动专项训练", "增强式训练", "落地/减速控制", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_008",
+    category: "musculo",
+    title: "锁骨骨折术后康复路径",
+    summary: "基于骨科术后康复通用模式的术后康复路径",
+    indication: "S42.0;锁骨骨折术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_009",
+    category: "musculo",
+    title: "肱骨近端骨折术后康复路径",
+    summary: "基于2024 AAOS骨折管理指南的术后康复路径",
+    indication: "S42.2;肱骨近端骨折术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" },
+      { index: 3, title: "功能回归期", window: "术后3月后", goal: "全面功能恢复，重返运动/工作", keyActions: ["运动专项训练", "增强式训练", "耐力训练", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_010",
+    category: "musculo",
+    title: "肩锁关节脱位术后康复路径",
+    summary: "基于2024 AAOS指南的术后康复路径",
+    indication: "S43.1;肩锁关节脱位术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" },
+      { index: 3, title: "功能回归期", window: "术后3月后", goal: "全面功能恢复，重返运动/工作", keyActions: ["运动专项训练", "增强式训练", "耐力训练", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_011",
+    category: "musculo",
+    title: "肘关节骨折术后康复路径",
+    summary: "基于2024 AAOS骨折管理指南的术后康复路径",
+    indication: "S52;肘关节骨折术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" },
+      { index: 3, title: "功能回归期", window: "术后3月后", goal: "全面功能恢复，重返运动/工作", keyActions: ["运动专项训练", "增强式训练", "耐力训练", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_012",
+    category: "musculo",
+    title: "肘关节僵硬康复路径",
+    summary: "基于2024 ASSH指南的保守/术后康复路径",
+    indication: "M24.6;肘关节僵硬康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_013",
+    category: "musculo",
+    title: "肱骨外上髁炎(网球肘)保守康复路径",
+    summary: "基于2024 AAOS指南的保守康复路径",
+    indication: "M77.1;肱骨外上髁炎(网球肘)保守康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_014",
+    category: "musculo",
+    title: "肘管综合征术后康复路径",
+    summary: "基于2024 ASSH指南的术后康复路径",
+    indication: "G56.2;肘管综合征术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_015",
+    category: "musculo",
+    title: "肱骨髁上骨折术后康复路径(儿童)",
+    summary: "基于2025 AAOS儿童骨折指南的术后康复路径",
+    indication: "S42.4;肱骨髁上骨折术后康复路径(儿童)",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_016",
+    category: "musculo",
+    title: "孟氏骨折术后康复路径",
+    summary: "基于2024 AAOS骨折管理指南的术后康复路径",
+    indication: "S52.0;孟氏骨折术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" },
+      { index: 3, title: "功能回归期", window: "术后3月后", goal: "全面功能恢复，重返运动/工作", keyActions: ["运动专项训练", "增强式训练", "耐力训练", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_017",
+    category: "musculo",
+    title: "腕管综合征术后康复路径",
+    summary: "基于2024 ASSH指南的术后康复路径",
+    indication: "G56.0;腕管综合征术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_018",
+    category: "musculo",
+    title: "手部肌腱损伤术后康复路径",
+    summary: "基于2024 ASSH指南的术后康复路径",
+    indication: "S66;手部肌腱损伤术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" },
+      { index: 3, title: "功能回归期", window: "术后3月后", goal: "全面功能恢复，重返运动/工作", keyActions: ["运动专项训练", "增强式训练", "耐力训练", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_019",
+    category: "musculo",
+    title: "腕关节骨折(桡骨远端)术后康复路径",
+    summary: "基于2024 AAOS骨折管理指南的术后康复路径",
+    indication: "S52.5-S52.6;腕关节骨折(桡骨远端)术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" },
+      { index: 3, title: "功能回归期", window: "术后3月后", goal: "全面功能恢复，重返运动/工作", keyActions: ["运动专项训练", "增强式训练", "耐力训练", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_020",
+    category: "musculo",
+    title: "拇指基底部关节炎(CMC)术后康复路径",
+    summary: "基于2025 ASSH共识的术后康复路径",
+    indication: "M18;拇指基底部关节炎(CMC)术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_021",
+    category: "musculo",
+    title: "腕管综合征保守康复路径",
+    summary: "基于2024 ASSH指南的保守康复路径",
+    indication: "G56.0;腕管综合征保守康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_022",
+    category: "musculo",
+    title: "De Quervain腱鞘炎保守康复路径",
+    summary: "基于2024 ASSH指南的保守康复路径",
+    indication: "M65.4;De Quervain腱鞘炎保守康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_023",
+    category: "musculo",
+    title: "扳机指(狭窄性腱鞘炎)术后康复路径",
+    summary: "基于2024 ASSH指南的术后康复路径",
+    indication: "M65.3;扳机指(狭窄性腱鞘炎)术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_024",
+    category: "musculo",
+    title: "盖氏骨折术后康复路径",
+    summary: "基于2024 AAOS骨折管理指南的术后康复路径",
+    indication: "S52.2;盖氏骨折术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" },
+      { index: 3, title: "功能回归期", window: "术后3月后", goal: "全面功能恢复，重返运动/工作", keyActions: ["运动专项训练", "增强式训练", "耐力训练", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_025",
+    category: "musculo",
+    title: "手外伤康复临床路径(综合版)",
+    summary: "基于国家卫健委手外伤康复临床路径(2016年版)的术后康复路径",
+    indication: "S61/S62/S66/S67;手外伤康复临床路径(综合版)",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_026",
+    category: "musculo",
+    title: "手部骨折内固定术后康复路径",
+    summary: "基于2024 AAOS骨折管理指南的术后康复路径",
+    indication: "S62;手部骨折内固定术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_027",
+    category: "musculo",
+    title: "断指再植术后康复路径",
+    summary: "基于2025中国显微外科康复共识的术后康复路径",
+    indication: "S68.0-S68.1;断指再植术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" },
+      { index: 3, title: "功能回归期", window: "术后3月后", goal: "全面功能恢复，重返运动/工作", keyActions: ["运动专项训练", "增强式训练", "耐力训练", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_028",
+    category: "musculo",
+    title: "腰椎间盘突出症保守康复路径",
+    summary: "基于2024 NASS指南的保守康复路径",
+    indication: "M51.1;腰椎间盘突出症保守康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "急性期", window: "0-2周", goal: "缓解剧烈疼痛，避免加重动作", keyActions: ["相对卧床(<48h)", "麦肯基伸展", "避免弯腰/扭转", "疼痛教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "亚急性期", window: "2-6周", goal: "恢复腰椎活动度，核心稳定训练", keyActions: ["核心激活", "麦肯基进阶", "姿势矫正", "逐步有氧"], milestone: "达成本阶段目标" },
+      { index: 2, title: "慢性期/功能期", window: "6周后", goal: "全面核心强化，预防复发", keyActions: ["渐进核心训练", "功能性训练", "工效学指导", "运动处方"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_029",
+    category: "musculo",
+    title: "腰椎术后康复路径(融合/减压)",
+    summary: "基于2025 NASS指南的术后康复路径",
+    indication: "M51.1/Z98.1;腰椎术后康复路径(融合/减压)",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" },
+      { index: 3, title: "功能回归期", window: "术后3月后", goal: "全面功能恢复，重返运动/工作", keyActions: ["运动专项训练", "增强式训练", "耐力训练", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_030",
+    category: "musculo",
+    title: "颈椎病(神经根型)保守康复路径",
+    summary: "基于2024 NASS指南+2025中国颈椎病康复共识的保守康复路径",
+    indication: "M47.2;颈椎病(神经根型)保守康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_031",
+    category: "musculo",
+    title: "特发性脊柱侧凸保守康复路径",
+    summary: "基于SOSORT 2024指南的保守康复路径",
+    indication: "M41.1;特发性脊柱侧凸保守康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_032",
+    category: "musculo",
+    title: "脊柱压缩性骨折保守康复路径",
+    summary: "基于2024 NASS指南的保守康复路径",
+    indication: "S32.0;脊柱压缩性骨折保守康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_033",
+    category: "musculo",
+    title: "骨质疏松性椎体压缩骨折PVP/PKP术后路径",
+    summary: "基于2025中国骨质疏松性骨折康复指南的术后康复路径",
+    indication: "M80.0;骨质疏松性椎体压缩骨折PVP/PKP术后路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_035",
+    category: "musculo",
+    title: "强直性脊柱炎康复路径",
+    summary: "基于2024 ASAS-EULAR指南的保守康复路径",
+    indication: "M45;强直性脊柱炎康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_036",
+    category: "musculo",
+    title: "上交叉综合征(圆肩驼背)体态矫正康复路径",
+    summary: "基于2025中国体态康复专家共识的保守康复路径",
+    indication: "M40.0/M41.0;上交叉综合征(圆肩驼背)体态矫正康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_037",
+    category: "musculo",
+    title: "下交叉综合征(骨盆前倾)体态矫正康复路径",
+    summary: "基于2025中国姿势康复指南的保守康复路径",
+    indication: "M40.3/M40.4;下交叉综合征(骨盆前倾)体态矫正康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_038",
+    category: "musculo",
+    title: "颈源性头痛康复路径",
+    summary: "基于2024国际头痛学会指南+颈椎康复共识的保守康复路径",
+    indication: "G44.8/M53.0;颈源性头痛康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_041",
+    category: "musculo",
+    title: "半月板修复术后康复路径",
+    summary: "基于2024 AAOS指南的术后康复路径",
+    indication: "S83.2;半月板修复术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "保护期", window: "术后0-2周", goal: "保护修复区域，控制肿胀", keyActions: ["支具保护", "限制屈膝<90°", "部分负重", "踝泵/股四头肌等长"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步负重，恢复ROM", keyActions: ["全负重", "屈膝>90°", "闭链训练(≤45°)", "本体感觉训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "强化期", window: "术后6-12周", goal: "肌力强化，功能性训练", keyActions: ["渐进抗阻", "功率车", "平衡训练", "步态矫正"], milestone: "达成本阶段目标" },
+      { index: 3, title: "重返运动期", window: "术后12周后", goal: "全面功能恢复，运动回归", keyActions: ["跑步渐进", "变向训练", "运动专项", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_042",
+    category: "musculo",
+    title: "髌骨骨折术后康复路径",
+    summary: "基于骨科术后康复通用模式的术后康复路径",
+    indication: "S82.0;髌骨骨折术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" },
+      { index: 3, title: "功能回归期", window: "术后3月后", goal: "全面功能恢复，重返运动/工作", keyActions: ["运动专项训练", "增强式训练", "耐力训练", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_044",
+    category: "musculo",
+    title: "膝关节周围骨折(胫骨平台/股骨髁)术后路径",
+    summary: "基于2024 AAOS骨折管理指南的术后康复路径",
+    indication: "S82.1/S72.4;膝关节周围骨折(胫骨平台/股骨髁)术后路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" },
+      { index: 3, title: "功能回归期", window: "术后3月后", goal: "全面功能恢复，重返运动/工作", keyActions: ["运动专项训练", "增强式训练", "耐力训练", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_045",
+    category: "musculo",
+    title: "胫骨应力综合征(外胫夹)康复路径",
+    summary: "基于2024 ACSM运动医学指南的保守康复路径",
+    indication: "M76.8/S82.2;胫骨应力综合征(外胫夹)康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_046",
+    category: "musculo",
+    title: "髌腱炎(跳跃膝)康复路径",
+    summary: "基于2024 APTA临床实践指南的保守康复路径",
+    indication: "M76.5;髌腱炎(跳跃膝)康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_047",
+    category: "musculo",
+    title: "腘窝囊肿术后康复路径",
+    summary: "基于2025 AAOS指南的术后康复路径",
+    indication: "M71.2;腘窝囊肿术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_048",
+    category: "musculo",
+    title: "膝关节韧带损伤(MCL)保守康复路径",
+    summary: "基于2024 AAOS指南的保守康复路径",
+    indication: "S83.4;膝关节韧带损伤(MCL)保守康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_049",
+    category: "musculo",
+    title: "股骨颈骨折术后康复路径",
+    summary: "基于2024 AAOS骨折管理指南的术后康复路径",
+    indication: "S72.0;股骨颈骨折术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" },
+      { index: 3, title: "功能回归期", window: "术后3月后", goal: "全面功能恢复，重返运动/工作", keyActions: ["运动专项训练", "增强式训练", "耐力训练", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_050",
+    category: "musculo",
+    title: "髋关节撞击综合征(FAI)术后康复路径",
+    summary: "基于2025 ISHA共识的术后康复路径",
+    indication: "M76.8;髋关节撞击综合征(FAI)术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" },
+      { index: 3, title: "功能回归期", window: "术后3月后", goal: "全面功能恢复，重返运动/工作", keyActions: ["运动专项训练", "增强式训练", "耐力训练", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_051",
+    category: "musculo",
+    title: "髋关节撞击综合征(FAI)保守康复路径",
+    summary: "基于2025 ISHA共识的保守康复路径",
+    indication: "M76.8;髋关节撞击综合征(FAI)保守康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_052",
+    category: "musculo",
+    title: "股骨头坏死保守康复路径",
+    summary: "基于2024 AAOS指南的保守康复路径",
+    indication: "M87.0;股骨头坏死保守康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_053",
+    category: "musculo",
+    title: "骨盆骨折术后康复路径",
+    summary: "基于2025 OTA指南的术后康复路径",
+    indication: "S32;骨盆骨折术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" },
+      { index: 3, title: "功能回归期", window: "术后3月后", goal: "全面功能恢复，重返运动/工作", keyActions: ["运动专项训练", "增强式训练", "耐力训练", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_054",
+    category: "musculo",
+    title: "梨状肌综合征康复路径",
+    summary: "基于2024 AAOS指南的保守康复路径",
+    indication: "G57.0/M76.0;梨状肌综合征康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_055",
+    category: "musculo",
+    title: "弹响髋康复路径",
+    summary: "基于2025 ISHA共识的保守康复路径",
+    indication: "M76.8;弹响髋康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_056",
+    category: "musculo",
+    title: "髋关节发育不良(DDH)术后康复路径",
+    summary: "基于2025 POSNA指南的术后康复路径",
+    indication: "Q65;髋关节发育不良(DDH)术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" },
+      { index: 3, title: "功能回归期", window: "术后3月后", goal: "全面功能恢复，重返运动/工作", keyActions: ["运动专项训练", "增强式训练", "耐力训练", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_057",
+    category: "musculo",
+    title: "踝关节扭伤保守康复路径",
+    summary: "基于2024 ESSKA-AFAS共识的保守康复路径",
+    indication: "S93.4;踝关节扭伤保守康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_058",
+    category: "musculo",
+    title: "慢性踝关节不稳康复路径",
+    summary: "基于2024 ESSKA-AFAS共识的保守康复路径",
+    indication: "M24.4;慢性踝关节不稳康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_059",
+    category: "musculo",
+    title: "跟腱断裂保守治疗康复路径",
+    summary: "基于2024 AAOS指南的保守康复路径",
+    indication: "S86.0;跟腱断裂保守治疗康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "固定期", window: "0-8周", goal: "保护肌腱愈合，控制肿胀", keyActions: ["石膏/靴固定(跖屈位)", "禁止负重/逐步负重", "足趾活动", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "过渡期", window: "8-12周", goal: "逐步恢复ROM，开始负重", keyActions: ["逐步去拐", "跖屈/背伸ROM", "等长收缩", "本体感觉训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "强化期", window: "12-20周", goal: "肌力强化，功能性训练", keyActions: ["离心训练", "渐进抗阻", "步态矫正", "功率车"], milestone: "达成本阶段目标" },
+      { index: 3, title: "重返运动期", window: "20周后", goal: "全面恢复运动能力", keyActions: ["跑步渐进", "增强式训练", "运动专项", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_060",
+    category: "musculo",
+    title: "跟腱断裂术后康复路径",
+    summary: "基于2024 AAOS指南的术后康复路径",
+    indication: "S86.0;跟腱断裂术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "保护期", window: "术后0-2周", goal: "保护修复肌腱，控制肿胀", keyActions: ["石膏/靴固定", "禁止负重", "足趾活动", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步负重，ROM训练", keyActions: ["逐步负重至全负重", "跖屈/背伸ROM", "等长收缩", "本体感觉训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "强化期", window: "术后6-16周", goal: "肌力强化，离心训练", keyActions: ["离心训练", "渐进抗阻", "步态矫正", "功能性训练"], milestone: "达成本阶段目标" },
+      { index: 3, title: "重返运动期", window: "术后16周后", goal: "全面恢复运动能力", keyActions: ["跑步渐进", "增强式训练", "运动专项", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_061",
+    category: "musculo",
+    title: "踝关节骨折术后康复路径(细化版)",
+    summary: "基于2024 AAOS骨折管理指南的术后康复路径",
+    indication: "S82.8;踝关节骨折术后康复路径(细化版)",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" },
+      { index: 3, title: "功能回归期", window: "术后3月后", goal: "全面功能恢复，重返运动/工作", keyActions: ["运动专项训练", "增强式训练", "耐力训练", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_062",
+    category: "musculo",
+    title: "足底筋膜炎保守康复路径",
+    summary: "基于2024 APTA临床实践指南的保守康复路径",
+    indication: "M72.2;足底筋膜炎保守康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_063",
+    category: "musculo",
+    title: "拇外翻(踇囊炎)术后康复路径",
+    summary: "基于2024 ACFAS指南的术后康复路径",
+    indication: "M20.1;拇外翻(踇囊炎)术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_064",
+    category: "musculo",
+    title: "踝关节韧带修复术后康复路径",
+    summary: "基于2024 ESSKA-AFAS共识的术后康复路径",
+    indication: "S93.4;踝关节韧带修复术后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" },
+      { index: 3, title: "功能回归期", window: "术后3月后", goal: "全面功能恢复，重返运动/工作", keyActions: ["运动专项训练", "增强式训练", "耐力训练", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_065",
+    category: "musculo",
+    title: "踝关节骨关节炎阶梯化康复路径",
+    summary: "基于2024 OARSI指南的保守康复路径",
+    indication: "M19.0;踝关节骨关节炎阶梯化康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_066",
+    category: "musculo",
+    title: "踝部韧带损伤康复临床路径",
+    summary: "基于国家卫健委踝部韧带损伤康复临床路径(2018版)的保守/术后康复路径",
+    indication: "S93.4/S93.5/S93.6;踝部韧带损伤康复临床路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_067",
+    category: "musculo",
+    title: "多发性肌炎/皮肌炎康复路径",
+    summary: "基于2024 EULAR指南的保守康复路径",
+    indication: "M33;多发性肌炎/皮肌炎康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_068",
+    category: "musculo",
+    title: "纤维肌痛综合康复路径",
+    summary: "基于2025 EULAR指南的保守康复路径",
+    indication: "M79.7;纤维肌痛综合康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_069",
+    category: "musculo",
+    title: "肌少症综合康复路径",
+    summary: "基于2026亚洲肌少症共识的保守康复路径",
+    indication: "M62.8;肌少症综合康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_070",
+    category: "musculo",
+    title: "血友病性关节病康复路径",
+    summary: "基于2024 WFH指南的保守康复路径",
+    indication: "M36.2;血友病性关节病康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_071",
+    category: "musculo",
+    title: "运动疲劳与过度训练康复路径",
+    summary: "基于2026 ACSM运动医学指南的保守康复路径",
+    indication: "Z73.0;运动疲劳与过度训练康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_072",
+    category: "musculo",
+    title: "胸廓出口综合征(TOS)保守康复路径",
+    summary: "基于2024国际TOS共识的保守康复路径",
+    indication: "G54.0;胸廓出口综合征(TOS)保守康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_073",
+    category: "musculo",
+    title: "颞下颌关节紊乱(TMD)康复路径",
+    summary: "基于2024 AAOP指南的保守康复路径",
+    indication: "K07.6/K07.7;颞下颌关节紊乱(TMD)康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_074",
+    category: "musculo",
+    title: "截肢后康复路径",
+    summary: "基于国家卫计委截肢后康复临床路径(2017版)的术后康复路径",
+    indication: "S48/S58/S68/S78/S88/S98;截肢后康复路径",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_075",
+    category: "musculo",
+    title: "肌肉拉伤/软组织损伤保守康复路径",
+    summary: "基于2024 ACSM运动医学指南的保守康复路径",
+    indication: "S46/S56/S66/S76/S86/S96;肌肉拉伤/软组织损伤保守康复路径",
+    track: "conservative",
+    techFeatures: ["AI动作评估", "个性化运动处方", "远程随访"],
+    stages: [
+      { index: 0, title: "疼痛控制期", window: "第1-4周", goal: "控制疼痛炎症，纠正异常模式，基础评估", keyActions: ["疼痛管理", "姿势矫正", "柔韧性训练", "患者教育"], milestone: "达成本阶段目标" },
+      { index: 1, title: "功能重建期", window: "第5-8周", goal: "肌力强化，运动控制，功能性训练", keyActions: ["渐进抗阻训练", "核心稳定", "运动模式重建", "步态/姿势训练"], milestone: "达成本阶段目标" },
+      { index: 2, title: "功能回归期", window: "第9-12周", goal: "全面功能恢复，预防复发，长期管理", keyActions: ["运动专项训练", "ADL训练", "居家方案", "定期随访"], milestone: "达成本阶段目标" }
+    ],
+  },
+  {
+    id: "pw_cp_ms_076",
+    category: "musculo",
+    title: "踝关节不稳术后康复路径(韧带修复术后)",
+    summary: "基于2024 ESSKA-AFAS共识的术后康复路径",
+    indication: "M24.4;踝关节不稳术后康复路径(韧带修复术后)",
+    track: "surgical",
+    techFeatures: ["数字化评估", "远程康复监测", "渐进性功能训练"],
+    stages: [
+      { index: 0, title: "急性保护期", window: "术后0-2周", goal: "控制疼痛肿胀，保护修复结构，预防并发症", keyActions: ["冰敷/加压/抬高", "被动关节活动", "等长收缩", "DVT预防"], milestone: "达成本阶段目标" },
+      { index: 1, title: "早期恢复期", window: "术后2-6周", goal: "逐步恢复关节活动度，启动主动运动", keyActions: ["主动辅助ROM", "逐步负重", "基础肌力训练", "步态/姿势矫正"], milestone: "达成本阶段目标" },
+      { index: 2, title: "力量强化期", window: "术后6周-3月", goal: "肌力强化，本体感觉重建，功能性训练", keyActions: ["渐进抗阻训练", "闭合链训练", "平衡/本体感觉", "ADL训练"], milestone: "达成本阶段目标" },
+      { index: 3, title: "功能回归期", window: "术后3月后", goal: "全面功能恢复，重返运动/工作", keyActions: ["运动专项训练", "增强式训练", "耐力训练", "定期复查"], milestone: "达成本阶段目标" }
+    ],
+  },
+
 ];
 
 export const DEMO_THERAPIST: User = {
