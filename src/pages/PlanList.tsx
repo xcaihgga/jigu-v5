@@ -148,7 +148,7 @@ export default function PlanList() {
           <div className="flex items-center gap-2">
             <Route className="h-4 w-4 text-teal-500" />
             <h2 className="section-title">临床路径选择</h2>
-            <span className="text-2xs text-ink-mute">悬停或点击卡片预览详情 · 共 {allPathways.length} 条</span>
+            <span className="text-2xs text-ink-mute">点击卡片预览详情 · 共 {allPathways.length} 条</span>
           </div>
           <div className="flex items-center gap-2">
             <Filter className="h-3.5 w-3.5 text-ink-mute" />
@@ -172,7 +172,6 @@ export default function PlanList() {
                 <div
                   key={pw.id}
                   className="card p-4 flex flex-col hover:shadow-lift transition-all group relative"
-                  onMouseEnter={() => { if (!previewing) setPreviewing(pw); }}
                   onClick={() => setPreviewing(pw)}
                 >
                   <div className="flex items-start justify-between gap-3 mb-2">
