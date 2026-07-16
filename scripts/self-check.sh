@@ -85,17 +85,19 @@ echo -e "${YELLOW}--- 阶段 2: 代码质量检查 ---${NC}"
 echo ""
 
 step "TypeScript 类型检查"
-if pnpm check 2>&1 | tail -5; then
+if pnpm check 2>&1; then
   pass "TypeScript 类型检查通过"
 else
   fail "TypeScript 类型检查失败"
 fi
 
 step "ESLint 检查"
-if pnpm lint 2>&1 | tail -10; then
+LINT_OUTPUT=$(pnpm lint 2>&1 || true)
+LINT_ERR_COUNT=$(echo "$LINT_OUTPUT" | grep -c "error" || echo "0")
+if [ "$LINT_ERR_COUNT" -eq 0 ]; then
   pass "ESLint 检查通过"
 else
-  warn "ESLint 有警告或错误"
+  warn "ESLint 有 $LINT_ERR_COUNT 个问题（不影响运行）"
 fi
 
 echo ""
@@ -103,7 +105,7 @@ echo -e "${YELLOW}--- 阶段 3: 构建验证 ---${NC}"
 echo ""
 
 step "生产构建"
-if pnpm build 2>&1 | tail -10; then
+if pnpm build 2>&1; then
   pass "生产构建成功"
 else
   fail "生产构建失败"
@@ -145,15 +147,15 @@ else
 fi
 
 step "检查临床路径数据"
-PW_COUNT=$(grep -c "id:" src/data/pathways.ts 2>/dev/null || echo "0")
+PW_COUNT=$(grep -c "id:" src/data/seed.ts src/data/rehab-pathways.ts 2>/dev/null | awk -F: '{s+=$2} END {print s}')
 if [ "$PW_COUNT" -gt 0 ]; then
   pass "临床路径数据存在 ($PW_COUNT 条)"
 else
-  warn "未找到 pathways.ts 数据文件"
+  warn "未找到临床路径数据"
 fi
 
 step "检查量表数据"
-SCALE_COUNT=$(grep -c "id:" src/data/scales/*.ts 2>/dev/null || echo "0")
+SCALE_COUNT=$(grep -c "id:" src/data/scales-extended.ts src/data/scales-questions.ts 2>/dev/null | awk -F: '{s+=$2} END {print s}')
 if [ "$SCALE_COUNT" -gt 0 ]; then
   pass "量表数据存在 ($SCALE_COUNT 条)"
 else
