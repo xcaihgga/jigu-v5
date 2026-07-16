@@ -13,6 +13,7 @@ import type {
 } from "@/lib/types";
 import { dayKey, load, save, uid } from "@/lib/storage";
 import {
+  DEMO_ADMIN,
   DEMO_PATIENTS,
   DEMO_THERAPIST,
   EXERCISES,
@@ -36,7 +37,7 @@ const KEYS = {
 // ============ 种子初始化 ============
 export function ensureSeed(): void {
   if (load(KEYS.seeded, false)) return;
-  save(KEYS.users, [DEMO_THERAPIST]);
+  save(KEYS.users, [DEMO_ADMIN, DEMO_THERAPIST]);
   save(KEYS.patients, DEMO_PATIENTS);
   save(KEYS.records, []);
   save(KEYS.plans, []);
@@ -533,5 +534,112 @@ export const pathway = {
       }
     }
     return suggestions.sort((a, b) => b.fit - a.fit);
+  },
+  // 路径预览：返回摘要、阶段大纲、适应症等
+  preview(id: string): {
+    pathway: Pathway;
+    overview: { totalStages: number; estimatedWeeks: string; indications: string[]; targetPopulation: string; contraindications: string[] };
+    stageOutlines: { index: number; title: string; window: string; goal: string; keyActions: string[]; milestone: string }[];
+  } | undefined {
+    const pw = this.get(id);
+    if (!pw) return undefined;
+    const indications = pw.indication.split(";").map((s) => s.trim()).filter(Boolean);
+    const stageOutlines = pw.stages.map((s) => ({
+      index: s.index,
+      title: s.title,
+      window: s.window,
+      goal: s.goal,
+      keyActions: s.keyActions,
+      milestone: s.milestone,
+    }));
+    // 估算总周数：从时间窗中提取最大数字（粗略）
+    const weeksSet = new Set<number>();
+    for (const s of pw.stages) {
+      const m = s.window.match(/(\d+)\s*[~\-到至]\s*(\d+)\s*(周|个月|月)/);
+      if (m) {
+        const num = Number(m[2]);
+        const unit = m[3];
+        weeksSet.add(unit.startsWith("周") ? num : num * 4);
+      } else {
+        const m2 = s.window.match(/(\d+)\s*(周|个月|月)/);
+        if (m2) {
+          const num = Number(m2[1]);
+          const unit = m2[2];
+          weeksSet.add(unit.startsWith("周") ? num : num * 4);
+        }
+      }
+    }
+    const maxWeeks = weeksSet.size > 0 ? Math.max(...weeksSet) : pw.stages.length * 2;
+    const targetPopulation =
+      pw.category === "musculo" ? "肌骨系统疾病患者（保守治疗或术后康复）" :
+      pw.category === "neuro" ? "神经系统疾病患者（脑卒中、脊髓损伤等）" :
+      pw.category === "cardio" ? "心肺系统疾病患者（COPD、冠心病等）" :
+      "儿童康复患者（发育迟缓、脑瘫等）";
+    return {
+      pathway: pw,
+      overview: {
+        totalStages: pw.stages.length,
+        estimatedWeeks: `约 ${maxWeeks} 周`,
+        indications,
+        targetPopulation,
+        contraindications: [
+          "急性期未稳定的危重患者",
+          "存在未明确诊断的严重原发疾病",
+          "临床医生判断不适宜康复介入的情况",
+        ],
+      },
+      stageOutlines,
+    };
+  },
+};
+
+// ============ 用户管理（管理员） ============
+export const users = {
+  list(): User[] {
+    return load<User[]>(KEYS.users, []);
+  },
+  get(id: string): User | undefined {
+    return this.list().find((u) => u.id === id);
+  },
+  create(input: { email: string; password: string; name: string; role: "admin" | "therapist" | "patient"; license?: string }): User {
+    const all = this.list();
+    if (all.some((u) => u.email === input.email)) throw new Error("该邮箱已存在");
+    const u: User = {
+      id: uid("u"),
+      email: input.email,
+      password: input.password,
+      name: input.name,
+      role: input.role,
+      license: input.license,
+      createdAt: Date.now(),
+    };
+    all.push(u);
+    save(KEYS.users, all);
+    return u;
+  },
+  update(id: string, patch: Partial<User>): User | undefined {
+    const all = this.list();
+    const idx = all.findIndex((u) => u.id === id);
+    if (idx < 0) return undefined;
+    all[idx] = { ...all[idx], ...patch };
+    save(KEYS.users, all);
+    return all[idx];
+  },
+  remove(id: string): void {
+    const all = this.list().filter((u) => u.id !== id);
+    save(KEYS.users, all);
+  },
+  // 管理员视角的统计概览
+  stats(): { totalUsers: number; therapists: number; patients: number; admins: number; totalRecords: number; totalPlans: number; totalCheckins: number } {
+    const us = this.list();
+    return {
+      totalUsers: us.length,
+      therapists: us.filter((u) => u.role === "therapist").length,
+      patients: us.filter((u) => u.role === "patient").length,
+      admins: us.filter((u) => u.role === "admin").length,
+      totalRecords: load<AssessmentRecord[]>(KEYS.records, []).length,
+      totalPlans: load<Plan[]>(KEYS.plans, []).length,
+      totalCheckins: load<Checkin[]>(KEYS.checkins, []).length,
+    };
   },
 };

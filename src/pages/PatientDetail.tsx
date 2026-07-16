@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Stethoscope, CalendarPlus, Route, ClipboardList, CalendarRange, ArrowRight, ClipboardPaste, Wand2, Save, Edit3 } from "lucide-react";
-import { assess, patient, pathway, plan } from "@/services";
+import { ArrowLeft, Stethoscope, CalendarPlus, Route, ClipboardList, CalendarRange, ArrowRight, ClipboardPaste, Wand2, Save, Edit3, Check, Flag, Activity, ChevronRight as ChevronRightIcon, CalendarClock } from "lucide-react";
+import { assess, patient, pathway, plan, progress as progressSvc } from "@/services";
 import { fmtDate, relativeTime } from "@/lib/storage";
 import { parsePatient } from "@/lib/text-parser";
 import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
 import GradeBadge from "@/components/ui/GradeBadge";
 import CategoryIcon, { CATEGORY_META } from "@/components/CategoryIcon";
+import ProgressRing from "@/components/ui/ProgressRing";
 import { toast } from "@/store/ui";
 import type { Category, Patient } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 export default function PatientDetail() {
   const { patientId } = useParams();
@@ -96,26 +98,31 @@ export default function PatientDetail() {
           )}
         </div>
 
-        {/* 路径状态 */}
+        {/* 进行中的路径（已迁移自康复计划） */}
         <div className="card p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="section-title">临床路径</h2>
-            <button onClick={() => navigate("/pathway")} className="text-2xs text-teal-500 hover:underline inline-flex items-center gap-1">详情 <ArrowRight className="h-3 w-3" /></button>
+            <h2 className="section-title inline-flex items-center gap-2"><Route className="h-4 w-4 text-teal-500" /> 进行中的路径</h2>
+            <button onClick={() => navigate("/plan")} className="text-2xs text-teal-500 hover:underline inline-flex items-center gap-1">管理 <ArrowRight className="h-3 w-3" /></button>
           </div>
           {states.length === 0 ? (
-            suggestions.length > 0 ? (
-              <div className="space-y-2">
-                <p className="text-2xs text-ink-mute mb-2">推荐路径</p>
-                {suggestions.slice(0, 2).map((s) => (
-                  <button key={s.pathway.id} onClick={() => navigate("/pathway")} className="w-full text-left rounded border border-line p-3 hover:border-teal-400 transition-all">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-ink">{s.pathway.title}</span>
-                      <span className="stat-num text-2xs text-coral">{s.fit}%</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            ) : <p className="text-2xs text-ink-faint py-6 text-center">暂无推荐，完成评估后生成</p>
+            <div>
+              {suggestions.length > 0 ? (
+                <div className="space-y-2">
+                  <p className="text-2xs text-ink-mute mb-2">基于诊断推荐</p>
+                  {suggestions.slice(0, 3).map((s) => (
+                    <button key={s.pathway.id} onClick={() => navigate("/plan")} className="w-full text-left rounded border border-line p-3 hover:border-teal-400 transition-all">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm text-ink flex-1 truncate">{s.pathway.title}</span>
+                        <span className="stat-num text-2xs text-coral shrink-0">{s.fit}%</span>
+                      </div>
+                      <p className="text-2xs text-ink-mute mt-0.5 line-clamp-1">{s.pathway.summary}</p>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-2xs text-ink-faint py-6 text-center">暂无启用路径，可到康复计划中预览选择</p>
+              )}
+            </div>
           ) : (
             <div className="space-y-3">
               {states.map((st) => {
@@ -124,8 +131,19 @@ export default function PatientDetail() {
                 const stage = pw.stages[st.currentStage];
                 return (
                   <div key={st.id} className="rounded border border-line p-3">
-                    <p className="text-sm font-medium text-ink">{pw.title}</p>
-                    <p className="text-2xs text-ink-mute mt-0.5">当前：{stage?.title}（{stage?.window}）</p>
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <p className="text-sm font-medium text-ink flex-1">{pw.title}</p>
+                      {st.currentStage < pw.stages.length - 1 && (
+                        <button
+                          onClick={() => { pathway.advance(p.id, pw.id); toast.success("已推进下一阶段"); setTick((t) => t + 1); }}
+                          className="text-2xs text-coral hover:underline shrink-0 inline-flex items-center gap-1"
+                        >
+                          <Check className="h-3 w-3" /> 达标推进
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-2xs text-ink-mute">当前：<span className="text-teal-600 font-medium">{stage?.title}</span>（{stage?.window}）</p>
+                    <p className="text-2xs text-ink-faint mt-0.5 line-clamp-1">目标：{stage?.goal}</p>
                     <div className="mt-2 flex items-center gap-1">
                       {pw.stages.map((_, i) => (
                         <div key={i} className={`h-1.5 flex-1 rounded-full ${i <= st.currentStage ? "bg-teal-500" : "bg-cream-200"}`} />
@@ -139,23 +157,47 @@ export default function PatientDetail() {
         </div>
       </div>
 
-      {/* 计划历史 */}
-      {plans.length > 0 && (
-        <div className="card p-5">
-          <h2 className="section-title mb-4">康复计划</h2>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {plans.map((pl) => (
-              <button key={pl.id} onClick={() => navigate(`/plan/${pl.id}`)} className="text-left rounded border border-line p-3.5 hover:border-teal-400 hover:shadow-soft transition-all">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium text-ink">{pl.title}</span>
-                  {pl.active && <span className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-1.5 py-0.5 text-2xs text-teal-600"><span className="h-1 w-1 rounded-full bg-teal-500" />执行中</span>}
-                </div>
-                <p className="text-2xs text-ink-mute">{fmtDate(pl.createdAt)} · {pl.durationWeeks} 周</p>
-              </button>
-            ))}
-          </div>
+      {/* 进行中的计划（已迁移自康复计划） */}
+      <div className="card p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="section-title inline-flex items-center gap-2">
+            <Activity className="h-4 w-4 text-coral" /> 进行中的计划
+          </h2>
+          <button onClick={() => navigate("/plan")} className="text-2xs text-teal-500 hover:underline inline-flex items-center gap-1">查看全部 <ArrowRight className="h-3 w-3" /></button>
         </div>
-      )}
+        {plans.length === 0 ? (
+          <p className="text-2xs text-ink-faint py-6 text-center">暂无康复计划，<button onClick={() => navigate("/assess")} className="text-teal-500 hover:underline">去评估生成</button></p>
+        ) : (
+          <div className="grid sm:grid-cols-2 gap-3">
+            {plans.map((pl) => {
+              const planCr = progressSvc.completionRate(pl.id, 14);
+              const totalEntries = pl.schedule.reduce((acc, d) => acc + d.entries.length, 0);
+              return (
+                <button key={pl.id} onClick={() => navigate(`/plan/${pl.id}`)} className="text-left rounded border border-line p-4 hover:border-teal-400 hover:shadow-soft transition-all">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        {pl.active && <span className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-1.5 py-0.5 text-2xs text-teal-600"><span className="h-1 w-1 rounded-full bg-teal-500" />执行中</span>}
+                        <span className="text-2xs text-ink-mute">{fmtDate(pl.createdAt)}</span>
+                      </div>
+                      <p className="text-sm font-medium text-ink truncate">{pl.title}</p>
+                    </div>
+                    <ProgressRing value={planCr.rate} size={42} />
+                  </div>
+                  <p className="text-2xs text-ink-mute line-clamp-1">{pl.goal}</p>
+                  <div className="mt-2 flex items-center gap-3 text-2xs text-ink-faint">
+                    <span className="inline-flex items-center gap-1"><CalendarClock className="h-3 w-3" />{pl.durationWeeks}周</span>
+                    <span>·</span>
+                    <span>{totalEntries} 项动作</span>
+                    <span>·</span>
+                    <span>完成 {planCr.doneDays}/{planCr.plannedDays}</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       <EditPatientModal
         open={editOpen}

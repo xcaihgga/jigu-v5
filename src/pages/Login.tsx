@@ -160,12 +160,15 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="mt-5 flex items-center justify-between text-2xs text-ink-faint">
+          <div className="mt-5 flex items-center justify-between text-2xs text-ink-faint flex-wrap gap-1">
             <button onClick={() => { enterVisitor(); navigate("/"); }} className="hover:text-teal-500 transition-colors">
               以访客身份浏览 →
             </button>
             {mode === "login" && (
-              <span>演示账号 therapist@rh.com / 123456</span>
+              <div className="text-right">
+                <div>治疗师：therapist@rh.com / 123456</div>
+                <div>管理员：admin@rh.com / admin123</div>
+              </div>
             )}
           </div>
         </div>

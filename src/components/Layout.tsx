@@ -11,6 +11,7 @@ import {
   Brain,
   BookOpen,
   Stethoscope,
+  Shield,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import { toast } from "@/store/ui";
@@ -25,6 +26,7 @@ const NAV = [
   { to: "/pathway", label: "临床参考", icon: Stethoscope },
   { to: "/patients", label: "患者档案", icon: Users },
   { to: "/quiz", label: "进修中心", icon: Brain },
+  { to: "/admin/users", label: "账户管理", icon: Shield, adminOnly: true },
   { to: "/profile", label: "个人中心", icon: Settings },
 ];
 
@@ -46,7 +48,9 @@ export default function Layout() {
 
   if (!user) return null;
 
-  const current = NAV.find((n) => (n.end ? location.pathname === n.to : location.pathname.startsWith(n.to) && n.to !== "/"));
+  // 过滤管理员专属导航
+  const visibleNav = NAV.filter((n) => !n.adminOnly || user.role === "admin");
+  const current = visibleNav.find((n) => (n.end ? location.pathname === n.to : location.pathname.startsWith(n.to) && n.to !== "/"));
   const handleLogout = () => {
     logout();
     toast.info("已退出登录");
@@ -79,7 +83,7 @@ export default function Layout() {
         </div>
 
         <nav className="flex-1 py-3 px-2.5 space-y-0.5 overflow-y-auto">
-          {NAV.map((item) => (
+          {visibleNav.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -108,7 +112,9 @@ export default function Layout() {
             {!collapsed && (
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-ink truncate">{user.name}</p>
-                <p className="text-2xs text-ink-mute">{user.role === "therapist" ? "治疗师" : user.role === "patient" ? "患者" : "访客"}</p>
+                <p className="text-2xs text-ink-mute">
+                  {user.role === "therapist" ? "治疗师" : user.role === "patient" ? "患者" : user.role === "admin" ? "管理员" : "访客"}
+                </p>
               </div>
             )}
             {!collapsed && (

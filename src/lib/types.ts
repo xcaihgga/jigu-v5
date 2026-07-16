@@ -1,6 +1,6 @@
 // 康衡平台核心类型定义
 
-export type Role = "therapist" | "patient" | "visitor";
+export type Role = "admin" | "therapist" | "patient" | "visitor";
 
 export type Category = "musculo" | "neuro" | "cardio" | "pediatric";
 

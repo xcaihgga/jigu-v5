@@ -3,8 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   CalendarRange, Plus, ArrowRight, CalendarClock, User,
   CalendarDays, TrendingUp, Check, ChevronLeft, ChevronRight, Activity,
-  Flag, Route, Users, ChevronRight as ChevronRightIcon,
-  Filter, Grid3X3, LayoutList
+  Route, Users, Filter, Flag, Layers, Clock, AlertTriangle, X, BookOpen
 } from "lucide-react";
 import { assess, plan as planSvc, progress as progressSvc, pathway, patient as patientSvc } from "@/services";
 import { useAuthStore } from "@/store/auth";
@@ -15,8 +14,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import ProgressRing from "@/components/ui/ProgressRing";
 import LineChart from "@/components/ui/LineChart";
 import CategoryIcon, { CATEGORY_META } from "@/components/CategoryIcon";
-import type { Plan } from "@/lib/types";
-import type { Category } from "@/lib/types";
+import type { Category, Pathway } from "@/lib/types";
 import type { Point } from "@/components/ui/Sparkline";
 
 const DAY_LABEL_PLAN = ["", "周一", "周二", "周三", "周四", "周五", "周六", "周日"];
@@ -50,12 +48,14 @@ export default function PlanList() {
     if (pwCategory === "all") return allPathways;
     return allPathways.filter((p) => p.category === pwCategory);
   }, [allPathways, pwCategory]);
-  const states = useMemo(() => (patientId ? pathway.statesByPatient(patientId) : []), [patientId]);
-  const pathwayRecords = useMemo(() => (patientId ? assess.listRecords(patientId) : []), [patientId]);
 
   const [activePlanId, setActivePlanId] = useState(activePlans[0]?.id ?? "");
   const [month, setMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); });
   const [metric, setMetric] = useState<typeof METRICS[number]["id"]>("rpe");
+
+  // 路径预览弹窗
+  const [previewing, setPreviewing] = useState<Pathway | null>(null);
+  const preview = useMemo(() => (previewing ? pathway.preview(previewing.id) : null), [previewing]);
 
   const currentPlan = activePlans.find((p) => p.id === activePlanId) ?? activePlans[0];
 
@@ -135,17 +135,20 @@ export default function PlanList() {
           </div>
           <div className="flex flex-wrap gap-1.5 ml-auto">
             {currentPatient.tags.map((t) => <span key={t} className="chip text-2xs">{t}</span>)}
+            <button onClick={() => navigate(`/patients/${currentPatient.id}`)} className="text-2xs text-teal-500 hover:underline ml-2">
+              查看完整档案 →
+            </button>
           </div>
         </div>
       )}
 
-      {/* 临床路径 */}
+      {/* 临床路径选择 */}
       <section>
         <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
           <div className="flex items-center gap-2">
             <Route className="h-4 w-4 text-teal-500" />
-            <h2 className="section-title">临床路径</h2>
-            <span className="text-2xs text-ink-mute">共 {allPathways.length} 条路径 · 可自主选择启用</span>
+            <h2 className="section-title">临床路径选择</h2>
+            <span className="text-2xs text-ink-mute">悬停或点击卡片预览详情 · 共 {allPathways.length} 条</span>
           </div>
           <div className="flex items-center gap-2">
             <Filter className="h-3.5 w-3.5 text-ink-mute" />
@@ -166,7 +169,12 @@ export default function PlanList() {
               const st = pathway.state(patientId, pw.id);
               const sug = suggestions.find((s) => s.pathway.id === pw.id);
               return (
-                <div key={pw.id} className="card p-4 flex flex-col hover:shadow-lift transition-all">
+                <div
+                  key={pw.id}
+                  className="card p-4 flex flex-col hover:shadow-lift transition-all group relative"
+                  onMouseEnter={() => { if (!previewing) setPreviewing(pw); }}
+                  onClick={() => setPreviewing(pw)}
+                >
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="flex items-center gap-2">
                       <CategoryIcon category={pw.category} />
@@ -186,33 +194,46 @@ export default function PlanList() {
                   </div>
                   <h3 className="font-display text-base text-ink leading-tight">{pw.title}</h3>
                   <p className="text-2xs text-ink-mute mt-1 leading-relaxed line-clamp-2">{pw.summary}</p>
+
+                  {/* 悬停预览：阶段预览缩略 */}
+                  <div className="mt-3 pt-3 border-t border-line">
+                    <div className="flex items-center gap-1.5 text-2xs text-ink-mute mb-2">
+                      <Layers className="h-3 w-3" /> 阶段预览 · 点击查看完整内容
+                    </div>
+                    <div className="space-y-1">
+                      {pw.stages.slice(0, 2).map((s) => (
+                        <div key={s.index} className="text-2xs text-ink-soft flex items-center gap-1.5">
+                          <span className="grid h-4 w-4 place-items-center rounded-full bg-teal-50 text-teal-600 text-[10px] shrink-0">{s.index + 1}</span>
+                          <span className="truncate flex-1">{s.title}</span>
+                          <span className="text-ink-faint">{s.window}</span>
+                        </div>
+                      ))}
+                      {pw.stages.length > 2 && (
+                        <div className="text-2xs text-ink-faint">+{pw.stages.length - 2} 个阶段</div>
+                      )}
+                    </div>
+                  </div>
+
                   {pw.techFeatures && pw.techFeatures.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
-                      {pw.techFeatures.slice(0, 3).map((tf, i) => (
-                        <span key={i} className="rounded bg-teal-50 px-2 py-0.5 text-2xs text-teal-600">{tf}</span>
+                      {pw.techFeatures.slice(0, 2).map((tf, i) => (
+                        <span key={i} className="rounded bg-teal-50 px-2 py-0.5 text-2xs text-teal-600">⚡ {tf}</span>
                       ))}
-                      {pw.techFeatures.length > 3 && (
-                        <span className="rounded bg-teal-50 px-2 py-0.5 text-2xs text-teal-600">+{pw.techFeatures.length - 3}</span>
-                      )}
                     </div>
                   )}
 
                   <div className="mt-auto pt-3 flex items-center gap-2">
                     {st ? (
-                      <>
-                        <span className="chip chip-active text-2xs">已启用 · 第 {st.currentStage + 1} 阶段</span>
-                        <button onClick={() => navigate(`/pathway?pw=${pw.id}&p=${patientId}`)} className="btn-ghost btn-sm ml-auto">
-                          查看 <ArrowRight className="h-3.5 w-3.5" />
-                        </button>
-                      </>
+                      <span className="chip chip-active text-2xs">已启用 · 第 {st.currentStage + 1} 阶段</span>
                     ) : (
-                      <button
-                        onClick={() => { pathway.start(patientId, pw.id); toast.success(`已启用「${pw.title}」`); }}
-                        className="btn-primary btn-sm ml-auto"
-                      >
-                        <Route className="h-3.5 w-3.5" /> 启用
-                      </button>
+                      <span className="text-2xs text-ink-mute">悬停或点击预览详情</span>
                     )}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setPreviewing(pw); }}
+                      className="btn-ghost btn-sm ml-auto"
+                    >
+                      <BookOpen className="h-3.5 w-3.5" /> 预览
+                    </button>
                   </div>
                 </div>
               );
@@ -220,109 +241,6 @@ export default function PlanList() {
           </div>
         )}
       </section>
-
-      {/* 进行中的路径时间轴 */}
-      {states.length > 0 && (
-        <section className="space-y-4">
-          <h2 className="section-title flex items-center gap-2"><Flag className="h-4 w-4 text-teal-500" /> 进行中的路径</h2>
-          {states.map((st) => {
-            const pw = pathway.get(st.pathwayId);
-            if (!pw) return null;
-            return (
-              <div key={st.id} className="card p-6">
-                <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
-                  <div>
-                    <h3 className="font-display text-xl text-ink">{pw.title}</h3>
-                    <p className="text-2xs text-ink-mute mt-0.5">启用于 {fmtDate(st.startedAt)} · 已推进 {st.history.length} 次</p>
-                    {pw.techFeatures && pw.techFeatures.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        {pw.techFeatures.map((tf, i) => (
-                          <span key={i} className="rounded bg-teal-50 px-2 py-0.5 text-2xs text-teal-600">⚡ {tf}</span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  {st.currentStage < pw.stages.length - 1 && (
-                    <button
-                      onClick={() => { pathway.advance(patientId, pw.id); toast.success("已推进至下一阶段"); }}
-                      className="btn-coral btn-sm"
-                    >
-                      <Check className="h-3.5 w-3.5" /> 达标，推进下一阶段
-                    </button>
-                  )}
-                </div>
-
-                {/* 时间轴 */}
-                <div className="relative">
-                  <div className="absolute left-[15px] top-2 bottom-2 w-0.5 bg-line" />
-                  <div className="space-y-5">
-                    {pw.stages.map((stage) => {
-                      const done = stage.index < st.currentStage;
-                      const active = stage.index === st.currentStage;
-                      return (
-                        <div key={stage.index} className="relative flex gap-4">
-                          <div className={cn(
-                            "relative z-10 grid h-8 w-8 place-items-center rounded-full border-2 shrink-0 transition-all",
-                            done ? "bg-teal-500 border-teal-500 text-cream-50" : active ? "bg-coral border-coral text-white" : "bg-cream-50 border-line text-ink-faint",
-                          )}>
-                            {done ? <Check className="h-4 w-4" /> : <span className="stat-num text-xs">{stage.index + 1}</span>}
-                          </div>
-                          <div className={cn("flex-1 rounded border p-4 transition-all", active ? "border-coral bg-coral-soft/10 shadow-soft" : done ? "border-line bg-cream-50/40" : "border-line bg-surface opacity-70")}>
-                            <div className="flex items-center justify-between gap-2 flex-wrap mb-1.5">
-                              <h4 className={cn("font-medium", active ? "text-coral-dark" : "text-ink")}>{stage.title}</h4>
-                              <span className="chip text-2xs">{stage.window}</span>
-                            </div>
-                            <p className="text-2xs text-ink-mute mb-3">目标：{stage.goal}</p>
-                            <div className="flex flex-wrap gap-1.5 mb-3">
-                              {stage.keyActions.map((a) => (
-                                <span key={a} className="rounded bg-cream-100 px-2 py-0.5 text-2xs text-ink-soft">{a}</span>
-                              ))}
-                            </div>
-                            {stage.techFeatures && stage.techFeatures.length > 0 && (
-                              <div className="flex flex-wrap gap-1.5 mb-3">
-                                {stage.techFeatures.map((tf, i) => (
-                                  <span key={i} className="rounded bg-teal-50 px-2 py-0.5 text-2xs text-teal-600">⚡ {tf}</span>
-                                ))}
-                              </div>
-                            )}
-                            <div className={cn("rounded px-3 py-2 text-2xs flex items-start gap-1.5", active ? "bg-teal-50 text-teal-600" : "bg-cream-100 text-ink-mute")}>
-                              <Flag className="h-3 w-3 mt-0.5 shrink-0" />
-                              <span>达标标志：{stage.milestone}</span>
-                            </div>
-                            {stage.referral && (
-                              <div className="mt-1.5 rounded px-3 py-2 text-2xs bg-coral-soft/20 text-coral-dark flex items-start gap-1.5">
-                                <ChevronRightIcon className="h-3 w-3 mt-0.5 shrink-0" />
-                                <span>转介提示：{stage.referral}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </section>
-      )}
-
-      {/* 最近评估（路径关联） */}
-      {pathwayRecords.length > 0 && (
-        <section className="card p-5">
-          <h2 className="section-title mb-3">关联评估记录</h2>
-          <div className="divide-y divide-line">
-            {pathwayRecords.slice(0, 4).map((r) => (
-              <button key={r.id} onClick={() => navigate(`/assess/${r.scaleId}/report/${r.id}`)} className="w-full flex items-center gap-3 py-2.5 text-left hover:bg-cream-50/60 -mx-2 px-2 rounded">
-                <CategoryIcon category={r.category} className="h-3.5 w-3.5" />
-                <span className="text-sm text-ink flex-1 truncate">{r.scaleTitle}</span>
-                <span className="stat-num text-2xs text-ink-mute">{fmtDate(r.takenAt)}</span>
-                <span className="text-2xs text-ink-mute">{r.grade}</span>
-              </button>
-            ))}
-          </div>
-        </section>
-      )}
 
       {plans.length === 0 ? (
         <div className="card">
@@ -509,6 +427,130 @@ export default function PlanList() {
             )}
           </div>
         </>
+      )}
+
+      {/* 路径预览弹窗 */}
+      {previewing && preview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/40 backdrop-blur-sm" onClick={() => setPreviewing(null)}>
+          <div
+            className="bg-cream-50 rounded-lg shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 bg-cream-50 border-b border-line p-5 flex items-start justify-between gap-3 z-10">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                  <CategoryIcon category={preview.pathway.category} />
+                  <span className="chip text-2xs">{CATEGORY_META[preview.pathway.category as Category]?.name}</span>
+                  {preview.pathway.track && (
+                    <span className={cn("text-2xs px-2 py-0.5 rounded", preview.pathway.track === "conservative" ? "bg-green-50 text-green-600" : "bg-blue-50 text-blue-600")}>
+                      {preview.pathway.track === "conservative" ? "保守治疗路径" : "术后康复路径"}
+                    </span>
+                  )}
+                  <span className="text-2xs text-ink-mute">· 预计 {preview.overview.estimatedWeeks}</span>
+                </div>
+                <h2 className="font-display text-xl text-ink">{preview.pathway.title}</h2>
+                <p className="text-sm text-ink-mute mt-1.5">{preview.pathway.summary}</p>
+              </div>
+              <button onClick={() => setPreviewing(null)} className="grid h-8 w-8 place-items-center rounded hover:bg-cream-200 shrink-0">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-5">
+              {/* 关键信息 */}
+              <div className="grid sm:grid-cols-3 gap-3">
+                <div className="rounded border border-line p-3 bg-surface">
+                  <div className="flex items-center gap-1.5 text-2xs text-ink-mute mb-1">
+                    <Layers className="h-3 w-3" /> 阶段数
+                  </div>
+                  <div className="text-2xl font-display text-teal-500">{preview.overview.totalStages}</div>
+                </div>
+                <div className="rounded border border-line p-3 bg-surface">
+                  <div className="flex items-center gap-1.5 text-2xs text-ink-mute mb-1">
+                    <Clock className="h-3 w-3" /> 预计周期
+                  </div>
+                  <div className="text-base font-medium text-ink">{preview.overview.estimatedWeeks}</div>
+                </div>
+                <div className="rounded border border-line p-3 bg-surface">
+                  <div className="flex items-center gap-1.5 text-2xs text-ink-mute mb-1">
+                    <Users className="h-3 w-3" /> 适用对象
+                  </div>
+                  <div className="text-2xs text-ink-soft">{preview.overview.targetPopulation}</div>
+                </div>
+              </div>
+
+              {/* 适应症 */}
+              <div>
+                <h3 className="text-sm font-medium text-ink mb-2">适应症</h3>
+                <div className="flex flex-wrap gap-1.5">
+                  {preview.overview.indications.map((tag) => (
+                    <span key={tag} className="rounded bg-teal-50 px-2 py-1 text-2xs text-teal-600">{tag}</span>
+                  ))}
+                </div>
+              </div>
+
+              {/* 禁忌症 */}
+              <div>
+                <h3 className="text-sm font-medium text-ink mb-2 inline-flex items-center gap-1.5">
+                  <AlertTriangle className="h-3.5 w-3.5 text-coral" /> 禁忌与转出指征
+                </h3>
+                <ul className="space-y-1">
+                  {preview.overview.contraindications.map((c, i) => (
+                    <li key={i} className="text-2xs text-ink-soft flex items-start gap-1.5">
+                      <span className="text-coral shrink-0">•</span>
+                      <span>{c}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* 阶段大纲 */}
+              <div>
+                <h3 className="text-sm font-medium text-ink mb-2">阶段大纲</h3>
+                <div className="space-y-2">
+                  {preview.stageOutlines.map((s) => (
+                    <div key={s.index} className="rounded border border-line p-3 bg-surface">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="grid h-6 w-6 place-items-center rounded-full bg-teal-500 text-cream-50 text-2xs font-medium shrink-0">{s.index + 1}</span>
+                        <h4 className="text-sm font-medium text-ink flex-1">{s.title}</h4>
+                        <span className="chip text-2xs">{s.window}</span>
+                      </div>
+                      <p className="text-2xs text-ink-mute mb-2">目标：{s.goal}</p>
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {s.keyActions.map((a, i) => (
+                          <span key={i} className="rounded bg-cream-100 px-2 py-0.5 text-2xs text-ink-soft">{a}</span>
+                        ))}
+                      </div>
+                      <div className="rounded bg-teal-50 px-2 py-1.5 text-2xs text-teal-600 inline-flex items-center gap-1.5">
+                        <Flag className="h-3 w-3" /> 达标：{s.milestone}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 操作按钮 */}
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-line">
+                <button onClick={() => setPreviewing(null)} className="btn-ghost btn-sm">关闭</button>
+                {currentPatient && (
+                  <button
+                    onClick={() => {
+                      if (!pathway.state(patientId, previewing.id)) {
+                        pathway.start(patientId, previewing.id);
+                        toast.success(`已为「${currentPatient.name}」启用「${previewing.title}」`);
+                      }
+                      setPreviewing(null);
+                      navigate(`/patients/${currentPatient.id}`);
+                    }}
+                    className="btn-primary btn-sm"
+                  >
+                    <Check className="h-3.5 w-3.5" /> 启用并进入患者档案
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

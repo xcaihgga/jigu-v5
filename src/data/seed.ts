@@ -1766,6 +1766,15 @@ export const DEMO_THERAPIST: User = {
   createdAt: Date.now() - 1000 * 60 * 60 * 24 * 120,
 };
 
+export const DEMO_ADMIN: User = {
+  id: "u_admin_demo",
+  email: "admin@rh.com",
+  password: "admin123",
+  role: "admin",
+  name: "系统管理员",
+  createdAt: Date.now() - 1000 * 60 * 60 * 24 * 200,
+};
+
 export const DEMO_PATIENTS: Patient[] = [
   { id: "p_demo_1", therapistId: "u_therapist_demo", name: "李建国", age: 58, sex: "男", diagnosis: "右侧脑梗死后偏瘫", category: "neuro", tags: ["偏瘫","上肢功能障碍","高血压"], createdAt: Date.now() - 1000 * 60 * 60 * 24 * 60 },
   { id: "p_demo_2", therapistId: "u_therapist_demo", name: "王晓蕾", age: 27, sex: "女", diagnosis: "左膝 ACL 重建术后", category: "musculo", tags: ["术后","运动员","运动损伤"], createdAt: Date.now() - 1000 * 60 * 60 * 24 * 28 },
