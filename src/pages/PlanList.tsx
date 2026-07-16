@@ -225,7 +225,7 @@ export default function PlanList() {
                     {st ? (
                       <span className="chip chip-active text-2xs">已启用 · 第 {st.currentStage + 1} 阶段</span>
                     ) : (
-                      <span className="text-2xs text-ink-mute">悬停或点击预览详情</span>
+                      <span className="text-2xs text-ink-mute">点击预览详情</span>
                     )}
                     <button
                       onClick={(e) => { e.stopPropagation(); setPreviewing(pw); }}
