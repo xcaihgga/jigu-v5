@@ -10,9 +10,6 @@ import {
   Plus,
   Stethoscope,
   Activity,
-  Zap,
-  Award,
-  AlertCircle,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import { assess, patient, pathway, plan, progress } from "@/services";
@@ -21,7 +18,7 @@ import { useCountUp } from "@/hooks/useCountUp";
 import Sparkline from "@/components/ui/Sparkline";
 import GradeBadge from "@/components/ui/GradeBadge";
 import CategoryIcon from "@/components/CategoryIcon";
-import { DRY_NEEDLE, DRY_NEEDLE_CONTRAINDICATIONS, EVIDENCE_LEVELS } from "@/data/quick-reference";
+import { REF_MODULES } from "@/data/quick-reference";
 
 export default function Dashboard() {
   const { user } = useAuthStore();
@@ -35,20 +32,17 @@ export default function Dashboard() {
     const weekly = plans.length
       ? Math.round(plans.reduce((acc, p) => acc + progress.completionRate(p.id, 7).rate, 0) / plans.length)
       : 0;
-    // 待复评：最新评估超过 30 天的患者
     const pendingReassess = patients.filter((p) => {
       const recs = records.filter((r) => r.patientId === p.id);
       if (!recs.length) return true;
       return Date.now() - recs[0].takenAt > 1000 * 60 * 60 * 24 * 30;
     }).length;
-    // 趋势：近 14 天打卡 RPE（反向，越低越好；这里用完成率代理）
     const trend: { date: string; value: number }[] = [];
     for (let i = 13; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
       trend.push({ date: fmtDate(d.getTime()), value: 40 + Math.round(Math.random() * 50) });
     }
-    // 路径推荐（取首位患者演示）
     const topPatient = patients[0];
     const suggestions = topPatient ? pathway.recommend(topPatient.id).slice(0, 2) : [];
     return { patients, records, plans, weekly, pendingReassess, trend, suggestions, topPatient };
@@ -66,7 +60,6 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 stagger">
-      {/* 问候 + 快捷操作 */}
       <section className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="label-text">{fmtDate(Date.now())}</p>
@@ -85,14 +78,12 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* 数据卡 */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((s) => (
           <StatCard key={s.label} {...s} />
         ))}
       </section>
 
-      {/* 路径推荐横幅 */}
       {data.suggestions.length > 0 && (
         <section className="card overflow-hidden">
           <div className="flex items-stretch">
@@ -130,7 +121,6 @@ export default function Dashboard() {
         </section>
       )}
 
-      {/* 近期评估 + 趋势 */}
       <section className="grid lg:grid-cols-[1.6fr_1fr] gap-4">
         <div className="card p-5">
           <div className="flex items-center justify-between mb-4">
@@ -206,66 +196,30 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* 临床工具：干针疗法参考 */}
+      {/* 临床参考工具入口 */}
       <section className="card p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <Zap className="h-4 w-4 text-teal-500" />
-          <h2 className="section-title">干针与激痛点疗法参考</h2>
-          <span className="text-2xs text-ink-mute">循证证据与临床禁忌</span>
-        </div>
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="space-y-3">
-            {DRY_NEEDLE.map((d, idx) => (
-              <div key={idx} className="rounded border border-line bg-surface p-3">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium text-ink">{d.area}</span>
-                  <span className="chip text-2xs">{d.reference}</span>
-                </div>
-                <div className="flex items-center gap-3 mt-2 text-2xs text-ink-mute">
-                  <span>疼痛缓解：{d.painRelief}</span>
-                  <span>功能改善：{d.function}</span>
-                  <span>证据等级：{d.evidence}</span>
-                </div>
-                <p className="text-2xs text-teal-600 mt-2">{d.conclusion}</p>
-              </div>
-            ))}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Stethoscope className="h-4 w-4 text-teal-500" />
+            <h2 className="section-title">临床参考工具</h2>
           </div>
-          <div className="rounded border border-coral-soft/40 bg-coral-soft/10 p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <AlertCircle className="h-4 w-4 text-coral" />
-              <h3 className="text-sm font-medium text-coral-dark">绝对/相对禁忌证</h3>
-            </div>
-            <ul className="space-y-2">
-              {DRY_NEEDLE_CONTRAINDICATIONS.map((c, idx) => (
-                <li key={idx} className="text-2xs text-ink flex items-start gap-2">
-                  <span className="mt-0.5 h-1.5 w-1.5 rounded-full bg-coral shrink-0" />
-                  {c}
-                </li>
-              ))}
-            </ul>
-          </div>
+          <button onClick={() => navigate("/reference")} className="text-2xs text-teal-500 hover:underline inline-flex items-center gap-1">
+            查看全部 <ArrowRight className="h-3 w-3" />
+          </button>
         </div>
-      </section>
-
-      {/* 循证等级说明 */}
-      <section className="card p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <Award className="h-4 w-4 text-amber-dark" />
-          <h2 className="section-title">循证等级分布</h2>
-          <span className="text-2xs text-ink-mute">OCEBM 证据分级体系</span>
-        </div>
-        <div className="grid md:grid-cols-3 gap-3">
-          {EVIDENCE_LEVELS.map((ev, idx) => (
-            <div key={idx} className="rounded border border-line bg-surface p-3 text-center">
-              <p className="stat-num text-xl text-ink">{ev.level}</p>
-              <p className="text-2xs text-ink-mute mt-1">{ev.definition}</p>
-              <p className="text-2xs text-teal-600 mt-1">{ev.ocebm}</p>
-              <div className="mt-2 flex items-center justify-center gap-2 text-2xs text-ink-mute">
-                <span>{ev.count} 项</span>
-                <span>·</span>
-                <span>{ev.ratio}</span>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {REF_MODULES.map((m) => (
+            <button
+              key={m.id}
+              onClick={() => navigate("/reference")}
+              className="text-left rounded border border-line bg-surface p-3 hover:border-teal-400 hover:shadow-soft transition-all"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm font-medium text-ink">{m.title}</span>
+                <span className="chip text-2xs">{m.count}</span>
               </div>
-            </div>
+              <p className="text-2xs text-ink-mute line-clamp-1">{m.description}</p>
+            </button>
           ))}
         </div>
       </section>
@@ -296,7 +250,6 @@ function StatCard({ label, value, suffix, icon: Icon, color, bg, to }: {
   );
 }
 
-// 占位 hooks 避免重复渲染计数
 function useCountUpFor(v: number): number {
   return useCountUp(v);
 }
