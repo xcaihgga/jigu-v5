@@ -17,6 +17,7 @@ import Profile from "@/pages/Profile";
 import QuizPage from "@/pages/QuizPage";
 import TreatmentHubPage from "@/pages/TreatmentHubPage";
 import AdminUsers from "@/pages/AdminUsers";
+import ReferencePage from "@/pages/ReferencePage";
 
 export default function App() {
   const init = useAuthStore((s) => s.init);
@@ -38,6 +39,7 @@ export default function App() {
             <Route path="/plan" element={<PlanList />} />
             <Route path="/plan/:planId" element={<PlanEditor />} />
             <Route path="/pathway" element={<PathwayPage />} />
+            <Route path="/reference" element={<ReferencePage />} />
             <Route path="/patients" element={<PatientsPage />} />
             <Route path="/patients/:patientId" element={<PatientDetail />} />
             <Route path="/profile" element={<Profile />} />

@@ -23,7 +23,7 @@ const NAV = [
   { to: "/assess", label: "评估中心", icon: ClipboardCheck },
   { to: "/treatment", label: "治疗方案", icon: BookOpen },
   { to: "/plan", label: "康复计划", icon: CalendarRange },
-  { to: "/pathway", label: "临床参考", icon: Stethoscope },
+  { to: "/reference", label: "临床参考", icon: Stethoscope },
   { to: "/patients", label: "患者档案", icon: Users },
   { to: "/quiz", label: "进修中心", icon: Brain },
   { to: "/admin/users", label: "账户管理", icon: Shield, adminOnly: true },
@@ -48,7 +48,6 @@ export default function Layout() {
 
   if (!user) return null;
 
-  // 过滤管理员专属导航
   const visibleNav = NAV.filter((n) => !n.adminOnly || user.role === "admin");
   const current = visibleNav.find((n) => (n.end ? location.pathname === n.to : location.pathname.startsWith(n.to) && n.to !== "/"));
   const handleLogout = () => {
@@ -59,7 +58,6 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen flex">
-      {/* 侧边栏 */}
       <aside
         className={cn(
           "sticky top-0 h-screen shrink-0 border-r border-line bg-cream-50/70 backdrop-blur flex flex-col transition-all duration-300",
@@ -103,7 +101,6 @@ export default function Layout() {
           ))}
         </nav>
 
-        {/* 用户卡 */}
         <div className={cn("border-t border-line p-2.5", collapsed && "px-1.5")}>
           <div className={cn("flex items-center gap-2.5 rounded bg-cream-200/50 p-2", collapsed && "justify-center p-1.5")}>
             <div className="grid h-8 w-8 place-items-center rounded-full bg-teal-500 text-cream-50 text-xs font-medium shrink-0">
@@ -126,7 +123,6 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* 主区 */}
       <div className="flex-1 min-w-0 flex flex-col">
         <header className="sticky top-0 z-30 h-[60px] border-b border-line bg-cream-100/80 backdrop-blur flex items-center justify-between px-6">
           <div className="flex items-center gap-2 text-sm">
