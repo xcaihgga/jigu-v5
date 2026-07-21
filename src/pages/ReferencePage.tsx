@@ -1,16 +1,16 @@
 import { useState } from "react";
 import {
   Zap, Hand, ClipboardCheck, Clock, Award, Activity,
-  AlertCircle, Search,
+  AlertCircle, Search, TrendingUp, MapPin, ZapOff,
 } from "lucide-react";
 import {
   DRY_NEEDLE, DRY_NEEDLE_CONTRAINDICATIONS, EVIDENCE_LEVELS,
   MANUAL_THERAPIES, ASSESSMENT_STANDARDS, DECISION_TIMINGS,
-  MUSCLE_DISEASE_MAP, REF_MODULES,
+  MUSCLE_DISEASE_MAP, REF_MODULES, REGION_SUMMARY, QUICK_REF, EVIDENCE_UPDATES,
 } from "@/data/quick-reference";
 import { cn } from "@/lib/utils";
 
-const ICON_MAP: Record<string, typeof Zap> = { Zap, Hand, ClipboardCheck, Clock, Award, Activity };
+const ICON_MAP: Record<string, typeof Zap> = { Zap, Hand, ClipboardCheck, Clock, Award, Activity, TrendingUp, MapPin, ZapOff };
 
 const EVIDENCE_COLOR: Record<string, string> = {
   A: "bg-teal-50 text-teal-600",
@@ -158,6 +158,68 @@ export default function ReferencePage() {
                 <span>{e.ratio}</span>
               </div>
             </div>
+          ))}
+        </div>
+      )}
+
+      {active === "evidence-update" && (
+        <div className="space-y-3">
+          {EVIDENCE_UPDATES.map((u, i) => (
+            <div key={i} className="card p-4">
+              <div className="flex items-start gap-3">
+                <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-teal-50 text-teal-600 text-2xs font-medium">{i + 1}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-sm font-medium text-ink">{u.muscleGroup}</h3>
+                    <span className="chip text-2xs">{u.keyMuscle}</span>
+                  </div>
+                  <p className="text-2xs text-teal-600 font-medium mb-1">{u.keyUpdate}</p>
+                  <p className="text-2xs text-ink-soft mb-1">推荐：{u.recommendation}</p>
+                  <p className="text-2xs text-ink-faint">{u.reference}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {active === "region-summary" && (
+        <div className="grid md:grid-cols-2 gap-3">
+          {REGION_SUMMARY.map((r, i) => (
+            <div key={i} className="card p-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-medium text-ink">{r.region}</h3>
+                <span className="chip text-2xs">{r.muscleCount} 块肌肉</span>
+              </div>
+              <div className="space-y-1.5 text-2xs">
+                <div><span className="text-ink-mute">主要功能：</span><span className="text-ink-soft">{r.mainFunction}</span></div>
+                <div><span className="text-ink-mute">常见损伤：</span><span className="text-ink-soft">{r.commonInjury}</span></div>
+                <div><span className="text-coral">红旗征：</span><span className="text-ink-soft">{r.redFlag}</span></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {active === "quick-ref" && (
+        <div className="space-y-2">
+          {QUICK_REF.map((q, i) => (
+            <details key={i} className="card p-4 group">
+              <summary className="flex items-center justify-between cursor-pointer list-none">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-ink">{q.muscle}</span>
+                  <span className="chip text-2xs">{q.region}</span>
+                </div>
+                <span className="text-2xs text-teal-500 group-open:hidden">展开</span>
+                <span className="text-2xs text-teal-500 hidden group-open:inline">收起</span>
+              </summary>
+              <div className="mt-3 grid md:grid-cols-2 gap-3 text-2xs">
+                <div><span className="text-ink-mute">常见损伤：</span><span className="text-ink-soft">{q.commonInjury}</span></div>
+                <div><span className="text-ink-mute">关键评估：</span><span className="text-ink-soft">{q.keyAssessment}</span></div>
+                <div><span className="text-coral">急救处理：</span><span className="text-ink-soft">{q.emergency}</span></div>
+                <div><span className="text-ink-mute">重返标准：</span><span className="text-ink-soft">{q.returnStandard}</span></div>
+              </div>
+            </details>
           ))}
         </div>
       )}

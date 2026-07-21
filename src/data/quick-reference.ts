@@ -51,7 +51,7 @@ export const MUSCLE_DISEASE_MAP: MuscleDisease[] = [
   { muscle: "腹外斜肌", diseaseCount: 1, diseases: "产后骨盆带疼痛（PGP/耻骨联合分离+骶髂紊乱）" },
   { muscle: "腹内斜肌", diseaseCount: 1, diseases: "产后骨盆带疼痛（PGP/耻骨联合分离+骶髂紊乱）" },
   { muscle: "腹横肌", diseaseCount: 1, diseases: "产后骨盆带疼痛（PGP/耻骨联合分离+骶髂紊乱）" },
-  { muscle: "背阔肌", diseaseCount: 0, diseases: "—" },
+  { muscle: "背阔肌", diseaseCount: 2, diseases: "背阔肌肌腱炎、翼状肩（前锯肌/胸长神经受累）" },
 ];
 
 export interface RegionSummary {
@@ -287,6 +287,9 @@ export const REF_MODULES: RefModule[] = [
   { id: "manual-therapy", title: "手法治疗技术", icon: "Hand", description: "关节松动、MET、PNF、神经松动等8种常用技术", count: MANUAL_THERAPIES.length },
   { id: "assessment-standard", title: "评估标准速查", icon: "ClipboardCheck", description: "Brunnstrom、FIM、MAS、Berg等8个常用量表解读", count: ASSESSMENT_STANDARDS.length },
   { id: "decision-timing", title: "临床决策时机", icon: "Clock", description: "卒中、术后、重返运动等8项关键时机", count: DECISION_TIMINGS.length },
+  { id: "evidence-update", title: "循证更新速递", icon: "TrendingUp", description: "8大肌群最新康复证据与临床推荐", count: EVIDENCE_UPDATES.length },
+  { id: "region-summary", title: "部位肌肉概览", icon: "MapPin", description: "16个身体部位的肌肉功能、常见损伤与红旗征", count: REGION_SUMMARY.length },
+  { id: "quick-ref", title: "肌肉快速参考", icon: "ZapOff", description: "20块核心肌肉的损伤、评估、急救与重返标准", count: QUICK_REF.length },
   { id: "evidence-level", title: "循证等级分布", icon: "Award", description: "OCEBM 证据分级体系", count: EVIDENCE_LEVELS.length },
-  { id: "muscle-disease", title: "肌肉-疾病映射", icon: "Activity", description: "55块肌肉与常见疾病对应关系", count: MUSCLE_DISEASE_MAP.length },
+  { id: "muscle-disease", title: "肌肉-疾病映射", icon: "Activity", description: "47块肌肉与常见疾病对应关系", count: MUSCLE_DISEASE_MAP.length },
 ];
