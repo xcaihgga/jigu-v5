@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, Shield, UserCog, UserPlus, Trash2, Edit3, Activity, ClipboardList, CalendarRange, TrendingUp, X, Save, Search } from "lucide-react";
-import { users, assess, plan as planSvc, progress as progressSvc } from "@/services";
+import { Users, Shield, UserCog, UserPlus, Trash2, Edit3, Activity, ClipboardList, CalendarRange, TrendingUp, Save, Search } from "lucide-react";
+import { users } from "@/services";
 import { useAuthStore } from "@/store/auth";
 import { toast } from "@/store/ui";
 import { fmtDate } from "@/lib/storage";
@@ -243,8 +243,8 @@ function UserFormModal({
         toast.success("账户已创建");
       }
       onSaved();
-    } catch (e: any) {
-      toast.error(e?.message || "操作失败");
+    } catch (e: unknown) {
+      toast.error((e as Error)?.message || "操作失败");
     }
   };
 

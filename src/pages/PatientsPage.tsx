@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, Users, ArrowRight, ClipboardPaste, Wand2 } from "lucide-react";
+import { Plus, Search, Users, ClipboardPaste, Wand2 } from "lucide-react";
 import { patient as patientSvc, assess, plan } from "@/services";
 import { useAuthStore } from "@/store/auth";
 import { toast } from "@/store/ui";
@@ -117,7 +117,7 @@ function CreatePatientModal({ open, onClose, onCreated }: { open: boolean; onClo
   };
 
   const applyParsed = () => {
-    const parsed = parsePatient(pasteText) as Record<string, any>;
+    const parsed = parsePatient(pasteText);
     if (parsed.name) setName(parsed.name);
     if (typeof parsed.age === "number") setAge(String(parsed.age));
     if (parsed.sex) setSex(parsed.sex);

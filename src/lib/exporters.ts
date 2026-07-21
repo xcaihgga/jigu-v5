@@ -12,7 +12,6 @@ import {
   WidthType,
   TextRun,
   AlignmentType,
-  ImageRun,
 } from "docx";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";

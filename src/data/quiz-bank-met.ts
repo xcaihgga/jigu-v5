@@ -1,7 +1,8 @@
 // MET 肌肉能量技术题库 — 来源：《MET千题题库_做题看板》框架
 // 70 道题覆盖：基础理论 / PIR / RI / CR / CRAC / 颈 / 肩 / 肘腕 / 腰 / 髋 / 膝 / 踝
+import type { QuizQuestion } from "./quiz-bank";
 
-export const Q_MET: any[] = [
+export const Q_MET: QuizQuestion[] = [
   {
     "id": "met-001",
     "type": "single",
@@ -71,7 +72,6 @@ export const Q_MET: any[] = [
     "question": "MET 主要作用包括？",
     "options": {
       "A": "延长短缩的肌肉",
-      "B:": "",
       "B": "强化薄弱肌肉",
       "C": "改善关节活动度",
       "D": "减轻疼痛"

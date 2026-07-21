@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Stethoscope, CalendarPlus, Route, ClipboardList, CalendarRange, ArrowRight, ClipboardPaste, Wand2, Save, Edit3, Check, Flag, Activity, ChevronRight as ChevronRightIcon, CalendarClock } from "lucide-react";
+import { ArrowLeft, Stethoscope, CalendarPlus, Route, ClipboardList, CalendarRange, ArrowRight, ClipboardPaste, Wand2, Save, Edit3, Check, Activity, CalendarClock } from "lucide-react";
 import { assess, patient, pathway, plan, progress as progressSvc } from "@/services";
 import { fmtDate, relativeTime } from "@/lib/storage";
 import { parsePatient } from "@/lib/text-parser";
@@ -11,7 +11,6 @@ import CategoryIcon, { CATEGORY_META } from "@/components/CategoryIcon";
 import ProgressRing from "@/components/ui/ProgressRing";
 import { toast } from "@/store/ui";
 import type { Category, Patient } from "@/lib/types";
-import { cn } from "@/lib/utils";
 
 export default function PatientDetail() {
   const { patientId } = useParams();
@@ -257,7 +256,7 @@ function EditPatientModal({
   };
 
   const applyParsed = () => {
-    const parsed = parsePatient(pasteText) as Record<string, any>;
+    const parsed = parsePatient(pasteText);
     if (parsed.name) setName(parsed.name);
     if (typeof parsed.age === "number") setAge(String(parsed.age));
     if (parsed.sex) setSex(parsed.sex);

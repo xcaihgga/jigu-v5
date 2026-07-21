@@ -3,9 +3,8 @@ import { useNavigate } from "react-router-dom";
 import {
   BookOpen, Search, ChevronRight, AlertTriangle, Map, Layers, Zap, Brain,
   Heart, Activity, Pill, Stethoscope, ClipboardList, Target, Shield,
-  TrendingUp, FileText, Lightbulb, ChevronDown, ArrowLeft, Menu
+  TrendingUp, FileText, Lightbulb, ChevronDown, ArrowLeft
 } from "lucide-react";
-import { toast } from "@/store/ui";
 import { cn } from "@/lib/utils";
 import { MUSCLE_DISEASE_MAP, REGION_SUMMARY, QUICK_REF, EVIDENCE_UPDATES } from "@/data/quick-reference";
 import { RED_FLAGS } from "@/data/red-flags";

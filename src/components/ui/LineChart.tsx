@@ -22,7 +22,7 @@ export default function LineChart({
   const padT = 16;
   const padB = 28;
 
-  const { allValues, allDates, lines, xStep, plotW, plotH } = useMemo(() => {
+  const { allValues, allDates, lines, xStep, plotH } = useMemo(() => {
     const allDates = Array.from(new Set(series.flatMap((s) => s.data.map((d) => d.date)))).sort();
     const allValues = series.flatMap((s) => s.data.map((d) => d.value));
     const maxV = yMax ?? Math.max(yMin, ...allValues) * 1.1;

@@ -102,9 +102,9 @@ function guessCategory(text: string): Patient["category"] | undefined {
  * scaleType: 量表类型标识（用于推断维度）
  * 返回 questionId -> score 映射，questionId 形如 vas/q1/q2 等
  */
-export function parseAssessment(text: string, scaleType: string = ""): Record<string, any> {
+export function parseAssessment(text: string, scaleType: string = ""): Record<string, unknown> {
   if (!text || !text.trim()) return {};
-  const result: Record<string, any> = {};
+  const result: Record<string, unknown> = {};
 
   // VAS 评分：0-10
   const vasMatch = text.match(/VAS\s*[评分]*\s*[:：]?\s*(\d{1,2})(?:\s*\/\s*10)?/i) || text.match(/疼痛评分\s*[:：]?\s*(\d{1,2})/);
@@ -131,7 +131,7 @@ export function parseAssessment(text: string, scaleType: string = ""): Record<st
 
   // 肌力：0–5 级
   // 例：左肱二头肌肌力 4 级 / 肌力 4/5
-  const strengthRegex = /([\u4e00-\u9fa5A-Za-z]*?肌)力?\s*[为是]?\s*([0-5])\s*[级\/]/g;
+  const strengthRegex = /([\u4e00-\u9fa5A-Za-z]*?肌)力?\s*[为是]?\s*([0-5])\s*[级/]/g;
   const strengths: { muscle: string; level: number }[] = [];
   while ((m = strengthRegex.exec(text)) !== null) {
     strengths.push({ muscle: m[1] + "力", level: parseInt(m[2], 10) });

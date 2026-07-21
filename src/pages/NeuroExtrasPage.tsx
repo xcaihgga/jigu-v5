@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Brain, FileText, Activity, Stethoscope, BookOpen, ChevronRight, ChevronDown, Sparkles, Layers, ClipboardList } from "lucide-react";
+import { Brain, Activity, Stethoscope, Sparkles, Layers, ClipboardList } from "lucide-react";
 import { SOAP_FRAMEWORK, SCI_LEVELS, SPASM_MANAGEMENT, STROKE_CRITICAL_PATHWAY, PD_PATHWAY, BRUNNSTROM_STAGES } from "@/data/neuro-extras";
 import { cn } from "@/lib/utils";
 

@@ -1,7 +1,8 @@
 // 疼痛治疗方案题库 — 来源：《疼痛治疗方案.xlsx》
 // 覆盖：足底筋膜炎 / 跟腱炎 / 踝扭伤 / 髌股关节痛 / 半月板 / 髋痛 / 腰痛（5 种）/ 肩（2 种）/ 肘（2 种）/ 颈（2 种）
+import type { QuizQuestion } from "./quiz-bank";
 
-export const Q_PAIN: any[] = [
+export const Q_PAIN: QuizQuestion[] = [
   {
     "id": "pain-001",
     "type": "single",

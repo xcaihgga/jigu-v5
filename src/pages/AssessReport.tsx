@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, FileText, CalendarPlus, Route, TrendingUp, Info, FileDown, FileSpreadsheet, FileType, Network, Eye, X, Loader2 } from "lucide-react";
+import { ArrowLeft, FileText, CalendarPlus, Route, TrendingUp, Info, FileDown, FileSpreadsheet, FileType, Network, Eye, Loader2 } from "lucide-react";
 import { assess, patient, pathway } from "@/services";
 import { useCountUp } from "@/hooks/useCountUp";
 import { fmtDateTime } from "@/lib/storage";

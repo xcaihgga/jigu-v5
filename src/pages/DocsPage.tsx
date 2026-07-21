@@ -1,6 +1,5 @@
-import { BookOpen, FileText, ChevronRight, Lightbulb, Sparkles, Layers, Activity, Wrench, BarChart3, ClipboardList, CalendarRange, Route, Users, Brain, Settings } from "lucide-react";
+import { BookOpen, FileText, ChevronRight, Lightbulb, Sparkles, BarChart3, ClipboardList, CalendarRange, Route, Users, Brain } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
 
 interface DocItem {
   id: string;

@@ -81,7 +81,7 @@ function isAnswerCorrect(q: QuizQuestion, given: "A" | "B" | "C" | "D" | "E" | (
   if (Array.isArray(a)) {
     const givens = Array.isArray(given) ? given : [given];
     if (givens.length !== a.length) return false;
-    return a.every((x) => givens.includes(x as any));
+    return a.every((x) => givens.includes(x as "A" | "B" | "C" | "D" | "E"));
   }
   return a === given;
 }
@@ -289,13 +289,13 @@ export default function QuizPage() {
         correct: prevCat.correct + (isCorrect ? 1 : 0),
       };
       let streakDays = prev.streakDays;
-      let newLastDays = lastDays.slice();
+      const newLastDays = lastDays.slice();
       if (!isToday) {
         newLastDays.push(today);
         const uniq = Array.from(new Set(newLastDays)).sort();
         // 计算连续天数
         let streak = 0;
-        let cur = new Date();
+        const cur = new Date();
         for (let i = uniq.length - 1; i >= 0; i--) {
           const k = dayKey(cur);
           if (uniq[i] === k) {
@@ -584,7 +584,7 @@ export default function QuizPage() {
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-2xs text-ink-mute">难度</span>
               {(["all", "easy", "medium", "hard"] as const).map((d) => (
-                <button key={d} onClick={() => setFilterDifficulty(d as any)} className={cn("chip text-2xs", filterDifficulty === d && "chip-active")}>
+                <button key={d} onClick={() => setFilterDifficulty(d as QuizDifficulty)} className={cn("chip text-2xs", filterDifficulty === d && "chip-active")}>
                   {d === "all" ? "全部" : d === "easy" ? "简单" : d === "medium" ? "中等" : "困难"}
                 </button>
               ))}

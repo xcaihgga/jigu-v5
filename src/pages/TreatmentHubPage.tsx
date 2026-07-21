@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Stethoscope, Search, ChevronRight, AlertCircle, Target, BookOpen,
-  Shield, Activity, MapPin, CheckCircle2, X, Layers, Sparkles, CalendarRange,
+  Shield, Activity, MapPin, X, Layers, Sparkles, CalendarRange,
   Plus, Edit3, Trash2, Save, User, Clock, Filter, ListChecks, TrendingUp
 } from "lucide-react";
-import { plan, patient, assess } from "@/services";
+import { plan, patient } from "@/services";
 import { PAIN_CONDITIONS, PAIN_CATEGORIES, searchPain, type PainCondition } from "@/data/pain-treatments";
 import type { Plan, PlanEntry } from "@/lib/types";
 import { fmtDate } from "@/lib/storage";
@@ -49,8 +49,8 @@ export default function TreatmentHubPage() {
   const [planSearch, setPlanSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterPatient, setFilterPatient] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<"createdAt" | "durationWeeks" | "title">("createdAt");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [sortBy] = useState<"createdAt" | "durationWeeks" | "title">("createdAt");
+  const [sortDir] = useState<"asc" | "desc">("desc");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Plan>>({});
@@ -84,11 +84,11 @@ export default function TreatmentHubPage() {
     if (filterStatus !== "all") arr = arr.filter((p) => (p.status || "active") === filterStatus);
     if (filterPatient !== "all") arr = arr.filter((p) => p.patientId === filterPatient);
     arr = [...arr].sort((a, b) => {
-      let va: any, vb: any;
+      let va: string | number, vb: string | number;
       if (sortBy === "title") { va = a.title; vb = b.title; }
       else if (sortBy === "durationWeeks") { va = a.durationWeeks; vb = b.durationWeeks; }
       else { va = a.createdAt; vb = b.createdAt; }
-      const cmp = typeof va === "string" ? va.localeCompare(vb) : (va as number) - (vb as number);
+      const cmp = typeof va === "string" ? va.localeCompare(vb as string) : (va as number) - (vb as number);
       return sortDir === "asc" ? cmp : -cmp;
     });
     return arr;
@@ -103,7 +103,7 @@ export default function TreatmentHubPage() {
 
   const startEdit = (p: Plan) => {
     setEditingId(p.id);
-    setEditForm({ title: p.title, goal: p.goal, durationWeeks: p.durationWeeks, status: (p.status as any) || "active" });
+    setEditForm({ title: p.title, goal: p.goal, durationWeeks: p.durationWeeks, status: (p.status as Plan["status"]) || "active" });
   };
   const cancelEdit = () => { setEditingId(null); setEditForm({}); };
   const saveEdit = (id: string) => {
@@ -456,7 +456,7 @@ export default function TreatmentHubPage() {
                       <div className="flex items-center gap-1 shrink-0">
                         {isEditing ? (
                           <>
-                            <select className="input text-2xs py-1" value={editForm.status as string} onChange={(e) => setEditForm({ ...editForm, status: e.target.value as any })}>
+                            <select className="input text-2xs py-1" value={editForm.status as string} onChange={(e) => setEditForm({ ...editForm, status: e.target.value as Plan["status"] })}>
                               <option value="active">进行中</option>
                               <option value="paused">已暂停</option>
                               <option value="completed">已完成</option>

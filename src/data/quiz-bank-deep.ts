@@ -1,7 +1,8 @@
 // 深度数据题库 — 基于《肌骨康复数据库.xlsx》和《评估量表汇总.docx》
 // 覆盖：急性期处理、重返标准、干针疗法、区域汇总、肌肉疾病映射、循证更新、循证等级
+import type { QuizQuestion } from "./quiz-bank";
 
-export const Q_ACUTE: any[] = [
+export const Q_ACUTE: QuizQuestion[] = [
   { id: "acute-001", type: "single", question: "RICE 原则首发于哪一年？", options: { A: "1978", B: "1985", C: "2012", D: "2019" }, answer: "A", explanation: "RICE 由 Gabe Mirkin 医生于 1978 年提出。", category: "evidence", subCategory: "急性期-历史", difficulty: "easy", source: "Mirkin 1978", tags: ["RICE", "历史"] },
   { id: "acute-002", type: "single", question: "POLICE 原则首发于哪一年？", options: { A: "1978", B: "2005", C: "2012", D: "2019" }, answer: "C", explanation: "POLICE 由 Bleakley 于 2012 年提出，将 R（Rest）改为 OL（Optimal Loading）。", category: "evidence", subCategory: "急性期-历史", difficulty: "medium", source: "Bleakley 2012 BJSM", tags: ["POLICE"] },
   { id: "acute-003", type: "single", question: "PEACE & LOVE 原则首发于哪一年？", options: { A: "2012", B: "2019", C: "2020", D: "2024" }, answer: "B", explanation: "PEACE & LOVE 由 Dubois 与 Esculier 于 2019 年 BJSM 提出。", category: "evidence", subCategory: "急性期-历史", difficulty: "medium", source: "Dubois 2019 BJSM", tags: ["PEACE&LOVE"] },
@@ -25,7 +26,7 @@ export const Q_ACUTE: any[] = [
   { id: "acute-021", type: "single", question: "PEACE & LOVE 中『主动运动』对应字母是？", options: { A: "L", B: "O", C: "V", D: "第二个 E（在 LOVE 中）" }, answer: "D", explanation: "LOVE 中第二个 E = Exercise（主动运动）。", category: "evidence", subCategory: "急性期-缩写", difficulty: "medium", source: "Dubois 2019" },
 ];
 
-export const Q_RETURN: any[] = [
+export const Q_RETURN: QuizQuestion[] = [
   { id: "ret-001", type: "single", question: "等速肌力测试 RTS 标准是？", options: { A: "双侧差异<5%", B: "双侧差异<10%", C: "双侧差异<20%", D: "双侧差异<30%" }, answer: "B", explanation: "等速肌力测试 RTS 标准为双侧差异<10%。", category: "sports", subCategory: "重返-肌力", difficulty: "medium", source: "《肌骨康复数据库》" },
   { id: "ret-002", type: "single", question: "单腿跳远 RTS 标准是？", options: { A: "≥健侧 70%", B: "≥健侧 80%", C: "≥健侧 90%", D: "≥健侧 100%" }, answer: "C", explanation: "单腿跳远 RTS 标准为≥健侧 90%。", category: "sports", subCategory: "重返-功能", difficulty: "easy", source: "《肌骨康复数据库》" },
   { id: "ret-003", type: "single", question: "Y-Balance / SEBT RTS 标准是？", options: { A: "≥85% 对称", B: "≥90% 对称", C: "≥95% 对称", D: "≥99% 对称" }, answer: "C", explanation: "Y-Balance / SEBT RTS 标准为前后内外≥95% 对称。", category: "sports", subCategory: "重返-本体感觉", difficulty: "medium", source: "《肌骨康复数据库》" },
@@ -48,7 +49,7 @@ export const Q_RETURN: any[] = [
   { id: "ret-020", type: "single", question: "腘绳肌平均适用度最高的测试类别是？", options: { A: "肌力", B: "功能", C: "速度", D: "专项" }, answer: "D", explanation: "腘绳肌平均适用度 3.875，专项测试为完整训练课，5/5。", category: "sports", subCategory: "重返-腘绳肌", difficulty: "medium", source: "《肌骨康复数据库》" },
 ];
 
-export const Q_DRYNEEDLE: any[] = [
+export const Q_DRYNEEDLE: QuizQuestion[] = [
   { id: "dn-001", type: "single", question: "颈/肩肌筋膜痛干针的短期疼痛缓解评分是？", options: { A: "1.5", B: "2.5", C: "3.5", D: "4.5" }, answer: "C", explanation: "颈/肩肌筋膜痛干针短期疼痛缓解评分 3.5/5。", category: "pt", subCategory: "干针-颈肩", difficulty: "medium", source: "Para-Garcia 2022 (5 RCT, n=315)" },
   { id: "dn-002", type: "single", question: "腰肌筋膜痛干针的功能改善评分是？", options: { A: "1.8", B: "2.8", C: "3.8", D: "4.8" }, answer: "B", explanation: "腰肌筋膜痛干针功能改善评分 2.8/5。", category: "pt", subCategory: "干针-腰", difficulty: "medium", source: "Cochrane 2023" },
   { id: "dn-003", type: "single", question: "过头运动员肩痛干针的证据强度是？", options: { A: "1/5", B: "2/5", C: "3/5", D: "4/5" }, answer: "B", explanation: "过头运动员肩痛干针证据强度 2/5，报告偏倚与异质性较高。", category: "pt", subCategory: "干针-肩", difficulty: "hard", source: "PMC 2024" },
@@ -65,7 +66,7 @@ export const Q_DRYNEEDLE: any[] = [
   { id: "dn-014", type: "single", question: "干针+运动对颈肩肌筋膜痛的样本量是？", options: { A: "n=215", B: "n=315", C: "n=415", D: "n=515" }, answer: "B", explanation: "Para-Garcia 2022 包含 5 RCT, n=315。", category: "pt", subCategory: "干针-颈肩", difficulty: "hard", source: "Para-Garcia 2022" },
 ];
 
-export const Q_REGION: any[] = [
+export const Q_REGION: QuizQuestion[] = [
   { id: "reg-001", type: "single", question: "头颈部肌肉主要功能是？", options: { A: "脊柱旋转", B: "头颈屈曲、旋转、肩胛骨上提", C: "髋外展", D: "踝跖屈" }, answer: "B", explanation: "头颈部主要功能为头颈屈曲、旋转、肩胛骨上提、后缩。", category: "anatomy", subCategory: "区域-头颈", difficulty: "easy", source: "《肌骨康复数据库》" },
   { id: "reg-002", type: "single", question: "头颈部的红旗征是？", options: { A: "腰痛", B: "发热、进行性神经症状", C: "髋痛", D: "膝痛" }, answer: "B", explanation: "头颈部红旗征：进行性神经症状、发热。", category: "redflag", subCategory: "区域-头颈", difficulty: "medium", source: "《肌骨康复数据库》" },
   { id: "reg-003", type: "single", question: "肩部肌肉主要功能是？", options: { A: "肘屈伸", B: "肩关节内旋、外旋", C: "髋屈伸", D: "膝屈伸" }, answer: "B", explanation: "肩部主要功能为肩关节内旋、外旋。", category: "anatomy", subCategory: "区域-肩", difficulty: "easy", source: "《肌骨康复数据库》" },
@@ -93,7 +94,7 @@ export const Q_REGION: any[] = [
   { id: "reg-025", type: "single", question: "背部深层红旗征是？", options: { A: "腰痛", B: "进行性旋转痛", C: "运动受限", D: "肌肉僵硬" }, answer: "B", explanation: "背部深层红旗征为进行性旋转痛。", category: "redflag", subCategory: "区域-背深", difficulty: "hard", source: "《肌骨康复数据库》" },
 ];
 
-export const Q_MUSDIS: any[] = [
+export const Q_MUSDIS: QuizQuestion[] = [
   { id: "md-001", type: "single", question: "胸锁乳突肌功能障碍常见于？", options: { A: "斜颈", B: "肩周炎", C: "腰突", D: "网球肘" }, answer: "A", explanation: "胸锁乳突肌功能障碍常见于斜颈（痉挛性/先天性）。", category: "musculo", subCategory: "肌肉疾病-颈", difficulty: "medium", source: "《肌骨康复数据库》" },
   { id: "md-002", type: "single", question: "斜方肌功能障碍可导致？", options: { A: "颈肌筋膜炎（落枕）、颈源性头痛", B: "网球肘", C: "腰突", D: "膝痛" }, answer: "A", explanation: "斜方肌功能障碍可导致颈肌筋膜炎（落枕）、颈源性头痛。", category: "musculo", subCategory: "肌肉疾病-颈", difficulty: "medium", source: "《肌骨康复数据库》" },
   { id: "md-003", type: "single", question: "三角肌功能障碍可导致？", options: { A: "肩袖损伤/肌腱病", B: "网球肘", C: "腰突", D: "膝痛" }, answer: "A", explanation: "三角肌功能障碍与肩袖损伤/肩峰下滑囊炎相关。", category: "musculo", subCategory: "肌肉疾病-肩", difficulty: "medium", source: "《肌骨康复数据库》" },
@@ -116,7 +117,7 @@ export const Q_MUSDIS: any[] = [
   { id: "md-020", type: "single", question: "菱形肌功能障碍可导致？", options: { A: "肩胛骨不稳/翼状肩", B: "网球肘", C: "腰突", D: "肩周炎" }, answer: "A", explanation: "菱形肌与肩胛骨不稳/翼状肩相关。", category: "musculo", subCategory: "肌肉疾病-背", difficulty: "hard", source: "《肌骨康复数据库》" },
 ];
 
-export const Q_EVIDENCE_UPDATE: any[] = [
+export const Q_EVIDENCE_UPDATE: QuizQuestion[] = [
   { id: "eu-001", type: "single", question: "AAOS 指南对肩袖部分撕裂的治疗推荐是？", options: { A: "立即手术", B: "非手术治疗对多数有效", C: "保守无效", D: "PRP 注射" }, answer: "B", explanation: "AAOS 指南：非手术治疗对多数肩袖部分撕裂有效，物理治疗+肩胛节律矫正，2周-数月恢复。", category: "evidence", subCategory: "循证更新-肩袖", difficulty: "medium", source: "StatPearls 2024; MSD Manual" },
   { id: "eu-002", type: "single", question: "腘绳肌 RTS 关键推荐是？", options: { A: "休息6周", B: "离心训练+运动链整合", C: "PRP注射", D: "手术" }, answer: "B", explanation: "腘绳肌康复关键：离心训练+运动链整合，降低复发。", category: "evidence", subCategory: "循证更新-腘绳肌", difficulty: "medium", source: "London Consensus 2023 BJSM 57:278" },
   { id: "eu-003", type: "single", question: "梨状肌综合征的现代称谓是？", options: { A: "梨状肌综合征", B: "深部臀肌综合征（DGS）", C: "臀肌筋膜炎", D: "坐骨神经痛" }, answer: "B", explanation: "梨状肌综合征现改称』深部臀肌综合征(DGS)『，是排除性诊断。", category: "evidence", subCategory: "循证更新-梨状肌", difficulty: "hard", source: "Cureus 2024" },
@@ -134,7 +135,7 @@ export const Q_EVIDENCE_UPDATE: any[] = [
   { id: "eu-015", type: "single", question: "多裂肌/回旋肌康复的运动学原理是？", options: { A: "纯力量", B: "节段性脊柱控制", C: "增加活动度", D: "增加柔韧性" }, answer: "B", explanation: "多裂/回旋肌康复原理是节段性脊柱控制。", category: "evidence", subCategory: "循证更新-腰", difficulty: "hard", source: "BJSM 系统综述" },
 ];
 
-export const Q_EVIDENCE_LEVEL: any[] = [
+export const Q_EVIDENCE_LEVEL: QuizQuestion[] = [
   { id: "el-001", type: "single", question: "OCEBM 1a-2b 对应哪种证据级别？", options: { A: "A 级", B: "B 级", C: "C 级", D: "D 级" }, answer: "A", explanation: "OCEBM 1a-2b（系统评价/RCT）对应 A 级证据。", category: "evidence", subCategory: "循证等级", difficulty: "medium", source: "OCEBM" },
   { id: "el-002", type: "single", question: "OCEBM 4-5 对应哪种证据级别？", options: { A: "A 级", B: "B 级", C: "C 级", D: "D 级" }, answer: "C", explanation: "OCEBM 4-5（病例系列/专家意见）对应 C 级证据。", category: "evidence", subCategory: "循证等级", difficulty: "medium", source: "OCEBM" },
   { id: "el-003", type: "single", question: "本题库中 A 级证据占多少比例？", options: { A: "约 30%", B: "约 52%", C: "约 70%", D: "约 90%" }, answer: "B", explanation: "本题库 A 级证据 25 条，占比约 52%。", category: "evidence", subCategory: "循证等级", difficulty: "hard", source: "《肌骨康复数据库》" },

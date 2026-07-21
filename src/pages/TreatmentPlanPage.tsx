@@ -4,12 +4,11 @@ import {
   CalendarRange, Plus, Edit3, Trash2, Save, X, User, Clock, Target, Search,
   Filter, ChevronDown, ChevronUp, ListChecks, BookOpen, Sparkles, TrendingUp
 } from "lucide-react";
-import { plan, patient, assess } from "@/services";
+import { plan, patient } from "@/services";
 import type { Plan, PlanEntry } from "@/lib/types";
 import { fmtDate } from "@/lib/storage";
 import { toast } from "@/store/ui";
 import EmptyState from "@/components/ui/EmptyState";
-import ProgressRing from "@/components/ui/ProgressRing";
 
 const DAY_LABEL = ["", "周一", "周二", "周三", "周四", "周五", "周六", "周日"];
 
@@ -58,11 +57,11 @@ export default function TreatmentPlanPage() {
     if (filterStatus !== "all") arr = arr.filter((p) => (p.status || "active") === filterStatus);
     if (filterPatient !== "all") arr = arr.filter((p) => p.patientId === filterPatient);
     arr = [...arr].sort((a, b) => {
-      let va: any, vb: any;
+      let va: string | number, vb: string | number;
       if (sortBy === "title") { va = a.title; vb = b.title; }
       else if (sortBy === "durationWeeks") { va = a.durationWeeks; vb = b.durationWeeks; }
       else { va = a.createdAt; vb = b.createdAt; }
-      const cmp = typeof va === "string" ? va.localeCompare(vb) : (va as number) - (vb as number);
+      const cmp = typeof va === "string" ? va.localeCompare(vb as string) : (va as number) - (vb as number);
       return sortDir === "asc" ? cmp : -cmp;
     });
     return arr;
@@ -83,7 +82,7 @@ export default function TreatmentPlanPage() {
       title: p.title,
       goal: p.goal,
       durationWeeks: p.durationWeeks,
-      status: (p.status as any) || "active",
+      status: (p.status as Plan["status"]) || "active",
     });
   };
 
@@ -307,7 +306,7 @@ export default function TreatmentPlanPage() {
                         <select
                           className="input text-2xs py-1"
                           value={editForm.status as string}
-                          onChange={(e) => setEditForm({ ...editForm, status: e.target.value as any })}
+                          onChange={(e) => setEditForm({ ...editForm, status: e.target.value as Plan["status"] })}
                         >
                           <option value="active">进行中</option>
                           <option value="paused">已暂停</option>
@@ -379,7 +378,6 @@ export default function TreatmentPlanPage() {
                 {isExpanded && (
                   <div className="border-t border-line bg-cream-50/40 p-4 space-y-3">
                     {p.schedule.map((d) => {
-                      const exs = d.entries.map((e) => plan.getExercise(e.exerciseId)).filter(Boolean);
                       return (
                         <div key={d.day} className="rounded border border-line bg-white/70 p-3">
                           <div className="flex items-center gap-2 mb-2">

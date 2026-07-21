@@ -1,4 +1,6 @@
-export const Q_YIZHI: any[] = [
+import type { QuizQuestion } from "./quiz-bank";
+
+export const Q_YIZHI: QuizQuestion[] = [
   {
     "id": "yz-001",
     "type": "single",

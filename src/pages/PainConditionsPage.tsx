@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   Stethoscope, Search, ChevronRight, AlertCircle, Target, BookOpen,
-  Shield, Activity, MapPin, CheckCircle2, X, Layers, Sparkles
+  Shield, Activity, MapPin, X, Layers, Sparkles
 } from "lucide-react";
 import { PAIN_CONDITIONS, PAIN_CATEGORIES, searchPain, type PainCondition } from "@/data/pain-treatments";
 import { cn } from "@/lib/utils";

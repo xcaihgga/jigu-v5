@@ -26,12 +26,9 @@ export default function AssessRunner() {
 
   const patients = useMemo(() => patient.list(user?.id), [user?.id]);
 
-  if (!scale) {
-    return <EmptyState icon={<ClipboardCheck className="h-10 w-10" />} title="量表不存在" desc="可能链接已失效" action={<button onClick={() => navigate("/assess")} className="btn-ghost btn-sm">返回评估中心</button>} />;
-  }
-
-  // 条件跳转：过滤出满足条件的题目
+  // 条件跳转：过滤出满足条件的题目（须在 early return 之前调用以遵守 Hook 规则）
   const visibleQuestions = useMemo(() => {
+    if (!scale) return [];
     return scale.questions.filter((question) => {
       if (!question.condition) return true;
       const condScore = answers[question.condition.questionId];
@@ -40,7 +37,11 @@ export default function AssessRunner() {
       if (question.condition.max !== undefined && condScore > question.condition.max) return false;
       return true;
     });
-  }, [scale.questions, answers]);
+  }, [scale, answers]);
+
+  if (!scale) {
+    return <EmptyState icon={<ClipboardCheck className="h-10 w-10" />} title="量表不存在" desc="可能链接已失效" action={<button onClick={() => navigate("/assess")} className="btn-ghost btn-sm">返回评估中心</button>} />;
+  }
 
   const q = visibleQuestions[idx] ?? scale.questions[idx];
   const total = visibleQuestions.length;
