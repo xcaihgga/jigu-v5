@@ -218,3 +218,75 @@ export const EVIDENCE_LEVELS: EvidenceLevel[] = [
   { level: "B 级", definition: "中等证据", ocebm: "2c–3a(队列研究 / 病例对照)", count: "19", ratio: "39.6%" },
   { level: "C 级", definition: "专家共识 / 低质量证据", ocebm: "4–5(病例系列 / 专家意见)", count: "4", ratio: "8.3%" },
 ];
+
+export interface ManualTherapy {
+  technique: string;
+  indication: string;
+  precaution: string;
+  evidence: string;
+  reference: string;
+}
+
+export const MANUAL_THERAPIES: ManualTherapy[] = [
+  { technique: "关节松动术（Maitland）", indication: "关节活动受限、关节囊紧缩、退行性关节病", precaution: "关节不稳、骨折未愈、严重骨质疏松、局部感染", evidence: "A", reference: "Cochrane 2023; AAOS 指南" },
+  { technique: "肌肉能量技术（MET）", indication: "肌张力失衡、关节活动受限、骨盆带功能障碍", precaution: "急性损伤、肌腱断裂、严重疼痛", evidence: "B", reference: "Chaitow 2020; JMMT 系统综述" },
+  { technique: "PNF 本体感觉神经促进", indication: "卒中偏瘫、脑外伤、多发性硬化肌力下降", precaution: "骨折未愈、急性炎症、严重骨质疏松", evidence: "A", reference: "Kabat 原理; NeuroRehab 综述 2024" },
+  { technique: "神经松动术（神经动力学）", indication: "神经卡压、放射痛、周围神经粘连", precaution: "急性神经损伤、严重感觉缺失、马尾综合征", evidence: "B", reference: "Shacklock 2020; BJSM 系统综述" },
+  { technique: "肌筋膜松解（MFR）", indication: "肌筋膜痛综合征、慢性腰痛、纤维肌痛", precaution: "局部感染、开放伤口、严重瘀斑", evidence: "B", reference: "Schleip 2021; PMC 系统综述" },
+  { technique: "牵伸技术（静态/PNF/动态）", indication: "肌肉短缩、关节ROM受限、运动前准备", precaution: "急性拉伤、关节不稳、骨折未愈", evidence: "A", reference: "ACSM 指南; Page 2012 系统综述" },
+  { technique: "Thera-Band 抗阻训练", indication: "肌力下降、术后康复、老年肌少症", precaution: "急性炎症、严重疼痛、肌腱断裂", evidence: "A", reference: "Page 2012; JOSPT 共识" },
+  { technique: "贴扎技术（Kinesio Taping）", indication: "肩袖损伤、髌股疼痛、踝扭伤后稳定", precaution: "皮肤过敏、开放伤口、深静脉血栓", evidence: "B", reference: "Cochrane 2020; JOSPT 综述" },
+];
+
+export interface AssessmentStandard {
+  name: string;
+  range: string;
+  interpretation: string;
+  usage: string;
+}
+
+export const ASSESSMENT_STANDARDS: AssessmentStandard[] = [
+  { name: "Brunnstrom 分期（偏瘫）", range: "I–VI 期", interpretation: "I=随意运动消失; II=联合反应; III=共同运动; IV=脱离共同运动; V=分离运动; VI=协调正常", usage: "卒中后上肢/下肢运动功能分期" },
+  { name: "FIM 功能独立性评定", range: "1–7 分/项（18项）", interpretation: "1=完全依赖; 2=大量辅助; 3=中等辅助; 4=最小辅助; 5=需监护; 6=修饰独立; 7=完全独立", usage: "综合功能独立性评估（运动+认知）" },
+  { name: "MAS 改良Ashworth量表", range: "0–4 级", interpretation: "0=无肌张力增高; 1+=轻微增加; 2=明显增加; 3=严重增高; 4=强直", usage: "痉挛评定（被动牵伸阻力）" },
+  { name: "Berg 平衡量表", range: "0–56 分", interpretation: "<20=轮椅; 20–40=辅助步行; 41–56=独立步行; <45=跌倒高风险", usage: "静态/动态平衡功能评估" },
+  { name: "10MWT 十米步行测试", range: "m/s", interpretation: "<0.4=受限社区步行; 0.4–0.8=有限社区步行; >0.8=社区步行", usage: "步行速度与功能步行分类" },
+  { name: "6MWT 六分钟步行测试", range: "米", interpretation: "COPD: >350m=轻; 200–350=中; <200=重; 心衰: >450m=良", usage: "心肺耐力与功能容量评估" },
+  { name: "VAS 视觉模拟评分", range: "0–10 cm", interpretation: "0=无痛; 1–3=轻度; 4–6=中度; 7–10=重度", usage: "疼痛强度主观评定" },
+  { name: "MMSE 简易精神状态检查", range: "0–30 分", interpretation: "27–30=正常; 21–26=轻度认知障碍; 10–20=中度; <10=重度", usage: "认知功能筛查（注意文化与教育偏差）" },
+];
+
+export interface DecisionTiming {
+  condition: string;
+  timing: string;
+  rationale: string;
+  reference: string;
+}
+
+export const DECISION_TIMINGS: DecisionTiming[] = [
+  { condition: "脑卒中康复介入时机", timing: "发病后 24–48h 生命体征稳定即开始", rationale: "早期活动降低并发症与死亡率，改善功能预后", reference: "AHA/ASA 2024; AVERT Trial" },
+  { condition: "肩袖修补术后康复", timing: "术后0–4周被动ROM→4–8周主动辅助→8–12周抗阻", rationale: "腱骨愈合需6–8周，过早主动影响修复", reference: "AAOS 指南; JSES 共识 2023" },
+  { condition: "ACL 重建术后重返运动", timing: "术后9–12个月+肌力≥90%+功能测试通过", rationale: "移植物成熟需9–12月，过早RTS再断风险高", reference: "London Consensus 2023; BJSM" },
+  { condition: "TKA 术后康复节点", timing: "术后当日负重→2周90°屈曲→6周120°→3月功能恢复", rationale: "早期负重与ROM是功能恢复关键", reference: "AAOS 指南; JBJS 综述" },
+  { condition: "THA 术后负重时机", timing: "骨水泥型即刻负重; 生物型4–6周保护负重", rationale: "生物型假体骨长入需保护期", reference: "AAOS 指南; JOA 共识" },
+  { condition: "踝外侧扭伤重返运动", timing: "急性期RICE→2–4周本体感觉训练→4–6周功能测试", rationale: "本体感觉恢复是防止复扭关键", reference: "IOC 共识; BJSM 2024" },
+  { condition: "下腰痛影像学检查时机", timing: "红旗征(+)/症状>6周→影像; 无红旗征4–6周保守", rationale: "过早影像增加不必要手术与焦虑", reference: "ACP 指南 2023; NICE NG59" },
+  { condition: "COPD 肺康复启动时机", timing: "稳定期mMRC≥1或6MWT<400m即启动", rationale: "肺康复减少急性加重，改善QoL与运动耐力", reference: "GOLD 2024; ATS/ERS 共识" },
+];
+
+export interface RefModule {
+  id: string;
+  title: string;
+  icon: string;
+  description: string;
+  count: number;
+}
+
+export const REF_MODULES: RefModule[] = [
+  { id: "dry-needle", title: "干针与激痛点疗法", icon: "Zap", description: "循证证据、疼痛缓解效果与禁忌证", count: DRY_NEEDLE.length },
+  { id: "manual-therapy", title: "手法治疗技术", icon: "Hand", description: "关节松动、MET、PNF、神经松动等8种常用技术", count: MANUAL_THERAPIES.length },
+  { id: "assessment-standard", title: "评估标准速查", icon: "ClipboardCheck", description: "Brunnstrom、FIM、MAS、Berg等8个常用量表解读", count: ASSESSMENT_STANDARDS.length },
+  { id: "decision-timing", title: "临床决策时机", icon: "Clock", description: "卒中、术后、重返运动等8项关键时机", count: DECISION_TIMINGS.length },
+  { id: "evidence-level", title: "循证等级分布", icon: "Award", description: "OCEBM 证据分级体系", count: EVIDENCE_LEVELS.length },
+  { id: "muscle-disease", title: "肌肉-疾病映射", icon: "Activity", description: "55块肌肉与常见疾病对应关系", count: MUSCLE_DISEASE_MAP.length },
+];
