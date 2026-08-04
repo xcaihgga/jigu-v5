@@ -3238,6 +3238,31 @@ function debounce(fn, wait, immediate) {
   };
 }
 
+// ============ 数据存储架构 ============
+// 全局存储抽象 + 版本化迁移，统一读写入口，便于未来数据结构变更
+const DATA_SCHEMA_VERSION = 1;
+
+const Storage = {
+  /** 安全读取，降级到默认值 */
+  read(key, fallback) {
+    return safeParse(key, fallback);
+  },
+  /** 安全写入，捕获 quota/隐私模式异常 */
+  write(key, value) {
+    return safeSet(key, value);
+  },
+  /** 版本检查与数据迁移，当前v1，未来升级Schema改版本+写迁移逻辑即可 */
+  migrateIfNeeded() {
+    const currentVersion = this.read('__schema_version', 0);
+    if (currentVersion < DATA_SCHEMA_VERSION) {
+      // 这里放未来版本的迁移代码
+      // 示例：if (currentVersion === 0) { migrateV0toV1(); }
+      this.write('__schema_version', DATA_SCHEMA_VERSION);
+    }
+    return DATA_SCHEMA_VERSION;
+  }
+};
+
 const iconSvg = {
   muscle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5L3 9v6l3.5 2.5L9 15h6l2.5 2.5 2.5-2.5L21 15V9l-3.5-2.5L15 9H9L6.5 6.5Z"/><circle cx="12" cy="12" r="2"/></svg>',
   diagnosis: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
@@ -6680,31 +6705,48 @@ setIcon('dashboardRankIcon', 'evidence', 22);
 setIcon('dashboardAvgIcon', 'assessment', 22);
 
 function init() {
-  initIcons();
-  initAllScales();
-  initAllProtocols();
-  renderMuscleBodyGrid();
-  renderDiseaseBodyGrid();
+  // 数据迁移：失败不阻断后续初始化
+  try {
+    Storage.migrateIfNeeded();
+  } catch (e) {
+    console.warn('[init] 数据迁移失败，继续:', e);
+  }
+
+  // 分步初始化，单步失败不阻断全局，至少保证页面可打开
+  const steps = [
+    initIcons,
+    initAllScales,
+    initAllProtocols,
+    renderMuscleBodyGrid,
+    renderDiseaseBodyGrid
+  ];
+  steps.forEach(function (fn) {
+    try { fn(); } catch (e) { console.warn('[init] ' + fn.name + ' 失败:', e); }
+  });
   
   if (document.getElementById('btnScaleList')) {
     document.getElementById('btnScaleList').classList.add('active');
   }
   
-  renderScaleList();
-  renderPatientList();
-  renderToolsCategoryBar();
-  renderToolsList();
-  renderGuidelinesCategoryBar();
-  renderGuidelinesList();
-  renderProtocolCatBar();
-  renderProtocolList();
+  [
+    renderScaleList,
+    renderPatientList,
+    renderToolsCategoryBar,
+    renderToolsList,
+    renderGuidelinesCategoryBar,
+    renderGuidelinesList,
+    renderProtocolCatBar,
+    renderProtocolList
+  ].forEach(function (fn) {
+    try { fn(); } catch (e) { console.warn('[init] ' + fn.name + ' 失败:', e); }
+  });
   
   var toolsSearch = document.getElementById('toolsSearch');
-  if (toolsSearch) toolsSearch.addEventListener('input', renderToolsList);
+  if (toolsSearch) toolsSearch.addEventListener('input', debounce(renderToolsList, 200));
   var guidelinesSearch = document.getElementById('guidelinesSearch');
-  if (guidelinesSearch) guidelinesSearch.addEventListener('input', renderGuidelinesList);
+  if (guidelinesSearch) guidelinesSearch.addEventListener('input', debounce(renderGuidelinesList, 200));
   var protocolSearch = document.getElementById('protocolSearch');
-  if (protocolSearch) protocolSearch.addEventListener('input', renderProtocolList);
+  if (protocolSearch) protocolSearch.addEventListener('input', debounce(renderProtocolList, 200));
   
   // v5: 不使用 Service Worker，避免 404 错误
 }
