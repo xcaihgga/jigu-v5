@@ -3172,7 +3172,7 @@ pre {
 
 <div id="modalContainer"></div>
 
-<script src="data/data.js?v=4.0"></script>
+<script src="data.js?v=4.0"></script>
 <script src="src/scales.js?v=4.0"></script>
 <script src="src/scales-extra.js?v=4.0"></script>
 <script src="src/scales-pro.js?v=4.0"></script>
@@ -3182,6 +3182,62 @@ pre {
 <script src="src/protocols-pro.js?v=4.0"></script>
 <script src="src/pain-protocols.js?v=4.0"></script>
 <script>
+// ============ 安全基础设施 ============
+// HTML 转义：防止存储型 XSS（用户输入/导入数据渲染到 innerHTML 前必须经过此函数）
+function escapeHtml(str) {
+  if (str === undefined || str === null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// 属性转义：用于 onclick 等属性值内联（与 escapeHtml 同义，语义更清晰）
+function escapeAttr(str) {
+  return escapeHtml(str);
+}
+
+// 安全解析 localStorage：损坏/非法 JSON 时降级返回默认值，避免整页崩溃
+function safeParse(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw === null || raw === undefined || raw === '') return fallback === undefined ? [] : fallback;
+    const parsed = JSON.parse(raw);
+    return parsed === undefined || parsed === null ? (fallback === undefined ? [] : fallback) : parsed;
+  } catch (e) {
+    console.warn('[safeParse] 解析失败，已降级:', key, e);
+    return fallback === undefined ? [] : fallback;
+  }
+}
+
+// 安全写入 localStorage：捕获配额/隐私模式异常
+function safeSet(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (e) {
+    console.warn('[safeSet] 写入失败:', key, e);
+    return false;
+  }
+}
+
+// 防抖：用于搜索等高频输入
+function debounce(fn, wait, immediate) {
+  let timer = null;
+  return function () {
+    const ctx = this, args = arguments;
+    const callNow = immediate && !timer;
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(function () {
+      timer = null;
+      if (!immediate) fn.apply(ctx, args);
+    }, wait || 200);
+    if (callNow) fn.apply(ctx, args);
+  };
+}
+
 const iconSvg = {
   muscle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5L3 9v6l3.5 2.5L9 15h6l2.5 2.5 2.5-2.5L21 15V9l-3.5-2.5L15 9H9L6.5 6.5Z"/><circle cx="12" cy="12" r="2"/></svg>',
   diagnosis: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
@@ -3318,7 +3374,8 @@ function switchTab(tab) {
   document.querySelectorAll('.page').forEach(el => {
     el.classList.remove('active');
   });
-  document.getElementById('page-' + tab).classList.add('active');
+  const pageEl = document.getElementById('page-' + tab);
+  if (pageEl) pageEl.classList.add('active');
   document.getElementById('content').scrollTop = 0;
   updateNavTitle(tab);
   document.getElementById('navBack').style.display = 'none';
@@ -5060,12 +5117,13 @@ function saveAssessment() {
     score: result.score,
     maxScore: result.maxScore,
     answers: [...currentScaleAnswers],
+    choiceIdx: [...currentScaleChoiceIdx],
     activities: result.activities || null,
     date: new Date().toISOString(),
     patientId: currentPatientId || null
   };
   
-  const history = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  const history = safeParse('assessmentHistory');
   history.unshift(record);
   localStorage.setItem('assessmentHistory', JSON.stringify(history));
   
@@ -5079,8 +5137,8 @@ function saveAssessment() {
 
 function renderScaleHistory() {
   const container = document.getElementById('scaleListContainer');
-  const history = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
-  const patients = JSON.parse(localStorage.getItem('patients') || '[]');
+  const history = safeParse('assessmentHistory');
+  const patients = safeParse('patients');
 
   let html =
     '<div class="page-head">' +
@@ -5168,7 +5226,7 @@ function setHistoryTimeRange(range) {
 }
 
 function viewHistoryDetail(recordId) {
-  const history = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  const history = safeParse('assessmentHistory');
   const record = history.find(r => r.id === recordId);
   if (!record) return;
   
@@ -5252,7 +5310,7 @@ function viewHistoryDetail(recordId) {
 function deleteHistory(recordId) {
   if (!confirm('确定要删除这条评估记录吗？')) return;
   
-  let history = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  let history = safeParse('assessmentHistory');
   history = history.filter(r => r.id !== recordId);
   localStorage.setItem('assessmentHistory', JSON.stringify(history));
   
@@ -5276,7 +5334,7 @@ function switchAssessmentTab(tab) {
 
 function renderScaleChart() {
   const container = document.getElementById('scaleListContainer');
-  const history = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  const history = safeParse('assessmentHistory');
 
   const scaleMap = {};
   history.forEach(r => {
@@ -5540,7 +5598,7 @@ function drawTrendChart(scaleMap) {
 }
 
 function showExportOptions(recordId) {
-  const history = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  const history = safeParse('assessmentHistory');
   const record = history.find(r => r.id === recordId);
   if (!record) return;
   
@@ -5572,7 +5630,7 @@ function showExportOptions(recordId) {
 }
 
 function exportAsText(recordId) {
-  const history = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  const history = safeParse('assessmentHistory');
   const record = history.find(r => r.id === recordId);
   if (!record) return;
   
@@ -5630,7 +5688,7 @@ function fallbackCopy(text) {
 }
 
 function exportAsImage(recordId) {
-  const history = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  const history = safeParse('assessmentHistory');
   const record = history.find(r => r.id === recordId);
   if (!record) return;
   
@@ -5640,51 +5698,57 @@ function exportAsImage(recordId) {
   const canvas = document.createElement('canvas');
   const w = 600;
   const h = 800;
-  canvas.width = w;
-  canvas.height = h;
+  // 高清屏导出（2x），避免图片模糊
+  canvas.width = w * 2;
+  canvas.height = h * 2;
   
   const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, w, h);
+  
+  // 跨平台字体栈（Canvas 不支持 -apple-system 时会回退）
+  const FONT = '"PingFang SC", "Microsoft YaHei", system-ui, sans-serif';
   
   ctx.fillStyle = '#2563eb';
   ctx.fillRect(0, 0, w, 120);
   
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 28px -apple-system, sans-serif';
+  ctx.font = 'bold 28px ' + FONT;
   ctx.textAlign = 'center';
-  ctx.fillText(record.scaleName, w / 2, 55);
+  ctx.fillText(String(record.scaleName || ''), w / 2, 55);
   
-  ctx.font = '16px -apple-system, sans-serif';
+  ctx.font = '16px ' + FONT;
   ctx.fillStyle = 'rgba(255,255,255,0.9)';
   ctx.fillText('评估时间：' + formatDate(record.date), w / 2, 85);
   
   ctx.fillStyle = '#111827';
-  ctx.font = 'bold 72px -apple-system, sans-serif';
+  ctx.font = 'bold 72px ' + FONT;
   ctx.textAlign = 'center';
-  ctx.fillText(record.score, w / 2, 220);
+  ctx.fillText(String(record.score === undefined || record.score === null ? '' : record.score), w / 2, 220);
   
-  ctx.font = '20px -apple-system, sans-serif';
+  ctx.font = '20px ' + FONT;
   ctx.fillStyle = '#6b7280';
-  ctx.fillText('/ ' + record.maxScore + ' 分', w / 2, 250);
+  ctx.fillText('/ ' + String(record.maxScore === undefined || record.maxScore === null ? '' : record.maxScore) + ' 分', w / 2, 250);
   
   if (interp) {
+    // Canvas 不支持 CSS 变量，使用实际十六进制色值
     const colors = {
-      success: 'var(--accent-teal)',
-      warning: 'var(--accent-amber)',
-      danger: 'var(--status-error-default)'
+      success: '#0d9488',
+      warning: '#d97706',
+      danger: '#dc2626'
     };
     const color = colors[interp.color] || '#2563eb';
     
     ctx.fillStyle = color;
-    ctx.font = 'bold 24px -apple-system, sans-serif';
-    ctx.fillText(interp.level, w / 2, 310);
+    ctx.font = 'bold 24px ' + FONT;
+    ctx.fillText(String(interp.level || ''), w / 2, 310);
     
     ctx.fillStyle = '#4b5563';
-    ctx.font = '16px -apple-system, sans-serif';
+    ctx.font = '16px ' + FONT;
     ctx.textAlign = 'center';
     
-    const words = interp.desc.split('');
+    const words = String(interp.desc || '').split('');
     let line = '';
     let y = 350;
     const maxWidth = w - 80;
@@ -5711,22 +5775,23 @@ function exportAsImage(recordId) {
   ctx.stroke();
   
   ctx.fillStyle = '#111827';
-  ctx.font = 'bold 18px -apple-system, sans-serif';
+  ctx.font = 'bold 18px ' + FONT;
   ctx.textAlign = 'left';
   ctx.fillText('答题详情', 40, 460);
   
-  ctx.font = '14px -apple-system, sans-serif';
+  ctx.font = '14px ' + FONT;
   ctx.fillStyle = '#4b5563';
   
   let yPos = 495;
   if (scale && scale.type === 'choice' && scale.questions) {
     for (let i = 0; i < Math.min(scale.questions.length, 10); i++) {
       const q = scale.questions[i];
-      const ansIdx = q.scores.indexOf(record.answers[i]);
-      const ansText = ansIdx >= 0 ? q.options[ansIdx] : '未作答';
+      // 优先使用保存的选项下标反查，避免重复分值导致 indexOf 反查错误
+      let ansIdx = (record.choiceIdx && record.choiceIdx[i] !== undefined) ? record.choiceIdx[i] : q.scores.indexOf(record.answers[i]);
+      const ansText = (ansIdx >= 0 && q.options && q.options[ansIdx] !== undefined) ? q.options[ansIdx] : '未作答';
       
       ctx.fillStyle = '#111827';
-      ctx.fillText((i + 1) + '. ' + q.text, 40, yPos);
+      ctx.fillText((i + 1) + '. ' + String(q.text || ''), 40, yPos);
       yPos += 24;
       ctx.fillStyle = '#6b7280';
       ctx.fillText('   答案：' + ansText, 40, yPos);
@@ -5741,25 +5806,48 @@ function exportAsImage(recordId) {
   }
   
   ctx.fillStyle = '#9ca3af';
-  ctx.font = '12px -apple-system, sans-serif';
+  ctx.font = '12px ' + FONT;
   ctx.textAlign = 'center';
   ctx.fillText('本评估结果仅供参考，不作为诊断依据', w / 2, h - 30);
   
-  const dataUrl = canvas.toDataURL('image/png');
-  
-  const link = document.createElement('a');
-  link.download = record.scaleName + '_' + formatDate(record.date).replace(/[:\s]/g, '_') + '.png';
-  link.href = dataUrl;
-  link.click();
-  
-  alert('图片已生成，正在下载...\n（如未自动下载，请长按图片保存）');
+  // 使用 toBlob + createObjectURL 下载，兼容 iOS Safari
+  const filename = String(record.scaleName || '评估结果') + '_' + formatDate(record.date).replace(/[:\s]/g, '_') + '.png';
+  function downloadCanvas(canvasEl, name) {
+    try {
+      canvasEl.toBlob(function (blob) {
+        if (!blob) { alert('图片生成失败，请重试'); return; }
+        try {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = name;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        } catch (e) {
+          alert('图片生成失败，请重试');
+        }
+      }, 'image/png');
+    } catch (e) {
+      // 兜底：转为 dataURL 打开新窗口
+      try {
+        const dataUrl = canvasEl.toDataURL('image/png');
+        const w2 = window.open('');
+        if (w2) { w2.document.write('<img src="' + dataUrl + '" style="max-width:100%">'); }
+      } catch (e2) {
+        alert('图片生成失败，请重试');
+      }
+    }
+  }
+  downloadCanvas(canvas, filename);
 }
 
 function renderPatientList() {
   const container = document.getElementById('patientListContainer');
   if (!container) return;
   
-  const patients = JSON.parse(localStorage.getItem('patients') || '[]');
+  const patients = safeParse('patients');
   const kw = document.getElementById('patientSearch') ? document.getElementById('patientSearch').value.trim().toLowerCase() : '';
   
   let filtered = patients;
@@ -5781,35 +5869,42 @@ function renderPatientList() {
     return;
   }
   
+  // 一次性解析评估历史并按患者计数，避免 N+1 重复解析
+  const allAssessments = safeParse('assessmentHistory');
+  const countByPatient = {};
+  allAssessments.forEach(a => {
+    if (a.patientId) countByPatient[a.patientId] = (countByPatient[a.patientId] || 0) + 1;
+  });
+
   let html = '';
   filtered.forEach(p => {
-    const assessments = JSON.parse(localStorage.getItem('assessmentHistory') || '[]').filter(a => a.patientId === p.id);
+    const assessments = countByPatient[p.id] || 0;
     const name = p.name || '未命名';
     const genderSym = p.gender === '男' ? '♂' : (p.gender === '女' ? '♀' : '');
     const genderClass = p.gender === '男' ? 'gender-male' : (p.gender === '女' ? 'gender-female' : '');
     
     let metaHtml = '<div class="patient-card-meta">';
     if (genderSym) {
-      metaHtml += '<span class="meta-item ' + genderClass + '">' + genderSym + ' ' + (p.gender || '') + '</span>';
+      metaHtml += '<span class="meta-item ' + genderClass + '">' + genderSym + ' ' + escapeHtml(p.gender || '') + '</span>';
     }
     if (p.age) {
-      metaHtml += '<span class="meta-item">' + p.age + '岁</span>';
+      metaHtml += '<span class="meta-item">' + escapeHtml(p.age) + '岁</span>';
     }
     if (p.bedNumber) {
-      metaHtml += '<span class="meta-item">床位 ' + p.bedNumber + '</span>';
+      metaHtml += '<span class="meta-item">床位 ' + escapeHtml(p.bedNumber) + '</span>';
     }
     metaHtml += '</div>';
     
     html += 
-      '<div class="patient-card" onclick="showPatientDetail(' + p.id + ')">' +
+      '<div class="patient-card" onclick="showPatientDetail(' + escapeAttr(p.id) + ')">' +
         '<div class="patient-card-header">' +
-          '<div class="patient-card-name">' + name + '</div>' +
+          '<div class="patient-card-name">' + escapeHtml(name) + '</div>' +
           icon('chevronRight', 18) +
         '</div>' +
-        '<div class="patient-card-info">' + (p.diagnosis || p.chiefComplaint || '暂无诊断') + '</div>' +
+        '<div class="patient-card-info">' + escapeHtml(p.diagnosis || p.chiefComplaint || '暂无诊断') + '</div>' +
         metaHtml +
         '<div class="patient-card-tags">' +
-          '<span class="assessment-tag">' + icon('assessment', 12) + ' ' + assessments.length + ' 条评估</span>' +
+          '<span class="assessment-tag">' + icon('assessment', 12) + ' ' + assessments + ' 条评估</span>' +
         '</div>' +
       '</div>';
   });
@@ -5824,7 +5919,7 @@ document.getElementById('btnAddPatient').addEventListener('click', function() {
 document.getElementById('btnExportPatientCsv').addEventListener('click', exportPatientCsv);
 
 function showPatientForm(patientId) {
-  const patients = JSON.parse(localStorage.getItem('patients') || '[]');
+  const patients = safeParse('patients');
   const patient = patientId ? patients.find(p => p.id === patientId) : null;
   const isEdit = !!patient;
   
@@ -5835,13 +5930,13 @@ function showPatientForm(patientId) {
   stages.forEach(function(s) {
     stageBtns += '<button type="button" class="stage-btn' + (p.assessmentStage === s ? ' active' : '') + '" onclick="selectStage(this, \'' + s + '\')">' + s + '</button>';
   });
-  stageBtns += '<input type="hidden" id="pfStage" value="' + (p.assessmentStage || '') + '"></div>';
+  stageBtns += '<input type="hidden" id="pfStage" value="' + escapeAttr(p.assessmentStage || '') + '"></div>';
   
   const content = 
     '<div class="form-row">' +
       '<div class="form-group">' +
         '<label class="form-label">姓名<span class="required">*</span></label>' +
-        '<input type="text" class="form-input" id="pfName" value="' + (p.name || '') + '" placeholder="请输入姓名">' +
+        '<input type="text" class="form-input" id="pfName" value="' + escapeAttr(p.name || '') + '" placeholder="请输入姓名">' +
       '</div>' +
       '<div class="form-group">' +
         '<label class="form-label">性别<span class="required">*</span></label>' +
@@ -5855,16 +5950,16 @@ function showPatientForm(patientId) {
     '<div class="form-row">' +
       '<div class="form-group">' +
         '<label class="form-label">年龄<span class="required">*</span></label>' +
-        '<input type="number" class="form-input" id="pfAge" value="' + (p.age || '') + '" placeholder="请输入年龄">' +
+        '<input type="number" class="form-input" id="pfAge" value="' + escapeAttr(p.age || '') + '" placeholder="请输入年龄">' +
       '</div>' +
       '<div class="form-group">' +
         '<label class="form-label">床号</label>' +
-        '<input type="text" class="form-input" id="pfBedNumber" value="' + (p.bedNumber || '') + '" placeholder="如：12床">' +
+        '<input type="text" class="form-input" id="pfBedNumber" value="' + escapeAttr(p.bedNumber || '') + '" placeholder="如：12床">' +
       '</div>' +
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">联系电话</label>' +
-      '<input type="tel" class="form-input" id="pfPhone" value="' + (p.phone || '') + '" placeholder="请输入联系电话">' +
+      '<input type="tel" class="form-input" id="pfPhone" value="' + escapeAttr(p.phone || '') + '" placeholder="请输入联系电话">' +
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">评估阶段<span class="required">*</span></label>' +
@@ -5872,27 +5967,27 @@ function showPatientForm(patientId) {
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">诊断<span class="required">*</span></label>' +
-      '<input type="text" class="form-input" id="pfDiagnosis" value="' + (p.diagnosis || '') + '" placeholder="如：腰椎间盘突出症">' +
+      '<input type="text" class="form-input" id="pfDiagnosis" value="' + escapeAttr(p.diagnosis || '') + '" placeholder="如：腰椎间盘突出症">' +
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">部位</label>' +
-      '<input type="text" class="form-input" id="pfBodyPart" value="' + (p.bodyPart || '') + '" placeholder="如：腰椎L4-L5">' +
+      '<input type="text" class="form-input" id="pfBodyPart" value="' + escapeAttr(p.bodyPart || '') + '" placeholder="如：腰椎L4-L5">' +
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">主诉</label>' +
-      '<textarea class="form-textarea" id="pfComplaint" placeholder="主要症状、持续时间等">' + (p.chiefComplaint || '') + '</textarea>' +
+      '<textarea class="form-textarea" id="pfComplaint" placeholder="主要症状、持续时间等">' + escapeHtml(p.chiefComplaint || '') + '</textarea>' +
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">既往病史</label>' +
-      '<textarea class="form-textarea" id="pfMedicalHistory" placeholder="既往疾病、手术史、过敏史等">' + (p.medicalHistory || '') + '</textarea>' +
+      '<textarea class="form-textarea" id="pfMedicalHistory" placeholder="既往疾病、手术史、过敏史等">' + escapeHtml(p.medicalHistory || '') + '</textarea>' +
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">治疗方案</label>' +
-      '<textarea class="form-textarea" id="pfTreatment" placeholder="治疗方案、康复计划等">' + (p.treatmentPlan || '') + '</textarea>' +
+      '<textarea class="form-textarea" id="pfTreatment" placeholder="治疗方案、康复计划等">' + escapeHtml(p.treatmentPlan || '') + '</textarea>' +
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">备注</label>' +
-      '<textarea class="form-textarea" id="pfNotes" placeholder="其他备注信息">' + (p.notes || '') + '</textarea>' +
+      '<textarea class="form-textarea" id="pfNotes" placeholder="其他备注信息">' + escapeHtml(p.notes || '') + '</textarea>' +
     '</div>';
   
   const footer = 
@@ -5942,7 +6037,7 @@ function savePatient(patientId) {
     return;
   }
   
-  const patients = JSON.parse(localStorage.getItem('patients') || '[]');
+  const patients = safeParse('patients');
   
   const patientData = {
     name: name,
@@ -5983,7 +6078,7 @@ function savePatient(patientId) {
 }
 
 function exportPatientCsv() {
-  const patients = JSON.parse(localStorage.getItem('patients') || '[]');
+  const patients = safeParse('patients');
   if (patients.length === 0) {
     alert('暂无患者数据可导出');
     return;
@@ -6017,41 +6112,41 @@ function exportPatientCsv() {
 }
 
 function showPatientDetail(patientId) {
-  const patients = JSON.parse(localStorage.getItem('patients') || '[]');
+  const patients = safeParse('patients');
   const p = patients.find(x => x.id === patientId);
   if (!p) return;
   
   currentPatientId = patientId;
   
-  const allAssessments = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  const allAssessments = safeParse('assessmentHistory');
   const patientAssessments = allAssessments.filter(a => a.patientId === patientId);
   
-  const title = (p.name || '未命名') + (p.age ? ' (' + p.age + '岁)' : '') + (p.gender ? ' · ' + p.gender : '');
+  const title = escapeHtml((p.name || '未命名') + (p.age ? ' (' + p.age + '岁)' : '') + (p.gender ? ' · ' + p.gender : ''));
   
   let content = 
     '<div class="detail-header" style="margin:-16px -16px 16px -16px;border-radius:0;">' +
       '<div class="detail-header-title">' + title + '</div>' +
-      '<div class="detail-header-sub">' + (p.diagnosis || '暂无诊断') + '</div>' +
-      (p.bodyPart ? '<div class="detail-header-sub" style="margin-top:4px;">部位：' + p.bodyPart + '</div>' : '') +
+      '<div class="detail-header-sub">' + escapeHtml(p.diagnosis || '暂无诊断') + '</div>' +
+      (p.bodyPart ? '<div class="detail-header-sub" style="margin-top:4px;">部位：' + escapeHtml(p.bodyPart) + '</div>' : '') +
     '</div>';
   
   content +=
     '<div class="result-detail-section">' +
       '<div class="result-detail-title">' + icon('basics', 18) + '基本信息</div>' +
-      '<div class="field-row"><div class="field-label">姓名</div><div class="field-value">' + (p.name || '-') + '</div></div>' +
-      '<div class="field-row"><div class="field-label">性别/年龄</div><div class="field-value">' + (p.gender || '-') + ' / ' + (p.age || '-') + '岁</div></div>' +
-      '<div class="field-row"><div class="field-label">床号</div><div class="field-value">' + (p.bedNumber || '-') + '</div></div>' +
-      '<div class="field-row"><div class="field-label">联系电话</div><div class="field-value">' + (p.phone || '-') + '</div></div>' +
-      '<div class="field-row"><div class="field-label">评估阶段</div><div class="field-value">' + (p.assessmentStage || '-') + '</div></div>' +
-      '<div class="field-row"><div class="field-label">诊断</div><div class="field-value">' + (p.diagnosis || '-') + '</div></div>' +
-      '<div class="field-row"><div class="field-label">部位</div><div class="field-value">' + (p.bodyPart || '-') + '</div></div>' +
+      '<div class="field-row"><div class="field-label">姓名</div><div class="field-value">' + escapeHtml(p.name || '-') + '</div></div>' +
+      '<div class="field-row"><div class="field-label">性别/年龄</div><div class="field-value">' + escapeHtml(p.gender || '-') + ' / ' + escapeHtml(p.age || '-') + '岁</div></div>' +
+      '<div class="field-row"><div class="field-label">床号</div><div class="field-value">' + escapeHtml(p.bedNumber || '-') + '</div></div>' +
+      '<div class="field-row"><div class="field-label">联系电话</div><div class="field-value">' + escapeHtml(p.phone || '-') + '</div></div>' +
+      '<div class="field-row"><div class="field-label">评估阶段</div><div class="field-value">' + escapeHtml(p.assessmentStage || '-') + '</div></div>' +
+      '<div class="field-row"><div class="field-label">诊断</div><div class="field-value">' + escapeHtml(p.diagnosis || '-') + '</div></div>' +
+      '<div class="field-row"><div class="field-label">部位</div><div class="field-value">' + escapeHtml(p.bodyPart || '-') + '</div></div>' +
     '</div>';
 
   if (p.chiefComplaint) {
     content +=
       '<div class="result-detail-section">' +
         '<div class="result-detail-title">' + icon('symptoms', 18) + '主诉</div>' +
-        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;">' + p.chiefComplaint + '</p>' +
+        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;">' + escapeHtml(p.chiefComplaint) + '</p>' +
       '</div>';
   }
 
@@ -6059,7 +6154,7 @@ function showPatientDetail(patientId) {
     content +=
       '<div class="result-detail-section">' +
         '<div class="result-detail-title">' + icon('info', 18) + '既往病史</div>' +
-        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;white-space:pre-wrap;">' + p.medicalHistory + '</p>' +
+        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;white-space:pre-wrap;">' + escapeHtml(p.medicalHistory) + '</p>' +
       '</div>';
   }
   
@@ -6067,7 +6162,7 @@ function showPatientDetail(patientId) {
     content += 
       '<div class="result-detail-section">' +
         '<div class="result-detail-title">' + icon('treatment', 18) + '治疗方案</div>' +
-        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;white-space:pre-wrap;">' + p.treatmentPlan + '</p>' +
+        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;white-space:pre-wrap;">' + escapeHtml(p.treatmentPlan) + '</p>' +
       '</div>';
   }
   
@@ -6089,7 +6184,7 @@ function showPatientDetail(patientId) {
       content += 
         '<div class="history-item" onclick="viewHistoryDetail(' + a.id + ')">' +
           '<div class="history-item-header">' +
-            '<div class="history-item-name">' + a.scaleName + '</div>' +
+            '<div class="history-item-name">' + escapeHtml(a.scaleName) + '</div>' +
             '<div class="history-item-score text-' + (interp ? interp.color : 'primary') + '">' + a.score + '分</div>' +
           '</div>' +
           '<div class="history-item-date">' + formatDate(a.date) + (interp ? ' · ' + interp.level : '') + '</div>' +
@@ -6106,7 +6201,7 @@ function showPatientDetail(patientId) {
     content += 
       '<div class="result-detail-section">' +
         '<div class="result-detail-title">' + icon('other', 18) + '备注</div>' +
-        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;white-space:pre-wrap;">' + p.notes + '</p>' +
+        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;white-space:pre-wrap;">' + escapeHtml(p.notes) + '</p>' +
       '</div>';
   }
   
@@ -6116,10 +6211,10 @@ function showPatientDetail(patientId) {
     '</div>';
   
   const footer = 
-    '<button class="btn btn-outline" onclick="deletePatient(' + p.id + ')">' +
+    '<button class="btn btn-outline" onclick="deletePatient(' + escapeAttr(p.id) + ')">' +
       icon('trash', 16) + '删除' +
     '</button>' +
-    '<button class="btn btn-primary" onclick="showPatientForm(' + p.id + ')">' +
+    '<button class="btn btn-primary" onclick="showPatientForm(' + escapeAttr(p.id) + ')">' +
       icon('edit', 16) + '编辑' +
     '</button>';
   
@@ -6127,7 +6222,7 @@ function showPatientDetail(patientId) {
 }
 
 function showAddAssessmentToPatient() {
-  const allAssessments = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  const allAssessments = safeParse('assessmentHistory');
   const unlinkedAssessments = allAssessments.filter(a => !a.patientId);
   
   if (unlinkedAssessments.length === 0) {
@@ -6143,7 +6238,7 @@ function showAddAssessmentToPatient() {
     content += 
       '<div class="history-item" onclick="linkAssessmentToPatient(' + a.id + ')">' +
         '<div class="history-item-header">' +
-          '<div class="history-item-name">' + a.scaleName + '</div>' +
+          '<div class="history-item-name">' + escapeHtml(a.scaleName) + '</div>' +
           '<div class="history-item-score text-' + (interp ? interp.color : 'primary') + '">' + a.score + '分</div>' +
         '</div>' +
         '<div class="history-item-date">' + formatDate(a.date) + (interp ? ' · ' + interp.level : '') + '</div>' +
@@ -6161,14 +6256,14 @@ function showAddAssessmentToPatient() {
 }
 
 function linkAssessmentToPatient(assessmentId) {
-  const allAssessments = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  const allAssessments = safeParse('assessmentHistory');
   const idx = allAssessments.findIndex(a => a.id === assessmentId);
   
   if (idx >= 0) {
     allAssessments[idx].patientId = currentPatientId;
     localStorage.setItem('assessmentHistory', JSON.stringify(allAssessments));
     
-    const patients = JSON.parse(localStorage.getItem('patients') || '[]');
+    const patients = safeParse('patients');
     const pIdx = patients.findIndex(p => p.id === currentPatientId);
     if (pIdx >= 0) {
       if (!patients[pIdx].assessmentIds) patients[pIdx].assessmentIds = [];
@@ -6186,11 +6281,11 @@ function linkAssessmentToPatient(assessmentId) {
 function deletePatient(patientId) {
   if (!confirm('确定要删除这个病例吗？关联的评估记录不会被删除。')) return;
   
-  let patients = JSON.parse(localStorage.getItem('patients') || '[]');
+  let patients = safeParse('patients');
   patients = patients.filter(p => p.id !== patientId);
   localStorage.setItem('patients', JSON.stringify(patients));
   
-  const allAssessments = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  const allAssessments = safeParse('assessmentHistory');
   allAssessments.forEach(a => {
     if (a.patientId === patientId) a.patientId = null;
   });
@@ -6201,9 +6296,9 @@ function deletePatient(patientId) {
   renderPatientList();
 }
 
-document.getElementById('patientSearch').addEventListener('input', function() {
+document.getElementById('patientSearch').addEventListener('input', debounce(function() {
   renderPatientList();
-});
+}, 200));
 
 document.getElementById('btnScaleList').addEventListener('click', () => switchAssessmentTab('list'));
 document.getElementById('btnScaleHistory').addEventListener('click', () => switchAssessmentTab('history'));
@@ -6350,8 +6445,8 @@ var dashboardCategoryMap = {
 var dashboardCategoryColors = ['var(--accent-blue)', 'var(--accent-teal)', 'var(--accent-amber)', 'var(--accent-violet)', 'var(--accent-magenta)', 'var(--bg-brand)', 'var(--accent-teal)', 'var(--status-error-default)'];
 
 function renderDashboard() {
-  var records = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
-  var patients = JSON.parse(localStorage.getItem('patients') || '[]');
+  var records = safeParse('assessmentHistory');
+  var patients = safeParse('patients');
 
   var totalAssessments = records.length;
   var totalPatients = patients.length;
