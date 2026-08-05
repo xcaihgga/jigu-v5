@@ -3340,6 +3340,8 @@ pre {
 
 <div id="modalContainer"></div>
 
+<!-- 应用配置（环境检测、权限校验、路由守卫）须最先加载 -->
+<script src="src/app-config.js"></script>
 <!-- 懒加载：数据文件由 DataLoader 异步加载 -->
 <script src="src/data-loader.js"></script>
 <script>
@@ -3467,7 +3469,7 @@ let pageHistory = [];
 let currentPage = null;
 
 function switchTab(tab) {
-  // 迁移报告页面需要管理员权限
+  // 迁移报告页面需要管理员权限，由 AppConfig 统一校验
   if (tab === 'migration') {
     const pageEl = document.getElementById('page-migration');
     if (pageEl) {
@@ -3478,7 +3480,10 @@ function switchTab(tab) {
       });
       updateNavTitle(tab);
       document.getElementById('navBack').style.display = 'none';
-      checkMigrationPermission();
+      // 调用 AppConfig 的权限校验
+      if (window.AppConfig) {
+        AppConfig.checkMigrationPermission();
+      }
     }
     return;
   }
@@ -3506,7 +3511,7 @@ function switchTab(tab) {
 }
 
 function updateNavTitle(tab) {
-  const titles = {
+  var titles = (window.AppConfig && AppConfig.NAV_TITLES) || {
     muscle: '肌肉查询',
     diagnosis: '临床诊断',
     assessment: '评估量表',
@@ -6973,66 +6978,25 @@ init().catch(function(e) {
 });
 
 // ═══════════════════════════════════════════════════
-//  迁移报告 — 权限校验与页面渲染
+//  迁移报告 — 页面渲染（权限校验由 AppConfig 统一处理）
 // ═══════════════════════════════════════════════════
 
-/**
- * 用户角色枚举
- */
-var USER_ROLES = {
-  GUEST: 'guest',
-  CLINICIAN: 'clinician',
-  ADMIN: 'admin'
-};
-
-/**
- * 获取当前用户角色
- * 从 localStorage 读取登录态；未登录默认为 guest
- * @returns {string} 用户角色
- */
+// 兼容别名：将内联函数委托给 AppConfig
+var USER_ROLES = (window.AppConfig && AppConfig.USER_ROLES) || { GUEST: 'guest', CLINICIAN: 'clinician', ADMIN: 'admin' };
 function getCurrentUserRole() {
-  try {
-    var stored = localStorage.getItem('userRole');
-    if (stored && [USER_ROLES.GUEST, USER_ROLES.CLINICIAN, USER_ROLES.ADMIN].indexOf(stored) >= 0) {
-      return stored;
-    }
-  } catch (e) {
-    // localStorage 不可用时降级
-  }
-  // 开发环境默认 admin，生产环境改为 GUEST
-  return typeof NODE_ENV !== 'undefined' && NODE_ENV === 'production' ? USER_ROLES.GUEST : USER_ROLES.ADMIN;
+  return window.AppConfig ? AppConfig.getCurrentUserRole() : USER_ROLES.GUEST;
 }
-
-/**
- * 设置用户角色（登录后调用）
- * @param {string} role - 用户角色
- */
 function setUserRole(role) {
-  try {
-    localStorage.setItem('userRole', role);
-  } catch (e) {
-    // localStorage 不可用时忽略
-  }
+  if (window.AppConfig) AppConfig.setUserRole(role);
 }
-
-/**
- * 检查迁移报告访问权限
- * 仅 ADMIN 角色可访问；CLINICIAN 和 GUEST 显示拒绝页面
- */
 function checkMigrationPermission() {
-  var role = getCurrentUserRole();
-  var deniedEl = document.getElementById('migrationAccessDenied');
-  var containerEl = document.getElementById('migrationReportContainer');
-
-  if (!deniedEl || !containerEl) return;
-
-  if (role === USER_ROLES.ADMIN) {
-    deniedEl.style.display = 'none';
-    containerEl.style.display = 'block';
-    renderMigrationReport();
-  } else {
-    deniedEl.style.display = 'block';
-    containerEl.style.display = 'none';
+  if (window.AppConfig) AppConfig.checkMigrationPermission();
+  else {
+    // AppConfig 不可用时的降级处理
+    var deniedEl = document.getElementById('migrationAccessDenied');
+    var containerEl = document.getElementById('migrationReportContainer');
+    if (deniedEl) deniedEl.style.display = 'block';
+    if (containerEl) containerEl.style.display = 'none';
   }
 }
 

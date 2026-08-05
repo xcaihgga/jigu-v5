@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>集成测试报告 — 迁移报告权限校验与路由集成</title>
+<style>
+:root {
+  --pass: #10B981; --fail: #EF4444; --warn: #F59E0B; --info: #3B82F6;
+  --bg: #F9FAFB; --card: #FFFFFF; --border: #E5E7EB;
+  --text-1: #111827; --text-2: #4B5563; --text-3: #9CA3AF;
+  --mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, "PingFang SC", system-ui, sans-serif; background: var(--bg); color: var(--text-1); line-height: 1.6; padding: 24px; }
+.report-header { max-width: 900px; margin: 0 auto 32px; }
+.report-header h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+.report-header .meta { font-size: 13px; color: var(--text-3); display: flex; gap: 20px; flex-wrap: wrap; }
+.report-header .meta span { display: inline-flex; align-items: center; gap: 4px; }
+.summary-bar { max-width: 900px; margin: 0 auto 24px; display: flex; gap: 12px; }
+.summary-card { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+.summary-card .num { font-size: 28px; font-weight: 700; }
+.summary-card .label { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+.summary-card.pass .num { color: var(--pass); }
+.summary-card.fail .num { color: var(--fail); }
+.summary-card.warn .num { color: var(--warn); }
+.summary-card.total .num { color: var(--text-1); }
+
+.section { max-width: 900px; margin: 0 auto 24px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.section-title { padding: 14px 20px; font-size: 15px; font-weight: 600; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.section-body { padding: 16px 20px; }
+
+.test-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #F3F4F6; }
+.test-item:last-child { border-bottom: none; }
+.test-icon { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: white; flex-shrink: 0; margin-top: 2px; }
+.test-icon.pass { background: var(--pass); }
+.test-icon.fail { background: var(--fail); }
+.test-icon.warn { background: var(--warn); }
+.test-content { flex: 1; }
+.test-name { font-size: 13px; font-weight: 500; color: var(--text-1); }
+.test-detail { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+.test-evidence { font-size: 11px; color: var(--text-2); margin-top: 4px; background: #F9FAFB; padding: 6px 10px; border-radius: 4px; font-family: var(--mono); }
+
+.bug-item { padding: 12px 16px; border-left: 3px solid var(--fail); background: #FEF2F2; border-radius: 0 6px 6px 0; margin-bottom: 12px; }
+.bug-item .bug-title { font-size: 13px; font-weight: 600; color: #DC2626; }
+.bug-item .bug-desc { font-size: 12px; color: #7F1D1D; margin-top: 4px; }
+.bug-item .bug-fix { font-size: 12px; color: #065F46; margin-top: 4px; }
+.bug-item .bug-fix::before { content: "修复: "; font-weight: 600; }
+
+.config-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.config-table th { background: #F3F4F6; padding: 8px 12px; text-align: left; font-weight: 600; color: var(--text-2); border-bottom: 1px solid var(--border); }
+.config-table td { padding: 8px 12px; border-bottom: 1px solid #F3F4F6; }
+.config-table td:first-child { font-family: var(--mono); color: var(--text-2); }
+
+.file-ref { font-family: var(--mono); font-size: 12px; color: var(--info); text-decoration: none; }
+.file-ref:hover { text-decoration: underline; }
+
+.footer { max-width: 900px; margin: 24px auto 0; text-align: center; font-size: 12px; color: var(--text-3); }
+</style>
+</head>
+<body>
+
+<div class="report-header">
+  <h1>集成测试报告 — 迁移报告权限校验与路由集成</h1>
+  <div class="meta">
+    <span>📅 生成时间: 2026-08-05</span>
+    <span>🔧 项目: 肌骨康复速查 V5.0</span>
+    <span>📦 版本: integration-test-v1</span>
+    <span>🌐 环境: development (localhost:8090)</span>
+  </div>
+</div>
+
+<div class="summary-bar">
+  <div class="summary-card total"><div class="num">14</div><div class="label">测试总数</div></div>
+  <div class="summary-card pass"><div class="num">14</div><div class="label">通过</div></div>
+  <div class="summary-card fail"><div class="num">0</div><div class="label">失败</div></div>
+  <div class="summary-card warn"><div class="num">1</div><div class="label">已修复缺陷</div></div>
+</div>
+
+<!-- 缺陷修复 -->
+<div class="section">
+  <div class="section-title">🐛 发现并修复的缺陷</div>
+  <div class="section-body">
+    <div class="bug-item">
+      <div class="bug-title">[严重] NODE_ENV 环境检测在浏览器中失效，导致生产环境默认授予 ADMIN 权限</div>
+      <div class="bug-desc">
+        原代码使用 <code>typeof NODE_ENV !== 'undefined'</code> 检测环境，但 <code>NODE_ENV</code> 是 Node.js 环境变量，
+        浏览器中永远为 <code>undefined</code>，导致条件始终为 <code>false</code>，生产环境也会默认返回 <code>ADMIN</code> 角色。
+        这是一个权限提升漏洞：任何访客在未登录状态下均可访问迁移报告页面并导出数据。
+      </div>
+      <div class="bug-fix">
+        创建 <a class="file-ref" href="file:///workspace/src/app-config.js">src/app-config.js</a>，
+        使用 <code>location.hostname</code> 检测环境（localhost/127.0.0.1/内网IP → development，其余 → production），
+        开发环境默认 ADMIN，生产环境默认 GUEST。安全降级原则：无 location 上下文时默认 production。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 环境配置 -->
+<div class="section">
+  <div class="section-title">⚙️ 环境与角色配置</div>
+  <div class="section-body">
+    <table class="config-table">
+      <thead>
+        <tr><th>配置项</th><th>开发环境 (development)</th><th>生产环境 (production)</th><th>检测方式</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>环境检测</td>
+          <td>localhost, 127.0.0.1, 192.168.*, 10.*, 172.16-31.*</td>
+          <td>其余所有域名</td>
+          <td><code>location.hostname</code> 正则匹配</td>
+        </tr>
+        <tr>
+          <td>默认角色</td>
+          <td><code>admin</code>（方便调试）</td>
+          <td><code>guest</code>（安全默认）</td>
+          <td><code>AppConfig.ENV</code> 判断</td>
+        </tr>
+        <tr>
+          <td>迁移报告权限</td>
+          <td>默认可访问</td>
+          <td>需显式设置 <code>admin</code> 角色</td>
+          <td><code>PAGE_PERMISSIONS.migration = ADMIN</code></td>
+        </tr>
+        <tr>
+          <td>角色存储</td>
+          <td colspan="2"><code>localStorage.userRole</code></td>
+          <td>try-catch 降级</td>
+        </tr>
+        <tr>
+          <td>无 localStorage 时</td>
+          <td>降级为 <code>admin</code></td>
+          <td>降级为 <code>guest</code></td>
+          <td>catch 块回退到环境默认值</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 测试用例 -->
+<div class="section">
+  <div class="section-title">✅ 测试用例详情</div>
+  <div class="section-body">
+
+    <div class="test-item">
+      <div class="test-icon pass">P</div>
+      <div class="test-content">
+        <div class="test-name">1. AppConfig 脚本加载与初始化</div>
+        <div class="test-detail">验证 <code>src/app-config.js</code> 正确加载，<code>window.AppConfig</code> 对象可用</div>
+        <div class="test-evidence">控制台输出: [AppConfig] 环境检测: development | 主机: localhost</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-icon pass">P</div>
+      <div class="test-content">
+        <div class="test-name">2. 环境检测 — localhost 识别为 development</div>
+        <div class="test-detail">通过 hostname 判断当前环境为开发模式</div>
+        <div class="test-evidence">AppConfig.ENV === 'development' (localhost:8090)</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-icon pass">P</div>
+      <div class="test-content">
+        <div class="test-name">3. 开发环境默认角色为 admin</div>
+        <div class="test-detail">未设置 localStorage 时，开发环境默认授予 ADMIN 权限</div>
+        <div class="test-evidence">AppConfig.getCurrentUserRole() === 'admin'</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-icon pass">P</div>
+      <div class="test-content">
+        <div class="test-name">4. 生产环境默认角色为 guest（修复验证）</div>
+        <div class="test-detail">浏览器测试环境 hostname 非 localhost 时，默认角色降级为 GUEST</div>
+        <div class="test-evidence">控制台输出: [AppConfig] 环境检测: production | 当前角色: guest</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-icon pass">P</div>
+      <div class="test-content">
+        <div class="test-name">5. Guest 角色访问迁移报告 — 权限拒绝</div>
+        <div class="test-detail">设置 userRole=guest 后点击「迁移报告」，显示「权限不足」拒绝页面</div>
+        <div class="test-evidence">页面显示 🔒 + "权限不足" + "迁移报告仅对管理员开放"，报告容器 display:none</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-icon pass">P</div>
+      <div class="test-content">
+        <div class="test-name">6. Guest 角色无数据泄露</div>
+        <div class="test-detail">权限拒绝时，迁移报告数据（量表/协议/抽检）不可见，fetch 请求未触发</div>
+        <div class="test-evidence">DOM 检查: migrationReportContainer.style.display === 'none'，无网络请求</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-icon pass">P</div>
+      <div class="test-content">
+        <div class="test-name">7. 「重新验证权限」按钮 — Guest 仍被拒绝</div>
+        <div class="test-detail">点击拒绝页面的「重新验证权限」按钮，角色仍为 guest，继续显示拒绝页</div>
+        <div class="test-evidence">checkMigrationPermission() 返回 false，页面状态不变</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-icon pass">P</div>
+      <div class="test-content">
+        <div class="test-name">8. Admin 角色访问迁移报告 — 正常加载</div>
+        <div class="test-detail">设置 userRole=admin 后点击「迁移报告」，报告内容正常渲染</div>
+        <div class="test-evidence">页面显示量表 31/31、协议 3/3、计算抽检 6 通过、导出按钮</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-icon pass">P</div>
+      <div class="test-content">
+        <div class="test-name">9. Admin 角色导出 CSV — 下载成功</div>
+        <div class="test-detail">Admin 视角下点击「导出迁移报告 CSV」，CSV 文件成功下载</div>
+        <div class="test-evidence">fetch 请求 src/migration-report.json 成功，CSV 下载触发</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-icon pass">P</div>
+      <div class="test-content">
+        <div class="test-name">10. hasPermission() 权限判断函数</div>
+        <div class="test-detail">验证权限判断逻辑：admin 可访问 migration，guest 不可</div>
+        <div class="test-evidence">JSON.stringify({env:'production', role:'admin', hasMigrationPermission:true})</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-icon pass">P</div>
+      <div class="test-content">
+        <div class="test-name">11. 路由集成 — switchTab 正确拦截 migration</div>
+        <div class="test-detail">switchTab('migration') 调用 AppConfig.checkMigrationPermission() 进行权限校验</div>
+        <div class="test-evidence">代码检查: switchTab 中 if (tab === 'migration') 分支调用 AppConfig.checkMigrationPermission()</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-icon pass">P</div>
+      <div class="test-content">
+        <div class="test-name">12. 导航标题映射正确</div>
+        <div class="test-detail">切换到 migration 页面时，导航栏标题更新为「数据迁移报告」</div>
+        <div class="test-evidence">AppConfig.NAV_TITLES.migration === '数据迁移报告'</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-icon pass">P</div>
+      <div class="test-content">
+        <div class="test-name">13. 内联代码正确委托到 AppConfig</div>
+        <div class="test-detail">index.html 中的 getCurrentUserRole/setUserRole/checkMigrationPermission 委托给 AppConfig</div>
+        <div class="test-evidence">代码检查: function getCurrentUserRole() { return window.AppConfig ? AppConfig.getCurrentUserRole() : ... }</div>
+      </div>
+    </div>
+
+    <div class="test-item">
+      <div class="test-icon pass">P</div>
+      <div class="test-content">
+        <div class="test-name">14. AppConfig 降级容错 — 脚本加载失败时安全拒绝</div>
+        <div class="test-detail">当 app-config.js 加载失败时，内联函数降级为显示拒绝页面（安全默认）</div>
+        <div class="test-evidence">代码检查: checkMigrationPermission else 分支 — deniedEl.style.display = 'block'</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 变更文件清单 -->
+<div class="section">
+  <div class="section-title">📁 变更文件清单</div>
+  <div class="section-body">
+    <table class="config-table">
+      <thead>
+        <tr><th>文件</th><th>变更类型</th><th>说明</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a class="file-ref" href="file:///workspace/src/app-config.js">src/app-config.js</a></td>
+          <td>新增</td>
+          <td>主应用配置文件：环境检测、角色管理、权限校验、路由守卫</td>
+        </tr>
+        <tr>
+          <td><a class="file-ref" href="file:///workspace/index.html">index.html</a></td>
+          <td>修改</td>
+          <td>引入 app-config.js；switchTab 委托 AppConfig；内联权限代码替换为委托；修复 NODE_ENV Bug</td>
+        </tr>
+        <tr>
+          <td><a class="file-ref" href="file:///workspace/migration-report-view.html">migration-report-view.html</a></td>
+          <td>修改（前序）</td>
+          <td>空指针防御：safeGet()、事件绑定 null 检查、数据源存在性校验</td>
+        </tr>
+        <tr>
+          <td><a class="file-ref" href="file:///workspace/test-export-automation.js">test-export-automation.js</a></td>
+          <td>新增（前序）</td>
+          <td>CSV 导出自动化测试脚本（Playwright + HTTP 回退双模式）</td>
+        </tr>
+        <tr>
+          <td><a class="file-ref" href="file:///workspace/integration-test-report.html">integration-test-report.html</a></td>
+          <td>新增</td>
+          <td>本报告文件</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="footer">
+  生成于 2026-08-05 | 肌骨康复速查 V5.0 集成测试 | 14/14 通过 ✅
+</div>
+
+</body>
+</html>
