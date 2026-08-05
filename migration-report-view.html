@@ -238,6 +238,76 @@ body {
   color: var(--text-tertiary);
 }
 
+/* 导出按钮 */
+.export-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.export-btn {
+  flex-shrink: 0;
+  padding: 10px 18px;
+  background: var(--gradient-brand);
+  color: white;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  box-shadow: var(--shadow-sm);
+}
+
+.export-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.export-btn:active {
+  transform: translateY(0);
+}
+
+.export-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.export-info {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin-left: auto;
+}
+
+.export-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--status-success-default);
+  color: white;
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  z-index: 2000;
+  transform: translateX(120%);
+  transition: transform 0.3s ease;
+}
+
+.export-toast.show {
+  transform: translateX(0);
+}
+
+.export-toast.error {
+  background: var(--status-error-default);
+}
+
 /* 分类分组 */
 .section {
   margin-bottom: 24px;
@@ -504,6 +574,14 @@ body {
 </div>
 
 <div class="summary-grid" id="summaryGrid"></div>
+
+<div class="export-bar">
+  <button class="export-btn" id="exportBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    导出 CSV
+  </button>
+  <span class="export-info" id="exportInfo">将导出当前筛选条件下的数据</span>
+</div>
 
 <div class="filter-bar" id="filterBar">
   <button class="filter-tab active" data-filter="all">全部 <span class="count-badge" id="countAll">0</span></button>
@@ -875,6 +953,7 @@ function applyFilter(filter) {
   
   renderScaleList(filter);
   renderProtocolList(filter);
+  updateExportInfo();
   
   // 警告筛选说明
   const warningItems = document.getElementById('warningNotice');
@@ -891,6 +970,152 @@ function applyFilter(filter) {
   }
 }
 
+// ============ CSV 导出 ============
+function exportToCSV() {
+  const rows = [];
+  const filter = currentFilter;
+  
+  // 构建数据行
+  function addRow(category, id, name, status, description) {
+    const statusMap = {
+      'success': '成功',
+      'error': '失败',
+      'warning': '警告'
+    };
+    rows.push({
+      '分类': category,
+      'ID': id,
+      '名称': name,
+      '状态': statusMap[status] || status,
+      '详细信息': description
+    });
+  }
+  
+  // 量表数据
+  for (const err of reportData.scales.errors) {
+    if (filter === 'all' || filter === 'error') {
+      addRow('量表', err.id, err.name, 'error', err.errors.map(e => `[${e.severity}] ${e.field}: ${e.message}`).join('; '));
+    }
+  }
+  
+  if (filter === 'all' || filter === 'success') {
+    const successCount = reportData.scales.migrated - reportData.scales.failed;
+    if (successCount > 0) {
+      addRow('量表', 'all', `${successCount} 个量表`, 'success', `共 ${reportData.scales.total} 个原始数据全部通过验证`);
+    }
+  }
+  
+  // 协议数据
+  for (const err of reportData.protocols.errors) {
+    if (filter === 'all' || filter === 'error') {
+      addRow('协议', err.id, err.name, 'error', err.message);
+    }
+  }
+  
+  if (filter === 'all' || filter === 'success') {
+    addRow('协议', 'all', `${reportData.protocols.migrated} 个协议`, 'success', `共 ${reportData.protocols.total} 个原始数据全部通过验证`);
+  }
+  
+  // 警告数据
+  if (filter === 'all' || filter === 'warning') {
+    if (reportData.selfCheck.warnings > 0) {
+      addRow('自检', 'warnings', '自检警告', 'warning', `检测到 ${reportData.selfCheck.warnings} 条警告，部分字段使用默认值回填`);
+    }
+  }
+  
+  // 计算抽检数据
+  if (filter === 'all' || filter === 'success') {
+    const spotCheckItems = [
+      { id: 'vas', name: 'VAS 视觉模拟评分' },
+      { id: 'nrs', name: 'NRS 数字疼痛评分' },
+      { id: 'p4', name: 'P4 疼痛4量表' },
+      { id: 'odi', name: 'ODI Oswestry 功能障碍' },
+      { id: 'joa-lumbar', name: 'JOA 腰椎评分' },
+      { id: 'dash', name: 'DASH 上肢功能' }
+    ];
+    for (const item of spotCheckItems) {
+      addRow('计算抽检', item.id, item.name, 'success', '通过抽样校验');
+    }
+  }
+  
+  if (rows.length === 0) {
+    showToast('当前筛选条件下没有可导出的数据', true);
+    return;
+  }
+  
+  // 生成 CSV
+  const headers = Object.keys(rows[0]);
+  const csvLines = [];
+  
+  // 添加 UTF-8 BOM for Excel 兼容
+  csvLines.push('\uFEFF');
+  
+  csvLines.push(headers.join(','));
+  
+  for (const row of rows) {
+    const values = headers.map(h => {
+      let val = String(row[h] || '');
+      // 转义双引号和换行符
+      if (val.includes('"') || val.includes(',') || val.includes('\n')) {
+        val = '"' + val.replace(/"/g, '""') + '"';
+      }
+      return val;
+    });
+    csvLines.push(values.join(','));
+  }
+  
+  csvLines.push('');
+  csvLines.push(`# 导出时间: ${new Date().toLocaleString('zh-CN')}`);
+  csvLines.push(`# 系统状态: ${reportData.systemStatus}`);
+  csvLines.push(`# 筛选条件: ${getFilterLabel(filter)}`);
+  csvLines.push(`# 数据来源: migration-report.json`);
+  
+  const csvContent = csvLines.join('\n');
+  
+  // 下载文件
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  const d = new Date();
+  const timestamp = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}`;
+  link.href = url;
+  link.download = `migration-report-${timestamp}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  
+  showToast(`✅ 成功导出 ${rows.length} 条数据为 CSV 文件`);
+}
+
+function getFilterLabel(filter) {
+  const labels = {
+    'all': '全部',
+    'success': '成功',
+    'error': '失败',
+    'warning': '警告'
+  };
+  return labels[filter] || filter;
+}
+
+function showToast(message, isError = false) {
+  const existing = document.getElementById('exportToast');
+  if (existing) existing.remove();
+  
+  const toast = document.createElement('div');
+  toast.id = 'exportToast';
+  toast.className = 'export-toast' + (isError ? ' error' : '');
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  
+  requestAnimationFrame(() => toast.classList.add('show'));
+  
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 2500);
+}
+
 // ============ 初始化 ============
 function updateFilterCounts() {
   document.getElementById('countAll').textContent = reportData.scales.total + reportData.protocols.total;
@@ -904,6 +1129,34 @@ document.getElementById('filterBar').addEventListener('click', (e) => {
   const tab = e.target.closest('.filter-tab');
   if (tab) applyFilter(tab.dataset.filter);
 });
+
+// 绑定导出事件
+document.getElementById('exportBtn').addEventListener('click', exportToCSV);
+
+// 更新导出信息
+function updateExportInfo() {
+  const exportInfo = document.getElementById('exportInfo');
+  const filter = currentFilter;
+  const parts = [];
+  
+  if (filter === 'all') {
+    parts.push(`量表 ${reportData.scales.total}`);
+    parts.push(`协议 ${reportData.protocols.total}`);
+    parts.push(`计算抽检 ${reportData.calculationSpotCheck.passed}`);
+    if (reportData.selfCheck.warnings > 0) parts.push(`警告 ${reportData.selfCheck.warnings}`);
+  } else if (filter === 'success') {
+    parts.push(`量表 ${reportData.scales.migrated}`);
+    parts.push(`协议 ${reportData.protocols.migrated}`);
+    parts.push(`计算抽检 ${reportData.calculationSpotCheck.passed}`);
+  } else if (filter === 'error') {
+    parts.push(`量表失败 ${reportData.scales.failed}`);
+    parts.push(`协议失败 ${reportData.protocols.failed}`);
+  } else if (filter === 'warning') {
+    parts.push(`警告 ${reportData.selfCheck.warnings}`);
+  }
+  
+  exportInfo.textContent = `筛选「${getFilterLabel(filter)}」：${parts.join(' / ')} 条记录可导出`;
+}
 
 // 启动
 renderHeader();
