@@ -3185,6 +3185,13 @@ pre {
         趋势图
       </button>
     </div>
+    <div id="scaleSearchBar" style="display:none;">
+      <div class="search-box">
+        <span class="icon" id="scaleSearchIcon"></span>
+        <input type="text" id="scaleSearch" placeholder="搜索量表名称、描述...">
+      </div>
+      <div id="scaleCategoryBar" style="display:flex;gap:8px;overflow-x:auto;padding:0 0 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none;"></div>
+    </div>
     <div id="scaleListContainer"></div>
   </div>
 
@@ -4753,12 +4760,47 @@ function getScaleCategoryName(cat) {
 
 function renderScaleList() {
   if (currentAssessmentTab === 'list') {
+    document.getElementById('scaleSearchBar').style.display = 'block';
+    renderScaleCategoryBar();
     renderScaleLibrary();
-  } else if (currentAssessmentTab === 'history') {
-    renderScaleHistory();
-  } else if (currentAssessmentTab === 'chart') {
-    renderScaleChart();
+  } else {
+    document.getElementById('scaleSearchBar').style.display = 'none';
+    if (currentAssessmentTab === 'history') {
+      renderScaleHistory();
+    } else if (currentAssessmentTab === 'chart') {
+      renderScaleChart();
+    }
   }
+}
+
+let currentScaleCategory = '全部';
+
+function renderScaleCategoryBar() {
+  var bar = document.getElementById('scaleCategoryBar');
+  if (!bar) return;
+  var scales = typeof assessmentScales !== 'undefined' ? assessmentScales : [];
+  // 收集有量表的实际分类
+  var usedCats = {};
+  scales.forEach(function(s) {
+    var cat = s.category;
+    if (!usedCats[cat]) {
+      var info = scaleCategoryInfo[cat] || { name: cat, icon: 'other' };
+      usedCats[cat] = info.name;
+    }
+  });
+  var cats = [{ key: '全部', name: '全部' }];
+  Object.keys(usedCats).forEach(function(k) {
+    cats.push({ key: k, name: usedCats[k] });
+  });
+  bar.innerHTML = cats.map(function(c) {
+    return '<button class="quick-nav-item ' + (c.key === currentScaleCategory ? 'active' : '') + '" onclick="selectScaleCategory(\'' + c.key + '\')">' + c.name + '</button>';
+  }).join('');
+}
+
+function selectScaleCategory(cat) {
+  currentScaleCategory = cat;
+  renderScaleCategoryBar();
+  renderScaleLibrary();
 }
 
 let currentToolCategory = '全部';
@@ -4997,33 +5039,52 @@ function showGuidelineDetail(idx) {
 
 function renderScaleLibrary() {
   const container = document.getElementById('scaleListContainer');
-  const categories = {};
-  
-  if (typeof assessmentScales !== 'undefined') {
-    assessmentScales.forEach(s => {
-      if (!categories[s.category]) categories[s.category] = [];
-      categories[s.category].push(s);
-    });
+  if (!container) return;
+
+  var searchKw = '';
+  var searchEl = document.getElementById('scaleSearch');
+  if (searchEl) searchKw = searchEl.value.trim().toLowerCase();
+
+  // 按分类过滤
+  var filtered = (typeof assessmentScales !== 'undefined' ? assessmentScales : []).filter(function(s) {
+    var catMatch = currentScaleCategory === '全部' || s.category === currentScaleCategory;
+    var searchMatch = !searchKw ||
+      (s.name && s.name.toLowerCase().indexOf(searchKw) >= 0) ||
+      (s.shortName && s.shortName.toLowerCase().indexOf(searchKw) >= 0) ||
+      (s.description && s.description.toLowerCase().indexOf(searchKw) >= 0);
+    return catMatch && searchMatch;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="dashboard-empty">未找到匹配的量表<br>试试其他关键词或分类</div>';
+    return;
   }
-  
+
+  // 按分类分组
+  const categories = {};
+  filtered.forEach(function(s) {
+    if (!categories[s.category]) categories[s.category] = [];
+    categories[s.category].push(s);
+  });
+
   let html = '';
-  const catOrder = ['pain', 'neck', 'back', 'upper', 'wrist', 'lower', 'ankle', 'function', 'balance', 'quality', 'muscle', 'mental'];
-  
+  const catOrder = ['pain', 'neck', 'back', 'upper', 'wrist', 'lower', 'ankle', 'function', 'balance', 'quality', 'muscle', 'mental', '平衡', '运动功能', '肌力与痉挛', '关节活动度', '日常生活', '认知与心理', '吞咽与言语'];
+
   catOrder.forEach(cat => {
     if (!categories[cat]) return;
     const scales = categories[cat];
     const catInfo = scaleCategoryInfo[cat] || { name: cat, icon: 'other' };
-    
-    html += 
+
+    html +=
       '<div class="scale-category">' +
         '<div class="scale-category-title">' +
           icon(catInfo.icon, 18) +
           catInfo.name + ' (' + scales.length + ')' +
         '</div>';
-    
+
     scales.forEach(scale => {
       const proBadge = scale.isPro ? '<span class="pro-badge">PRO</span>' : '';
-      html += 
+      html +=
         '<div class="list-item" onclick="startScale(\'' + scale.id + '\')">' +
           icon(catInfo.icon, 36) +
           '<div class="list-item-content">' +
@@ -5033,10 +5094,10 @@ function renderScaleLibrary() {
           '<div class="list-item-arrow">' + icon('chevronRight', 18) + '</div>' +
         '</div>';
     });
-    
+
     html += '</div>';
   });
-  
+
   container.innerHTML = html;
 }
 
@@ -6520,6 +6581,11 @@ document.getElementById('patientSearch').addEventListener('input', function() {
 document.getElementById('btnScaleList').addEventListener('click', () => switchAssessmentTab('list'));
 document.getElementById('btnScaleHistory').addEventListener('click', () => switchAssessmentTab('history'));
 document.getElementById('btnScaleChart').addEventListener('click', () => switchAssessmentTab('chart'));
+
+// 量表搜索实时筛选
+document.getElementById('scaleSearch').addEventListener('input', function() {
+  renderScaleLibrary();
+});
 
 // ===== 循证方案库 =====
 var currentProtocolCat = 'ALL';

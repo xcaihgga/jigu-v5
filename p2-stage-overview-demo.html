@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P2 示例 — 方案详情阶段概览表格</title>
+<style>
+:root {
+  --primary: #0891B2;
+  --secondary: #0D9488;
+  --bg: #F9FAFB;
+  --card: #FFFFFF;
+  --border: #E5E7EB;
+  --text-1: #111827;
+  --text-2: #4B5563;
+  --text-3: #9CA3AF;
+  --accent-blue: #2563eb;
+  --accent-amber: #F59E0B;
+  --accent-green: #10B981;
+  --accent-red: #EF4444;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, "PingFang SC", system-ui, sans-serif; background: var(--bg); color: var(--text-1); line-height: 1.6; padding: 20px; max-width: 820px; margin: 0 auto; }
+
+.demo-header { margin-bottom: 24px; }
+.demo-header h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.demo-header p { font-size: 13px; color: var(--text-3); }
+
+/* ── 阶段概览表格 ── */
+.stage-overview {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.stage-overview-title {
+  padding: 14px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(8,145,178,0.04), rgba(13,148,136,0.04));
+}
+.stage-overview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.stage-overview-table thead th {
+  background: rgba(8,145,178,0.06);
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-2);
+  font-size: 12px;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+.stage-overview-table tbody td {
+  padding: 12px;
+  border-bottom: 1px solid #F3F4F6;
+  vertical-align: top;
+}
+.stage-overview-table tbody tr:last-child td { border-bottom: none; }
+.stage-overview-table tbody tr { transition: background 0.15s; cursor: pointer; }
+.stage-overview-table tbody tr:hover { background: rgba(8,145,178,0.03); }
+
+/* 阶段序号圆圈 */
+.stage-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* 阶段名称 */
+.stage-name { font-weight: 600; color: var(--text-1); }
+.stage-duration { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+/* 目标 */
+.stage-goal-cell { color: var(--text-2); font-size: 12px; line-height: 1.5; }
+
+/* 核心动作 */
+.stage-exercises-cell { color: var(--text-2); font-size: 12px; }
+.stage-exercises-cell ul { list-style: none; padding: 0; }
+.stage-exercises-cell li { padding: 2px 0; }
+.stage-exercises-cell li::before { content: "•"; color: var(--primary); margin-right: 6px; }
+
+/* 频率标签 */
+.freq-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.freq-tag.high { background: rgba(239,68,68,0.1); color: #dc2626; }
+.freq-tag.mid { background: rgba(245,158,11,0.1); color: #d97706; }
+.freq-tag.low { background: rgba(16,185,129,0.1); color: #059669; }
+
+/* 进阶标准 */
+.stage-criteria-cell { font-size: 11px; color: var(--accent-green); }
+
+/* ── 对比：现有卡片式布局 ── */
+.comparison { margin-top: 32px; }
+.comparison h2 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text-2); }
+.comparison-note {
+  background: rgba(37,99,235,0.06);
+  border-left: 3px solid var(--accent-blue);
+  padding: 12px 16px;
+  border-radius: 0 8px 8px 0;
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 16px;
+}
+
+/* 现有卡片式 */
+.stage-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.stage-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+}
+.stage-card-number {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  flex-shrink: 0;
+}
+.stage-card-name { font-weight: 600; font-size: 14px; }
+.stage-card-arrow { margin-left: auto; color: var(--text-3); }
+.stage-card-content { padding: 0 16px 14px; display: none; }
+.stage-card-content.open { display: block; }
+.stage-card-goal { font-size: 13px; color: var(--text-2); margin-bottom: 8px; }
+.stage-card-goal strong { color: var(--text-1); }
+.stage-card-exercises { font-size: 12px; color: var(--text-2); padding-left: 16px; }
+.stage-card-exercises li { padding: 2px 0; }
+</style>
+</head>
+<body>
+
+<div class="demo-header">
+  <h1>P2 示例 — 方案详情阶段概览表格</h1>
+  <p>以「腰椎间盘突出症系统化康复方案」为例，展示在方案详情顶部增加阶段概览表格的效果</p>
+</div>
+
+<!-- ═══ 阶段概览表格 ═══ -->
+<div class="stage-overview">
+  <div class="stage-overview-title">
+    📋 康复阶段概览（4 个阶段）
+  </div>
+  <table class="stage-overview-table">
+    <thead>
+      <tr>
+        <th style="width:32px;">#</th>
+        <th style="width:130px;">阶段</th>
+        <th>治疗目标</th>
+        <th>核心训练动作</th>
+        <th style="width:80px;">频率</th>
+        <th style="width:100px;">进阶标准</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr onclick="toggleRow(this)">
+        <td><span class="stage-num">1</span></td>
+        <td>
+          <div class="stage-name">急性期</div>
+          <div class="stage-duration">1-2 周</div>
+        </td>
+        <td class="stage-goal-cell">缓解疼痛、减轻炎症、防止肌肉萎缩</td>
+        <td class="stage-exercises-cell">
+          <ul>
+            <li>麦肯基伸展练习</li>
+            <li>骨盆倾斜训练</li>
+            <li>神经滑动技术</li>
+          </ul>
+        </td>
+        <td><span class="freq-tag high">每日 3 组</span></td>
+        <td class="stage-criteria-cell">VAS ≤ 3/10</td>
+      </tr>
+      <tr onclick="toggleRow(this)">
+        <td><span class="stage-num">2</span></td>
+        <td>
+          <div class="stage-name">亚急性期</div>
+          <div class="stage-duration">2-6 周</div>
+        </td>
+        <td class="stage-goal-cell">恢复活动度、增强核心稳定性、改善神经功能</td>
+        <td class="stage-exercises-cell">
+          <ul>
+            <li>核心稳定性训练（初级）</li>
+            <li>臀肌激活训练</li>
+            <li>腘绳肌牵拉</li>
+          </ul>
+        </td>
+        <td><span class="freq-tag mid">每日 2-3 组</span></td>
+        <td class="stage-criteria-cell">直腿抬高 ≥ 70°</td>
+      </tr>
+      <tr onclick="toggleRow(this)">
+        <td><span class="stage-num">3</span></td>
+        <td>
+          <div class="stage-name">恢复期</div>
+          <div class="stage-duration">6-12 周</div>
+        </td>
+        <td class="stage-goal-cell">全面恢复腰椎功能、增强腰背肌力量、改善日常生活能力</td>
+        <td class="stage-exercises-cell">
+          <ul>
+            <li>核心稳定性训练（进阶）</li>
+            <li>腰背肌力量训练</li>
+            <li>功能性训练</li>
+          </ul>
+        </td>
+        <td><span class="freq-tag mid">每周 3-5 次</span></td>
+        <td class="stage-criteria-cell">ODI ≤ 20%</td>
+      </tr>
+      <tr onclick="toggleRow(this)">
+        <td><span class="stage-num">4</span></td>
+        <td>
+          <div class="stage-name">重返运动期</div>
+          <div class="stage-duration">12 周以后</div>
+        </td>
+        <td class="stage-goal-cell">重返运动或工作、预防复发、长期健康管理</td>
+        <td class="stage-exercises-cell">
+          <ul>
+            <li>专项运动训练</li>
+            <li>高阶核心训练</li>
+            <li>爆发力训练</li>
+          </ul>
+        </td>
+        <td><span class="freq-tag low">每周 2-3 次</span></td>
+        <td class="stage-criteria-cell">无痛完成专项运动</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══ 对比说明 ═══ -->
+<div class="comparison">
+  <h2>设计说明</h2>
+  <div class="comparison-note">
+    <strong>表格 vs 现有折叠卡片：</strong>概览表格放在方案详情顶部，让用户<strong>一眼扫完全部阶段</strong>。
+    下方保留现有的折叠卡片详细展示（含注意事项、进阶标准等），实现「快速概览 + 深度详情」双层信息架构。
+    点击表格行可展开/滚动到对应的详细卡片。
+  </h2>
+
+  <!-- 现有卡片式（保留） -->
+  <div class="stage-card">
+    <div class="stage-card-header" onclick="this.nextElementSibling.classList.toggle('open')">
+      <div class="stage-card-number">1</div>
+      <div class="stage-card-name">急性期（疼痛剧烈期）· 1-2 周</div>
+      <span class="stage-card-arrow">▼</span>
+    </div>
+    <div class="stage-card-content">
+      <div class="stage-card-goal"><strong>目标：</strong>缓解疼痛、减轻炎症、防止肌肉萎缩</div>
+      <ul class="stage-card-exercises">
+        <li>卧床休息与体位指导</li>
+        <li>麦肯基伸展练习（10次/组，3组/日）</li>
+        <li>骨盆倾斜训练（15次/组，3组/日）</li>
+        <li>神经滑动技术（10次/组，2组/日）</li>
+        <li>物理因子治疗（20分钟/次，每日1次）</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="stage-card">
+    <div class="stage-card-header" onclick="this.nextElementSibling.classList.toggle('open')">
+      <div class="stage-card-number">2</div>
+      <div class="stage-card-name">亚急性期（疼痛缓解期）· 2-6 周</div>
+      <span class="stage-card-arrow">▼</span>
+    </div>
+    <div class="stage-card-content">
+      <div class="stage-card-goal"><strong>目标：</strong>恢复活动度、增强核心稳定性、改善神经功能</div>
+      <ul class="stage-card-exercises">
+        <li>腰椎活动度训练（15次/组，3组/日）</li>
+        <li>核心稳定性训练（初级）：死虫式、鸟狗式</li>
+        <li>臀肌激活训练：蚌式开合、臀桥</li>
+        <li>腘绳肌牵拉（保持30秒/次，3次）</li>
+      </ul>
+    </div>
+  </div>
+
+  <p style="font-size:12px;color:var(--text-3);margin-top:16px;text-align:center;">
+    ↑ 仅为前两个阶段的示例，实际应用中四个阶段的折叠卡片完整保留
+  </p>
+</div>
+
+<script>
+function toggleRow(row) {
+  row.style.background = row.style.background ? '' : 'rgba(8,145,178,0.06)';
+}
+</script>
+
+</body>
+</html>
