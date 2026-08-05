@@ -5748,6 +5748,41 @@ function showScaleResult(result) {
   document.querySelector('#currentModal .modal-footer').innerHTML = footer;
 }
 
+// ========== 安全工具函数 ==========
+function escapeHtml(str) {
+  if (str == null) return '';
+  const div = document.createElement('div');
+  div.textContent = String(str);
+  return div.innerHTML;
+}
+function escapeAttr(str) {
+  if (str == null) return '';
+  return String(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function safeLS(key, value) {
+  try {
+    if (value === null) {
+      localStorage.removeItem(key);
+    } else {
+      localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+    }
+    return true;
+  } catch (e) {
+    console.error('[safeLS] localStorage 写入失败:', key, e.message);
+    alert('数据保存失败：本地存储空间可能已满，请清理浏览器缓存后重试。');
+    return false;
+  }
+}
+let _saveDebounce = {};
+function debounceSave(fn, key, delay) {
+  return function() {
+    if (_saveDebounce[key]) return;
+    _saveDebounce[key] = true;
+    setTimeout(() => { _saveDebounce[key] = false; }, delay || 500);
+    fn.apply(this, arguments);
+  };
+}
+
 function saveAssessment() {
   const scale = currentScale;
   let result;
@@ -5781,7 +5816,7 @@ function saveAssessment() {
   
   const history = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
   history.unshift(record);
-  localStorage.setItem('assessmentHistory', JSON.stringify(history));
+  if (!safeLS('assessmentHistory', history)) return;
   
   closeModal();
   alert('评估记录已保存！');
@@ -5968,7 +6003,7 @@ function deleteHistory(recordId) {
   
   let history = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
   history = history.filter(r => r.id !== recordId);
-  localStorage.setItem('assessmentHistory', JSON.stringify(history));
+  if (!safeLS('assessmentHistory', history)) return;
   
   closeModal();
   renderScaleHistory();
@@ -6498,19 +6533,19 @@ function renderPatientList() {
   let html = '';
   filtered.forEach(p => {
     const assessments = JSON.parse(localStorage.getItem('assessmentHistory') || '[]').filter(a => a.patientId === p.id);
-    const name = p.name || '未命名';
+    const name = escapeHtml(p.name) || '未命名';
     const genderSym = p.gender === '男' ? '♂' : (p.gender === '女' ? '♀' : '');
     const genderClass = p.gender === '男' ? 'gender-male' : (p.gender === '女' ? 'gender-female' : '');
     
     let metaHtml = '<div class="patient-card-meta">';
     if (genderSym) {
-      metaHtml += '<span class="meta-item ' + genderClass + '">' + genderSym + ' ' + (p.gender || '') + '</span>';
+      metaHtml += '<span class="meta-item ' + genderClass + '">' + genderSym + ' ' + escapeHtml(p.gender) + '</span>';
     }
     if (p.age) {
-      metaHtml += '<span class="meta-item">' + p.age + '岁</span>';
+      metaHtml += '<span class="meta-item">' + escapeHtml(p.age) + '岁</span>';
     }
     if (p.bedNumber) {
-      metaHtml += '<span class="meta-item">床位 ' + p.bedNumber + '</span>';
+      metaHtml += '<span class="meta-item">床位 ' + escapeHtml(p.bedNumber) + '</span>';
     }
     metaHtml += '</div>';
     
@@ -6520,7 +6555,7 @@ function renderPatientList() {
           '<div class="patient-card-name">' + name + '</div>' +
           icon('chevronRight', 18) +
         '</div>' +
-        '<div class="patient-card-info">' + (p.diagnosis || p.chiefComplaint || '暂无诊断') + '</div>' +
+        '<div class="patient-card-info">' + escapeHtml(p.diagnosis || p.chiefComplaint || '暂无诊断') + '</div>' +
         metaHtml +
         '<div class="patient-card-tags">' +
           '<span class="assessment-tag">' + icon('assessment', 12) + ' ' + assessments.length + ' 条评估</span>' +
@@ -6549,13 +6584,13 @@ function showPatientForm(patientId) {
   stages.forEach(function(s) {
     stageBtns += '<button type="button" class="stage-btn' + (p.assessmentStage === s ? ' active' : '') + '" onclick="selectStage(this, \'' + s + '\')">' + s + '</button>';
   });
-  stageBtns += '<input type="hidden" id="pfStage" value="' + (p.assessmentStage || '') + '"></div>';
+  stageBtns += '<input type="hidden" id="pfStage" value="' + escapeAttr(p.assessmentStage) + '"></div>';
   
   const content = 
     '<div class="form-row">' +
       '<div class="form-group">' +
         '<label class="form-label">姓名<span class="required">*</span></label>' +
-        '<input type="text" class="form-input" id="pfName" value="' + (p.name || '') + '" placeholder="请输入姓名">' +
+        '<input type="text" class="form-input" id="pfName" value="' + escapeAttr(p.name) + '" placeholder="请输入姓名">' +
       '</div>' +
       '<div class="form-group">' +
         '<label class="form-label">性别<span class="required">*</span></label>' +
@@ -6569,16 +6604,16 @@ function showPatientForm(patientId) {
     '<div class="form-row">' +
       '<div class="form-group">' +
         '<label class="form-label">年龄<span class="required">*</span></label>' +
-        '<input type="number" class="form-input" id="pfAge" value="' + (p.age || '') + '" placeholder="请输入年龄">' +
+        '<input type="number" class="form-input" id="pfAge" value="' + escapeAttr(p.age) + '" placeholder="请输入年龄">' +
       '</div>' +
       '<div class="form-group">' +
         '<label class="form-label">床号</label>' +
-        '<input type="text" class="form-input" id="pfBedNumber" value="' + (p.bedNumber || '') + '" placeholder="如：12床">' +
+        '<input type="text" class="form-input" id="pfBedNumber" value="' + escapeAttr(p.bedNumber) + '" placeholder="如：12床">' +
       '</div>' +
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">联系电话</label>' +
-      '<input type="tel" class="form-input" id="pfPhone" value="' + (p.phone || '') + '" placeholder="请输入联系电话">' +
+      '<input type="tel" class="form-input" id="pfPhone" value="' + escapeAttr(p.phone) + '" placeholder="请输入联系电话">' +
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">评估阶段<span class="required">*</span></label>' +
@@ -6586,27 +6621,27 @@ function showPatientForm(patientId) {
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">诊断<span class="required">*</span></label>' +
-      '<input type="text" class="form-input" id="pfDiagnosis" value="' + (p.diagnosis || '') + '" placeholder="如：腰椎间盘突出症">' +
+      '<input type="text" class="form-input" id="pfDiagnosis" value="' + escapeAttr(p.diagnosis) + '" placeholder="如：腰椎间盘突出症">' +
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">部位</label>' +
-      '<input type="text" class="form-input" id="pfBodyPart" value="' + (p.bodyPart || '') + '" placeholder="如：腰椎L4-L5">' +
+      '<input type="text" class="form-input" id="pfBodyPart" value="' + escapeAttr(p.bodyPart) + '" placeholder="如：腰椎L4-L5">' +
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">主诉</label>' +
-      '<textarea class="form-textarea" id="pfComplaint" placeholder="主要症状、持续时间等">' + (p.chiefComplaint || '') + '</textarea>' +
+      '<textarea class="form-textarea" id="pfComplaint" placeholder="主要症状、持续时间等">' + escapeHtml(p.chiefComplaint) + '</textarea>' +
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">既往病史</label>' +
-      '<textarea class="form-textarea" id="pfMedicalHistory" placeholder="既往疾病、手术史、过敏史等">' + (p.medicalHistory || '') + '</textarea>' +
+      '<textarea class="form-textarea" id="pfMedicalHistory" placeholder="既往疾病、手术史、过敏史等">' + escapeHtml(p.medicalHistory) + '</textarea>' +
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">治疗方案</label>' +
-      '<textarea class="form-textarea" id="pfTreatment" placeholder="治疗方案、康复计划等">' + (p.treatmentPlan || '') + '</textarea>' +
+      '<textarea class="form-textarea" id="pfTreatment" placeholder="治疗方案、康复计划等">' + escapeHtml(p.treatmentPlan) + '</textarea>' +
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">备注</label>' +
-      '<textarea class="form-textarea" id="pfNotes" placeholder="其他备注信息">' + (p.notes || '') + '</textarea>' +
+      '<textarea class="form-textarea" id="pfNotes" placeholder="其他备注信息">' + escapeHtml(p.notes) + '</textarea>' +
     '</div>';
   
   const footer = 
@@ -6690,7 +6725,7 @@ function savePatient(patientId) {
     patients.unshift(patientData);
   }
   
-  localStorage.setItem('patients', JSON.stringify(patients));
+  if (!safeLS('patients', patients)) return;
   closeModal();
   renderPatientList();
   alert('保存成功！');
@@ -6740,32 +6775,32 @@ function showPatientDetail(patientId) {
   const allAssessments = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
   const patientAssessments = allAssessments.filter(a => a.patientId === patientId);
   
-  const title = (p.name || '未命名') + (p.age ? ' (' + p.age + '岁)' : '') + (p.gender ? ' · ' + p.gender : '');
+  const title = escapeHtml(p.name || '未命名') + (p.age ? ' (' + escapeHtml(p.age) + '岁)' : '') + (p.gender ? ' · ' + escapeHtml(p.gender) : '');
   
   let content = 
     '<div class="detail-header" style="margin:-16px -16px 16px -16px;border-radius:0;">' +
       '<div class="detail-header-title">' + title + '</div>' +
-      '<div class="detail-header-sub">' + (p.diagnosis || '暂无诊断') + '</div>' +
-      (p.bodyPart ? '<div class="detail-header-sub" style="margin-top:4px;">部位：' + p.bodyPart + '</div>' : '') +
+      '<div class="detail-header-sub">' + escapeHtml(p.diagnosis || '暂无诊断') + '</div>' +
+      (p.bodyPart ? '<div class="detail-header-sub" style="margin-top:4px;">部位：' + escapeHtml(p.bodyPart) + '</div>' : '') +
     '</div>';
   
   content +=
     '<div class="result-detail-section">' +
       '<div class="result-detail-title">' + icon('basics', 18) + '基本信息</div>' +
-      '<div class="field-row"><div class="field-label">姓名</div><div class="field-value">' + (p.name || '-') + '</div></div>' +
-      '<div class="field-row"><div class="field-label">性别/年龄</div><div class="field-value">' + (p.gender || '-') + ' / ' + (p.age || '-') + '岁</div></div>' +
-      '<div class="field-row"><div class="field-label">床号</div><div class="field-value">' + (p.bedNumber || '-') + '</div></div>' +
-      '<div class="field-row"><div class="field-label">联系电话</div><div class="field-value">' + (p.phone || '-') + '</div></div>' +
-      '<div class="field-row"><div class="field-label">评估阶段</div><div class="field-value">' + (p.assessmentStage || '-') + '</div></div>' +
-      '<div class="field-row"><div class="field-label">诊断</div><div class="field-value">' + (p.diagnosis || '-') + '</div></div>' +
-      '<div class="field-row"><div class="field-label">部位</div><div class="field-value">' + (p.bodyPart || '-') + '</div></div>' +
+      '<div class="field-row"><div class="field-label">姓名</div><div class="field-value">' + escapeHtml(p.name || '-') + '</div></div>' +
+      '<div class="field-row"><div class="field-label">性别/年龄</div><div class="field-value">' + escapeHtml(p.gender || '-') + ' / ' + escapeHtml(p.age || '-') + '岁</div></div>' +
+      '<div class="field-row"><div class="field-label">床号</div><div class="field-value">' + escapeHtml(p.bedNumber || '-') + '</div></div>' +
+      '<div class="field-row"><div class="field-label">联系电话</div><div class="field-value">' + escapeHtml(p.phone || '-') + '</div></div>' +
+      '<div class="field-row"><div class="field-label">评估阶段</div><div class="field-value">' + escapeHtml(p.assessmentStage || '-') + '</div></div>' +
+      '<div class="field-row"><div class="field-label">诊断</div><div class="field-value">' + escapeHtml(p.diagnosis || '-') + '</div></div>' +
+      '<div class="field-row"><div class="field-label">部位</div><div class="field-value">' + escapeHtml(p.bodyPart || '-') + '</div></div>' +
     '</div>';
 
   if (p.chiefComplaint) {
     content +=
       '<div class="result-detail-section">' +
         '<div class="result-detail-title">' + icon('symptoms', 18) + '主诉</div>' +
-        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;">' + p.chiefComplaint + '</p>' +
+        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;">' + escapeHtml(p.chiefComplaint) + '</p>' +
       '</div>';
   }
 
@@ -6773,7 +6808,7 @@ function showPatientDetail(patientId) {
     content +=
       '<div class="result-detail-section">' +
         '<div class="result-detail-title">' + icon('info', 18) + '既往病史</div>' +
-        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;white-space:pre-wrap;">' + p.medicalHistory + '</p>' +
+        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;white-space:pre-wrap;">' + escapeHtml(p.medicalHistory) + '</p>' +
       '</div>';
   }
   
@@ -6781,7 +6816,7 @@ function showPatientDetail(patientId) {
     content += 
       '<div class="result-detail-section">' +
         '<div class="result-detail-title">' + icon('treatment', 18) + '治疗方案</div>' +
-        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;white-space:pre-wrap;">' + p.treatmentPlan + '</p>' +
+        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;white-space:pre-wrap;">' + escapeHtml(p.treatmentPlan) + '</p>' +
       '</div>';
   }
   
@@ -6803,10 +6838,10 @@ function showPatientDetail(patientId) {
       content += 
         '<div class="history-item" onclick="viewHistoryDetail(' + a.id + ')">' +
           '<div class="history-item-header">' +
-            '<div class="history-item-name">' + a.scaleName + '</div>' +
+            '<div class="history-item-name">' + escapeHtml(a.scaleName) + '</div>' +
             '<div class="history-item-score text-' + (interp ? interp.color : 'primary') + '">' + a.score + '分</div>' +
           '</div>' +
-          '<div class="history-item-date">' + formatDate(a.date) + (interp ? ' · ' + interp.level : '') + '</div>' +
+          '<div class="history-item-date">' + formatDate(a.date) + (interp ? ' · ' + escapeHtml(interp.level) : '') + '</div>' +
         '</div>';
     });
   }
@@ -6879,8 +6914,11 @@ function linkAssessmentToPatient(assessmentId) {
   const idx = allAssessments.findIndex(a => a.id === assessmentId);
   
   if (idx >= 0) {
+    const bakAssessments = JSON.parse(JSON.stringify(allAssessments));
+    const bakPatients = JSON.parse(localStorage.getItem('patients') || '[]');
+    
     allAssessments[idx].patientId = currentPatientId;
-    localStorage.setItem('assessmentHistory', JSON.stringify(allAssessments));
+    if (!safeLS('assessmentHistory', allAssessments)) return;
     
     const patients = JSON.parse(localStorage.getItem('patients') || '[]');
     const pIdx = patients.findIndex(p => p.id === currentPatientId);
@@ -6889,7 +6927,11 @@ function linkAssessmentToPatient(assessmentId) {
       if (!patients[pIdx].assessmentIds.includes(assessmentId)) {
         patients[pIdx].assessmentIds.push(assessmentId);
       }
-      localStorage.setItem('patients', JSON.stringify(patients));
+      if (!safeLS('patients', patients)) {
+        safeLS('assessmentHistory', bakAssessments);
+        alert('关联失败，已回滚。');
+        return;
+      }
     }
     
     alert('关联成功！');
@@ -6900,15 +6942,20 @@ function linkAssessmentToPatient(assessmentId) {
 function deletePatient(patientId) {
   if (!confirm('确定要删除这个病例吗？关联的评估记录不会被删除。')) return;
   
-  let patients = JSON.parse(localStorage.getItem('patients') || '[]');
-  patients = patients.filter(p => p.id !== patientId);
-  localStorage.setItem('patients', JSON.stringify(patients));
+  const bakPatients = JSON.parse(localStorage.getItem('patients') || '[]');
+  const bakAssessments = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
   
-  const allAssessments = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
-  allAssessments.forEach(a => {
-    if (a.patientId === patientId) a.patientId = null;
-  });
-  localStorage.setItem('assessmentHistory', JSON.stringify(allAssessments));
+  let patients = bakPatients.filter(p => p.id !== patientId);
+  if (!safeLS('patients', patients)) return;
+  
+  const allAssessments = bakAssessments.map(a => 
+    a.patientId === patientId ? { ...a, patientId: null } : a
+  );
+  if (!safeLS('assessmentHistory', allAssessments)) {
+    safeLS('patients', bakPatients);
+    alert('删除失败，已回滚。');
+    return;
+  }
   
   currentPatientId = null;
   closeModal();
