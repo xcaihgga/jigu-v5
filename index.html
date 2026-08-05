@@ -7107,18 +7107,52 @@ function highlightStageRow(row, stageIndex) {
   void card.offsetWidth;
   card.classList.add('stage-card-pulse');
 
+  // 临时高亮卡片背景（黄色闪烁），增强视觉反馈
+  var origTransition = card.style.transition;
+  var origBg = card.style.backgroundColor;
+  card.style.transition = 'background-color 0.4s ease';
+  card.style.backgroundColor = 'rgba(255, 193, 7, 0.35)';
+  setTimeout(function() {
+    card.style.backgroundColor = origBg;
+    setTimeout(function() { card.style.transition = origTransition; }, 400);
+  }, 700);
+
   // 平滑滚动到卡片位置（偏移 80px 避免被固定导航遮挡）
   var contentEl = document.getElementById('content');
-  var scrollTarget = contentEl || window;
   var cardTop = card.getBoundingClientRect().top;
   var containerTop = contentEl ? contentEl.getBoundingClientRect().top : 0;
   var offset = cardTop - containerTop + (contentEl ? contentEl.scrollTop : window.scrollY) - 80;
+  // 确保 offset 非负
+  if (offset < 0) offset = 0;
 
-  if (contentEl) {
-    contentEl.scrollTo({ top: offset, behavior: 'smooth' });
-  } else {
-    window.scrollTo({ top: offset, behavior: 'smooth' });
+  var scrollBefore = contentEl ? contentEl.scrollTop : window.scrollY;
+  var scrollContainer = contentEl ? 'content' : 'window';
+
+  // 尝试 smooth scroll
+  try {
+    (contentEl || window).scrollTo({ top: offset, behavior: 'smooth' });
+  } catch (e) {
+    // 不支持 scrollTo options，fallback 到 instant
+    if (contentEl) contentEl.scrollTop = offset;
+    else window.scrollTo(0, offset);
+    window.interactionLog && window.interactionLog.warn('stage.scroll.fallback', {
+      stageIndex: stageIndex, reason: 'scrollTo-options-unsupported', error: e.message
+    });
   }
+
+  // 300ms 后检测 smooth scroll 是否生效，未生效则 fallback instant
+  setTimeout(function() {
+    var scrollAfter = contentEl ? contentEl.scrollTop : window.scrollY;
+    // 如果滚动位置离目标还很远，且几乎没有变化，说明 smooth 未生效
+    if (Math.abs(scrollAfter - offset) > 10 && Math.abs(scrollAfter - scrollBefore) < 10) {
+      if (contentEl) contentEl.scrollTop = offset;
+      else window.scrollTo(0, offset);
+      window.interactionLog && window.interactionLog.warn('stage.scroll.fallback', {
+        stageIndex: stageIndex, reason: 'smooth-no-effect',
+        before: scrollBefore, after: scrollAfter, target: Math.round(offset)
+      });
+    }
+  }, 300);
 
   // 埋点：滚动联动结果
   window.interactionLog && window.interactionLog.info('stage.scroll.link', {
@@ -7127,7 +7161,8 @@ function highlightStageRow(row, stageIndex) {
     cardFound: true,
     cardExpanded: !wasOpen,
     scrollTarget: Math.round(offset),
-    scrollContainer: contentEl ? 'content' : 'window',
+    scrollBefore: Math.round(scrollBefore),
+    scrollContainer: scrollContainer,
     timestamp: new Date().toISOString()
   });
 }
