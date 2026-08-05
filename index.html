@@ -2097,6 +2097,112 @@ body { display: flex; flex-direction: column; width: 100%; max-width: 100%; marg
 .result-level-info { background: linear-gradient(135deg, var(--accent-blue), #2563eb); color: white; }
 .result-level-purple { background: linear-gradient(135deg, var(--accent-violet), #7c3aed); color: white; }
 
+/* 循证数据表格 */
+.evidence-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 8px;
+}
+.evidence-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #F3F4F6;
+  vertical-align: top;
+}
+.evidence-table td:first-child {
+  font-weight: 600;
+  color: var(--text-2);
+  white-space: nowrap;
+  width: 80px;
+}
+.evidence-table td:nth-child(2) {
+  color: var(--primary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.evidence-table td:last-child {
+  color: var(--text-3);
+  font-size: 12px;
+}
+.evidence-table tr:last-child td { border-bottom: none; }
+
+/* 阶段概览表格 */
+.stage-overview {
+  background: var(--card-bg, rgba(255,255,255,0.8));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.stage-overview-title {
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(8,145,178,0.04), rgba(13,148,136,0.04));
+}
+.stage-overview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.stage-overview-table thead th {
+  background: rgba(8,145,178,0.06);
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-2);
+  font-size: 11px;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+.stage-overview-table tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #F3F4F6;
+  vertical-align: top;
+}
+.stage-overview-table tbody tr:last-child td { border-bottom: none; }
+.stage-overview-table tbody tr {
+  transition: background 0.15s;
+  cursor: pointer;
+}
+.stage-overview-table tbody tr.highlight {
+  background: rgba(8,145,178,0.08);
+}
+.stage-overview-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.stage-overview-name { font-weight: 600; color: var(--text-1); font-size: 12px; }
+.stage-overview-duration { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+.stage-overview-goal { color: var(--text-2); font-size: 11px; line-height: 1.4; }
+.stage-overview-exercises { color: var(--text-2); font-size: 11px; }
+.stage-overview-exercises ul { list-style: none; padding: 0; margin: 0; }
+.stage-overview-exercises li { padding: 1px 0; }
+.stage-overview-exercises li::before { content: "•"; color: var(--primary); margin-right: 4px; }
+.freq-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.freq-tag.high { background: rgba(239,68,68,0.1); color: #dc2626; }
+.freq-tag.mid { background: rgba(245,158,11,0.1); color: #d97706; }
+.freq-tag.low { background: rgba(16,185,129,0.1); color: #059669; }
+
 /* 方案卡片样式 */
 .protocol-card {
   background: rgba(255,255,255,0.8);
@@ -5117,8 +5223,53 @@ function startScale(scaleId) {
     currentScaleAnswers.push(null);
     currentScaleChoiceIdx.push(null);
   }
-  
+
   showScaleIntro();
+}
+
+/**
+ * 判断量表是否有循证数据
+ */
+function hasEvidenceData(scale) {
+  return !!(scale && scale.evidence && typeof scale.evidence === 'object' && Object.keys(scale.evidence).length > 0);
+}
+
+/**
+ * 渲染循证数据为 HTML 表格
+ * 只渲染存在的字段，缺失字段自动跳过
+ */
+function renderEvidenceHtml(scale) {
+  if (!hasEvidenceData(scale)) return '';
+
+  var ev = scale.evidence;
+  var rows = [];
+
+  if (ev.sensitivity) {
+    rows.push('<tr><td>敏感度</td><td>' + ev.sensitivity + '</td><td>真阳性率，越高越不漏诊</td></tr>');
+  }
+  if (ev.specificity) {
+    rows.push('<tr><td>特异度</td><td>' + ev.specificity + '</td><td>真阴性率，越高越不误诊</td></tr>');
+  }
+  if (ev.mcid !== undefined && ev.mcid !== null) {
+    rows.push('<tr><td>MCID</td><td>' + ev.mcid + ' 分</td><td>最小临床重要差异</td></tr>');
+  }
+  if (ev.reliability) {
+    rows.push('<tr><td>内部一致性</td><td>' + ev.reliability + '</td><td>Cronbach α，≥0.8 为良好</td></tr>');
+  }
+  if (ev.testRetest) {
+    rows.push('<tr><td>重测信度</td><td>' + ev.testRetest + '</td><td>ICC，≥0.75 为良好</td></tr>');
+  }
+  if (ev.source) {
+    var yearSuffix = ev.year ? ' (' + ev.year + ')' : '';
+    rows.push('<tr><td>文献来源</td><td colspan="2">' + ev.source + yearSuffix + '</td></tr>');
+  }
+
+  if (rows.length === 0) return '';
+
+  return '<div class="result-detail-section">' +
+    '<div class="result-detail-title">' + icon('evidence', 18) + '循证数据</div>' +
+    '<table class="evidence-table"><tbody>' + rows.join('') + '</tbody></table>' +
+    '</div>';
 }
 
 function showScaleIntro() {
@@ -5132,6 +5283,7 @@ function showScaleIntro() {
       '<div class="result-detail-title">' + icon('evidence', 18) + '信效度</div>' +
       '<p style="font-size:14px;color:var(--text-2);line-height:1.7;">' + (scale.reliability || '') + '</p>' +
     '</div>' +
+    renderEvidenceHtml(scale) +
     '<div class="result-detail-section">' +
       '<div class="result-detail-title">' + icon('list', 18) + '参考来源</div>' +
       '<p style="font-size:14px;color:var(--text-2);line-height:1.7;">' + (scale.reference || '') + '</p>' +
@@ -6699,6 +6851,59 @@ function showProtocolDetail(id) {
     extraHtml += '<div style="padding:4px 16px 4px;"><div class="stage-caution" style="background:rgba(37,99,235,0.08);border-left:3px solid #2563eb;"><strong>评估方法</strong><br>' + p.evaluation + '</div></div>';
   }
 
+  // 阶段概览表格（仅点击高亮，滚动联动放二期）
+  var overviewHtml = '';
+  if (p.stages && p.stages.length > 0) {
+    var overviewRows = p.stages.map(function(s, i) {
+      // 提取前 3 个核心动作做概览
+      var topExercises = s.exercises.slice(0, 3).map(function(e) {
+        // 截取动作名称（取冒号前的部分，或前 20 字符）
+        var shortName = e.split('：')[0].split('（')[0];
+        if (shortName.length > 20) shortName = shortName.substring(0, 20) + '...';
+        return '<li>' + shortName + '</li>';
+      }).join('');
+      // 从 stage.name 中提取简短阶段名和时长
+      var stageNameShort = s.name.split('（')[0].split('：')[0];
+      var durationMatch = s.name.match(/（([^）]+)）/);
+      var durationText = durationMatch ? durationMatch[1] : (s.duration || '');
+      // 进阶标准简短化
+      var criteriaShort = s.criteria ? (s.criteria.length > 15 ? s.criteria.substring(0, 15) + '...' : s.criteria) : '—';
+      // 频率标签（从 exercises 中推断，或使用 duration）
+      var freqClass = 'mid';
+      var freqText = s.duration || '—';
+      if (freqText.indexOf('每日') >= 0 || freqText.indexOf('每天') >= 0) { freqClass = 'high'; }
+      else if (freqText.indexOf('每周') >= 0 && freqText.indexOf('每周 2') < 0) { freqClass = 'mid'; }
+      else if (freqText.indexOf('周以后') >= 0 || freqText.indexOf('每周 2') >= 0) { freqClass = 'low'; }
+
+      return '<tr onclick="highlightStageRow(this)">' +
+        '<td><span class="stage-overview-num">' + (i + 1) + '</span></td>' +
+        '<td><div class="stage-overview-name">' + stageNameShort + '</div>' +
+        (durationText ? '<div class="stage-overview-duration">' + durationText + '</div>' : '') + '</td>' +
+        '<td class="stage-overview-goal">' + (s.goal || '') + '</td>' +
+        '<td class="stage-overview-exercises"><ul>' + topExercises + '</ul></td>' +
+        '<td><span class="freq-tag ' + freqClass + '">' + freqText + '</span></td>' +
+        '<td style="font-size:11px;color:var(--accent-green, #10B981);">' + criteriaShort + '</td>' +
+      '</tr>';
+    }).join('');
+
+    overviewHtml = '<div style="padding:0 16px 16px;">' +
+      '<div class="stage-overview">' +
+        '<div class="stage-overview-title">📋 康复阶段概览（' + p.stages.length + ' 个阶段）</div>' +
+        '<table class="stage-overview-table">' +
+          '<thead><tr>' +
+            '<th style="width:28px;">#</th>' +
+            '<th style="width:90px;">阶段</th>' +
+            '<th>治疗目标</th>' +
+            '<th>核心训练动作</th>' +
+            '<th style="width:70px;">频率</th>' +
+            '<th style="width:80px;">进阶标准</th>' +
+          '</tr></thead>' +
+          '<tbody>' + overviewRows + '</tbody>' +
+        '</table>' +
+      '</div>' +
+    '</div>';
+  }
+
   container.innerHTML = '<div class="protocol-detail">' +
     '<div class="protocol-detail-header">' +
       '<div class="protocol-detail-title">' + p.name + (p.isPro ? ' <span class="pro-badge">PRO</span>' : '') + (p.isPain ? ' <span style="display:inline-block;padding:2px 8px;background:linear-gradient(135deg,var(--status-error-default),#dc2626);color:#fff;font-size:11px;font-weight:600;border-radius:20px;">疼痛</span>' : '') + '</div>' +
@@ -6707,6 +6912,7 @@ function showProtocolDetail(id) {
       '<span class="protocol-card-badge" data-cat="' + p.category + '" style="margin-top:8px;">' + p.categoryName + '</span>' +
     '</div>' +
     extraHtml +
+    overviewHtml +
     '<div style="padding:0 16px 20px;">' + stagesHtml + '</div>' +
   '</div>';
   
@@ -6715,6 +6921,20 @@ function showProtocolDetail(id) {
   setTimeout(function() { container.classList.remove('fade-in'); }, 200);
   document.getElementById('content').scrollTop = 0;
   document.getElementById('navBack').style.display = 'flex';
+}
+
+/**
+ * 阶段概览表格行点击高亮（一期）
+ * 二期将增加滚动联动到对应详细卡片
+ */
+function highlightStageRow(row) {
+  // 清除同表格内其他行的高亮
+  var tbody = row.parentNode;
+  tbody.querySelectorAll('tr.highlight').forEach(function(r) {
+    if (r !== row) r.classList.remove('highlight');
+  });
+  // 切换当前行高亮
+  row.classList.toggle('highlight');
 }
 
 // ===== 数据看板 =====
