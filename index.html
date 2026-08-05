@@ -2967,6 +2967,131 @@ pre {
     .ds-tag--warning { background: var(--status-warning-surface-l1); color: var(--status-warning-default); }
     .ds-tag--danger { background: var(--status-error-surface-l1); color: var(--status-error-default); }
 
+/* ── Clinical Data Version Bar ────────────────────────── */
+.data-version-bar {
+  background: linear-gradient(135deg, #F5F3FF 0%, #EEF2FF 100%);
+  border-bottom: 1px solid rgba(75, 63, 227, 0.12);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #4B5563;
+  flex-shrink: 0;
+}
+.data-version-bar.dark {
+  background: linear-gradient(135deg, rgba(75, 63, 227, 0.08) 0%, rgba(99, 102, 241, 0.06) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: #A1A1AA;
+}
+.data-version-bar .version-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #4B3FE3;
+  white-space: nowrap;
+}
+.data-version-bar.dark .version-label { color: #8B8FFF; }
+.data-version-bar .version-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+.data-version-bar .version-dot.warn {
+  background: #F59E0B;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+}
+.data-version-bar .version-dot.error {
+  background: #EF4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+.data-version-bar .version-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  font-family: var(--font-family-mono);
+  color: #1F2937;
+}
+.data-version-bar.dark .version-info { color: #F3F4F6; }
+.data-version-bar .divider {
+  width: 1px;
+  height: 12px;
+  background: rgba(75, 63, 227, 0.2);
+}
+.data-version-bar.dark .divider { background: rgba(255, 255, 255, 0.12); }
+.data-version-bar .source-label {
+  color: #6B7280;
+  white-space: nowrap;
+}
+.data-version-bar.dark .source-label { color: #9CA3AF; }
+.data-version-bar .source-info {
+  flex: 1;
+  min-width: 0;
+  color: #374151;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.data-version-bar.dark .source-info { color: #D1D5DB; }
+.data-version-bar .meta-link {
+  color: #4B3FE3;
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+  user-select: none;
+}
+.data-version-bar.dark .meta-link { color: #A5B4FC; }
+.data-version-bar .meta-link:hover { text-decoration: underline; }
+.data-version-bar .chevron {
+  display: inline-block;
+  transition: transform 0.2s ease;
+  font-size: 10px;
+}
+.data-version-bar.expanded .chevron { transform: rotate(90deg); }
+.data-version-bar .expanded-panel {
+  display: none;
+  width: 100%;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(75, 63, 227, 0.2);
+  font-size: 11px;
+  line-height: 1.6;
+  color: #4B5563;
+}
+.data-version-bar.dark .expanded-panel {
+  border-top-color: rgba(255, 255, 255, 0.1);
+  color: #D1D5DB;
+}
+.data-version-bar .expanded-panel h4 {
+  margin: 6px 0 2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #4B3FE3;
+}
+.data-version-bar.dark .expanded-panel h4 { color: #A5B4FC; }
+.data-version-bar .expanded-panel ul {
+  margin: 0;
+  padding-left: 16px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+.data-version-bar .expanded-panel li {
+  font-size: 10.5px;
+  line-height: 1.5;
+  opacity: 0.9;
+}
+.data-version-bar .expanded-panel #dataStatsText {
+  margin-top: 4px;
+  font-size: 10.5px;
+  font-weight: 500;
+}
 </style>
 </head>
 <body>
@@ -2982,6 +3107,29 @@ pre {
     <button class="nav-btn" id="navSearch">
       <span class="icon" id="navSearchIcon"></span>
     </button>
+  </div>
+</div>
+
+<!-- 临床数据版本信息栏 -->
+<div class="data-version-bar" id="dataVersionBar">
+  <span class="version-label">
+    <span class="version-dot" id="versionStatusDot"></span>
+    临床数据
+  </span>
+  <span class="version-info" id="versionInfoText">v1.0.0</span>
+  <span class="divider"></span>
+  <span class="source-label">来源:</span>
+  <span class="source-info" id="sourceInfoText">加载中...</span>
+  <span class="meta-link" id="versionMetaToggle" title="查看详细版本与来源信息">
+    详情 <span class="chevron">▶</span>
+  </span>
+  <div class="expanded-panel" id="versionMetaPanel">
+    <h4>量表来源（部分）</h4>
+    <ul id="scaleSourceList"></ul>
+    <h4>协议来源</h4>
+    <ul id="protocolSourceList"></ul>
+    <h4>数据统计</h4>
+    <div id="dataStatsText">量表 0 个 · 协议 0 个 · 状态未知</div>
   </div>
 </div>
 
@@ -4313,6 +4461,8 @@ function convertExtraScale(extra) {
 function initAllScales() {
   if (typeof assessmentScales === 'undefined') {
     window.assessmentScales = [];
+  } else {
+    window.assessmentScales = assessmentScales;
   }
   if (typeof scalesExtra !== 'undefined' && scalesExtra.length > 0) {
     const existingIds = new Set(assessmentScales.map(s => s.id));
@@ -4333,11 +4483,14 @@ function initAllScales() {
       }
     });
   }
+  window.assessmentScales = assessmentScales;
 }
 
 function initAllProtocols() {
   if (typeof rehabProtocols === 'undefined') {
     window.rehabProtocols = [];
+  } else {
+    window.rehabProtocols = rehabProtocols;
   }
   if (typeof protocolsPro !== 'undefined' && protocolsPro.length > 0) {
     const existingIds = new Set(rehabProtocols.map(p => p.id));
@@ -4366,6 +4519,129 @@ function initAllProtocols() {
       }
     });
   }
+  window.rehabProtocols = rehabProtocols;
+}
+
+/**
+ * 初始化临床数据版本信息栏
+ */
+function initDataVersionBar() {
+  const bar = document.getElementById('dataVersionBar');
+  if (!bar) return;
+
+  const dot = document.getElementById('versionStatusDot');
+  const versionText = document.getElementById('versionInfoText');
+  const sourceText = document.getElementById('sourceInfoText');
+  const toggle = document.getElementById('versionMetaToggle');
+  const scaleSourceList = document.getElementById('scaleSourceList');
+  const protocolSourceList = document.getElementById('protocolSourceList');
+  const statsText = document.getElementById('dataStatsText');
+  const panel = document.getElementById('versionMetaPanel');
+
+  const scales = Array.isArray(window.assessmentScales) ? window.assessmentScales : [];
+  const protocols = Array.isArray(window.rehabProtocols) ? window.rehabProtocols : [];
+
+  const scaleVersions = new Set();
+  const scaleSources = new Set();
+  scales.forEach(s => {
+    if (s && s.version) scaleVersions.add(s.version);
+    if (s) {
+      const src = s.source || s.reference || s.evidence || '';
+      if (src) scaleSources.add(src);
+    }
+  });
+
+  const protocolVersions = new Set();
+  const protocolSources = new Set();
+  protocols.forEach(p => {
+    if (p && p.version) protocolVersions.add(p.version);
+    if (p) {
+      const src = p.source || p.reference || p.evidence || '';
+      if (src) protocolSources.add(src);
+    }
+  });
+
+  const scaleSourceArr = [...scaleSources];
+  const protocolSourceArr = [...protocolSources];
+  const allVersions = [...scaleVersions, ...protocolVersions].filter(Boolean);
+  const allSources = [...scaleSources, ...protocolSources].filter(Boolean);
+
+  const primaryVersion = allVersions[0] || '1.0.0';
+  versionText.textContent = 'v' + primaryVersion;
+
+  if (allSources.length > 0) {
+    const primarySource = allSources[0];
+    sourceText.textContent = allSources.length > 1
+      ? primarySource + ' 等 ' + allSources.length + ' 项临床指南/文献'
+      : primarySource;
+    sourceText.title = allSources.join(' | ');
+  } else {
+    sourceText.textContent = '临床常规应用 · 基于循证医学证据';
+    sourceText.title = '基于循证医学证据';
+  }
+
+  if (dot) {
+    if (scales.length === 0) {
+      dot.className = 'version-dot error';
+      dot.title = '无临床数据';
+    } else if (allSources.length === 0) {
+      dot.className = 'version-dot warn';
+      dot.title = '数据缺少来源信息';
+    } else {
+      dot.className = 'version-dot';
+      dot.title = '数据状态良好';
+    }
+  }
+
+  if (scaleSourceList) {
+    scaleSourceList.innerHTML = '';
+    scaleSourceArr.slice(0, 8).forEach(src => {
+      const li = document.createElement('li');
+      li.textContent = src;
+      scaleSourceList.appendChild(li);
+    });
+    if (scaleSourceArr.length === 0) {
+      scaleSourceList.innerHTML = '<li style="color:#9CA3AF;">暂无来源信息</li>';
+    }
+  }
+
+  if (protocolSourceList) {
+    protocolSourceList.innerHTML = '';
+    protocolSourceArr.forEach(src => {
+      const li = document.createElement('li');
+      li.textContent = src;
+      protocolSourceList.appendChild(li);
+    });
+    if (protocolSourceArr.length === 0) {
+      protocolSourceList.innerHTML = '<li style="color:#9CA3AF;">暂无来源信息</li>';
+    }
+  }
+
+  if (statsText) {
+    statsText.textContent = '量表 ' + scales.length + ' 个 · 协议 ' + protocols.length + ' 个 · 状态 ' +
+      (dot && dot.classList.contains('version-dot.warn') ? '⚠️ 降级（有警告）' : '✅ 健康');
+  }
+
+  if (toggle && panel) {
+    toggle.addEventListener('click', function (e) {
+      e.stopPropagation();
+      bar.classList.toggle('expanded');
+      if (panel.style.display === 'block') {
+        panel.style.display = 'none';
+      } else {
+        panel.style.display = 'block';
+      }
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    if (!bar.contains(e.target)) {
+      bar.classList.remove('expanded');
+      if (panel) panel.style.display = 'none';
+    }
+  });
+
+  console.log('[DataVersionBar] 临床数据版本: v' + primaryVersion + ', 量表 ' + scales.length + ' 个, 协议 ' + protocols.length + ' 个');
 }
 
 function showModal(title, contentHtml, footerHtml) {
@@ -6627,6 +6903,7 @@ async function init() {
   initIcons();
   initAllScales();
   initAllProtocols();
+  initDataVersionBar();
   renderMuscleBodyGrid();
   renderDiseaseBodyGrid();
   
