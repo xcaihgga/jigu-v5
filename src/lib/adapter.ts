@@ -8,6 +8,7 @@
  */
 
 import { DataValidator, createScale, createProtocol, Scale, Protocol } from './validator';
+import { logger } from './logger';
 
 // ========== 量表适配器 ==========
 
@@ -17,7 +18,7 @@ import { DataValidator, createScale, createProtocol, Scale, Protocol } from './v
  */
 export function adaptScale(raw: any): Scale {
   if (!raw || !raw.id || !raw.name) {
-    console.warn('[Adapter] adaptScale: 量表缺少必要的 id 或 name 字段', {
+    logger.warn('adaptScale: 量表缺少必要的 id 或 name 字段', {
       hasId: !!(raw && raw.id),
       hasName: !!(raw && raw.name),
       rawKeys: raw ? Object.keys(raw).slice(0, 8) : null
@@ -25,8 +26,7 @@ export function adaptScale(raw: any): Scale {
     throw new Error('量表缺少必要的 id 和 name 字段');
   }
 
-  // 预处理：将基于数组索引的 calculate 函数包装为基于 questionId 的访问
-  console.log(`[Adapter] adaptScale: 适配量表 "${raw.name}" [${raw.id}]`, {
+  logger.info(`adaptScale: 适配量表 "${raw.name}" [${raw.id}]`, {
     category: raw.category || 'uncategorized',
     hasQuestions: Array.isArray(raw.questions),
     questionCount: Array.isArray(raw.questions) ? raw.questions.length : 0,
@@ -44,7 +44,6 @@ export function adaptScale(raw: any): Scale {
     shortName: raw.shortName || raw.id.toUpperCase(),
     category: raw.category || 'uncategorized',
     
-    // 元数据（补齐缺失字段）
     version: raw.version || '1.0.0',
     source: raw.source || raw.reference || '临床常规应用',
     lastUpdated: raw.lastUpdated || new Date().toISOString().split('T')[0],
@@ -57,10 +56,8 @@ export function adaptScale(raw: any): Scale {
     question: raw.question,
     labels: raw.labels || [],
     
-    // 仅当原始数据有 totalScore 时才设置，否则让验证器检测
     ...(raw.totalScore !== undefined ? { totalScore: raw.totalScore } : {}),
     
-    // 仅当原始数据有 interpretation 时才映射，否则让验证器检测
     ...(raw.interpretation ? {
       interpretation: raw.interpretation.map((item: any) => ({
         min: item.min ?? 0,
@@ -74,14 +71,12 @@ export function adaptScale(raw: any): Scale {
     calculate: wrappedCalculate
   };
 
-  // 保留原始 questions 数据（如果存在）
   if (raw.questions) {
     scaleConfig.questions = raw.questions;
   }
   
-  // 使用工厂创建，自动触发校验
   const created = createScale(scaleConfig);
-  console.log(`[Adapter] adaptScale: 量表 "${raw.name}" [${raw.id}] 适配成功`, {
+  logger.info(`adaptScale: 量表 "${raw.name}" [${raw.id}] 适配成功`, {
     finalCategory: created.category,
     finalVersion: created.version,
     finalSource: created.source,
@@ -98,7 +93,7 @@ export function adaptScales(rawScales: any[]): {
   scales: Scale[];
   errors: { id: string; name: string; errors: ReturnType<typeof DataValidator.validateScale> }[];
 } {
-  console.log(`[Adapter] adaptScales: 开始批量适配 ${rawScales.length} 个量表`);
+  logger.info(`adaptScales: 开始批量适配 ${rawScales.length} 个量表`);
   const scales: Scale[] = [];
   const errors: any[] = [];
   
@@ -108,9 +103,7 @@ export function adaptScales(rawScales: any[]): {
       const scale = adaptScale(raw);
       scales.push(scale);
     } catch (e: any) {
-      console.error(`[Adapter] adaptScales: 第${i + 1}/${rawScales.length}个量表适配失败 [${raw?.id}]:`, e.message, {
-        fieldErrors: e.message?.split('；') || e.message
-      });
+      logger.error(`adaptScales: 第${i + 1}/${rawScales.length}个量表适配失败 [${raw?.id}]`, e.message);
       errors.push({
         id: raw.id,
         name: raw.name,
@@ -119,27 +112,22 @@ export function adaptScales(rawScales: any[]): {
     }
   }
   
-  // 全局验证
   const validation = DataValidator.validateAllScales(scales);
   if (validation.summary.invalid > 0) {
-    console.warn(`[Adapter] adaptScales: 二次验证发现 ${validation.summary.invalid}/${scales.length} 个无效量表`);
+    logger.warn(`adaptScales: 二次验证发现 ${validation.summary.invalid}/${scales.length} 个无效量表`);
   }
   
-  console.log(`[Adapter] adaptScales: 适配完成 - 成功 ${scales.length}, 失败 ${errors.length}`);
+  logger.info(`adaptScales: 适配完成 - 成功 ${scales.length}, 失败 ${errors.length}`);
   return { scales, errors };
 }
 
 /**
  * 包装 calculate 函数：将基于索引的数组访问转换为基于 ID 的访问
- * 
- * 问题：原始数据使用 answers[0], answers[1] 访问答案
- * 风险：问题顺序改变时，分数计算会出错
- * 解决方案：将对象格式的 answers 转换为数组格式，同时支持两种访问方式
  */
 function wrapCalculateFunction(raw: any): (answers: Record<string, number | string>) => { score: number; maxScore: number; details?: Record<string, any> } {
   const originalCalc = raw.calculate;
   if (typeof originalCalc !== 'function') {
-    console.warn(`[Adapter] wrapCalculateFunction: 量表 ${raw.id} 无 calculate 函数，使用默认求和计算`);
+    logger.warn(`wrapCalculateFunction: 量表 ${raw.id} 无 calculate 函数，使用默认求和计算`);
     return (answers: any) => {
       const values = Object.values(answers).map(v => typeof v === 'number' ? v : 0);
       const score = values.reduce((a, b) => a + b, 0);
@@ -147,18 +135,15 @@ function wrapCalculateFunction(raw: any): (answers: Record<string, number | stri
     };
   }
   
-  // 如果原始函数接受数组参数，保持向后兼容
   return function(answers: Record<string, number | string>) {
     let arrayAnswers: any[] = [];
     
     if (raw.questions && Array.isArray(raw.questions)) {
-      // 按 questions 顺序提取答案
       arrayAnswers = raw.questions.map((q: any, idx: number) => {
         const val = answers[q.id] ?? answers[q.order] ?? answers[idx];
         return val !== undefined ? val : 0;
       });
     } else {
-      // 简单量表：直接取 values 作为数组
       const values = Object.values(answers);
       arrayAnswers = values.map(v => typeof v === 'number' || typeof v === 'string' ? v : 0);
       if (arrayAnswers.length === 0) {
@@ -170,15 +155,12 @@ function wrapCalculateFunction(raw: any): (answers: Record<string, number | stri
       const result = originalCalc(arrayAnswers);
       return normalizeResult(result, raw.totalScore);
     } catch (e) {
-      console.error(`[Adapter] wrapCalculateFunction: 量表 ${raw.id} 计算异常，返回默认 0 分:`, e);
+      logger.error(`wrapCalculateFunction: 量表 ${raw.id} 计算异常，返回默认 0 分`, e);
       return { score: 0, maxScore: raw.totalScore || 10 };
     }
   };
 }
 
-/**
- * 标准化计算结果
- */
 function normalizeResult(result: any, totalScore: number): { score: number; maxScore: number; details?: Record<string, any> } {
   if (!result || typeof result !== 'object') {
     return { score: 0, maxScore: totalScore };
@@ -195,15 +177,10 @@ function normalizeResult(result: any, totalScore: number): { score: number; maxS
 
 /**
  * 适配协议数据
- * 
- * 支持多种旧格式：
- * - 标准协议：{ phases, indications, contraindications }
- * - 康复方案（protocols-pro.js）：{ stages, goal, exercises, cautions }
- * - 术后协议：{ phase, therapeuticGoals, treatments, progressCriteria }
  */
 export function adaptProtocol(raw: any): Protocol {
   if (!raw || !raw.id || !raw.name) {
-    console.warn('[Adapter] adaptProtocol: 协议缺少必要的 id 或 name 字段', {
+    logger.warn('adaptProtocol: 协议缺少必要的 id 或 name 字段', {
       hasId: !!(raw && raw.id),
       hasName: !!(raw && raw.name),
       rawKeys: raw ? Object.keys(raw).slice(0, 8) : null
@@ -211,7 +188,6 @@ export function adaptProtocol(raw: any): Protocol {
     throw new Error('协议缺少必要的 id 和 name 字段');
   }
 
-  // 识别并转换阶段数据
   const phaseSource = Array.isArray(raw.phases) && raw.phases.length > 0 && raw.phases[0]?.name
     ? 'phases'
     : (Array.isArray(raw.stages) && raw.stages.length > 0 ? 'stages'
@@ -222,7 +198,7 @@ export function adaptProtocol(raw: any): Protocol {
     (Array.isArray(raw.stages) && raw.stages.length > 0 ? raw.stages :
     (Array.isArray(raw.phase) ? raw.phase : []));
 
-  console.log(`[Adapter] adaptProtocol: 适配协议 "${raw.name}" [${raw.id}]`, {
+  logger.info(`adaptProtocol: 适配协议 "${raw.name}" [${raw.id}]`, {
     phaseSource,
     phaseCount: rawPhases.length,
     hasGoal: !!raw.goal,
@@ -249,7 +225,6 @@ export function adaptProtocol(raw: any): Protocol {
     };
   });
 
-  // 推导协议类型
   let type = raw.type;
   if (!type) {
     const idStr = (raw.id || '').toLowerCase();
@@ -257,10 +232,9 @@ export function adaptProtocol(raw: any): Protocol {
     else if (idStr.includes('postop') || idStr.includes('术后')) type = 'postop';
     else if (idStr.includes('pain') || idStr.includes('疼痛')) type = 'pain';
     else type = 'rehab';
-    console.log(`[Adapter] adaptProtocol: 协议 "${raw.name}" 类型自动推导为 "${type}"`);
+    logger.info(`adaptProtocol: 协议 "${raw.name}" 类型自动推导为 "${type}"`);
   }
 
-  // 推导 indications / contraindications（从描述中提取或留空）
   const indications = Array.isArray(raw.indications) && raw.indications.length > 0
     ? raw.indications
     : (raw.evidence ? [raw.evidence] : []);
@@ -268,7 +242,6 @@ export function adaptProtocol(raw: any): Protocol {
     ? raw.contraindications
     : [];
 
-  // 推导来源
   const source = raw.source || raw.evidence || raw.reference || '临床指南';
 
   const created = createProtocol({
@@ -284,7 +257,7 @@ export function adaptProtocol(raw: any): Protocol {
     phases
   });
 
-  console.log(`[Adapter] adaptProtocol: 协议 "${raw.name}" [${raw.id}] 适配成功`, {
+  logger.info(`adaptProtocol: 协议 "${raw.name}" [${raw.id}] 适配成功`, {
     finalType: created.type,
     finalVersion: created.version,
     phaseCount: created.phases.length,
@@ -301,7 +274,7 @@ export function adaptProtocols(rawProtocols: any[]): {
   protocols: Protocol[];
   errors: { id: string; name: string; message: string }[];
 } {
-  console.log(`[Adapter] adaptProtocols: 开始批量适配 ${rawProtocols.length} 个协议`);
+  logger.info(`adaptProtocols: 开始批量适配 ${rawProtocols.length} 个协议`);
   const protocols: Protocol[] = [];
   const errors: any[] = [];
   
@@ -311,20 +284,17 @@ export function adaptProtocols(rawProtocols: any[]): {
       const protocol = adaptProtocol(raw);
       protocols.push(protocol);
     } catch (e: any) {
-      console.error(`[Adapter] adaptProtocols: 第${i + 1}/${rawProtocols.length}个协议适配失败 [${raw?.id}]:`, e.message);
+      logger.error(`adaptProtocols: 第${i + 1}/${rawProtocols.length}个协议适配失败 [${raw?.id}]`, e.message);
       errors.push({ id: raw.id, name: raw.name, message: e.message });
     }
   }
   
-  console.log(`[Adapter] adaptProtocols: 适配完成 - 成功 ${protocols.length}, 失败 ${errors.length}`);
+  logger.info(`adaptProtocols: 适配完成 - 成功 ${protocols.length}, 失败 ${errors.length}`);
   return { protocols, errors };
 }
 
 // ========== 安全访问器 ==========
 
-/**
- * 安全获取量表列表（附带版本信息）
- */
 export function getScalesMeta(scales: Scale[]): Array<Pick<Scale, 'id' | 'name' | 'version' | 'source' | 'category'>> {
   return scales.map(s => ({
     id: s.id,
@@ -335,9 +305,6 @@ export function getScalesMeta(scales: Scale[]): Array<Pick<Scale, 'id' | 'name' 
   }));
 }
 
-/**
- * 获取所有数据的版本信息（用于显示在 UI 上）
- */
 export function getDataVersionInfo(scales: Scale[], protocols: Protocol[]): {
   scales: { count: number; versions: string[]; sources: string[] };
   protocols: { count: number; versions: string[]; sources: string[] };
