@@ -7574,33 +7574,42 @@ async function init() {
     }, { once: true });
   }
 
-  initIcons();
-  initAllScales();
-  initAllProtocols();
-  initDataVersionBar();
-  if (hasMuscles) renderMuscleBodyGrid();
-  renderDiseaseBodyGrid();
-  
+  // 各渲染步骤独立 try-catch：单个失败不中断其他模块初始化
+  // （部分模块依赖 data.js 里的 muscles/diseases/diseaseBodyParts，
+  //  data.js 后台加载未完成时会报错，需隔离）
+  function safeCall(name, fn) {
+    try { fn(); } catch (e) {
+      console.warn('[Init] ' + name + ' 渲染失败（可能数据未就绪）:', e && e.message ? e.message : e);
+    }
+  }
+
+  safeCall('initIcons', initIcons);
+  safeCall('initAllScales', initAllScales);
+  safeCall('initAllProtocols', initAllProtocols);
+  safeCall('initDataVersionBar', initDataVersionBar);
+  if (hasMuscles) safeCall('renderMuscleBodyGrid', renderMuscleBodyGrid);
+  safeCall('renderDiseaseBodyGrid', renderDiseaseBodyGrid);
+
   if (document.getElementById('btnScaleList')) {
     document.getElementById('btnScaleList').classList.add('active');
   }
-  
-  renderScaleList();
-  renderPatientList();
-  renderToolsCategoryBar();
-  renderToolsList();
-  renderGuidelinesCategoryBar();
-  renderGuidelinesList();
-  renderProtocolCatBar();
-  renderProtocolList();
-  
+
+  safeCall('renderScaleList', renderScaleList);
+  safeCall('renderPatientList', renderPatientList);
+  safeCall('renderToolsCategoryBar', renderToolsCategoryBar);
+  safeCall('renderToolsList', renderToolsList);
+  safeCall('renderGuidelinesCategoryBar', renderGuidelinesCategoryBar);
+  safeCall('renderGuidelinesList', renderGuidelinesList);
+  safeCall('renderProtocolCatBar', renderProtocolCatBar);
+  safeCall('renderProtocolList', renderProtocolList);
+
   var toolsSearch = document.getElementById('toolsSearch');
   if (toolsSearch) toolsSearch.addEventListener('input', renderToolsList);
   var guidelinesSearch = document.getElementById('guidelinesSearch');
   if (guidelinesSearch) guidelinesSearch.addEventListener('input', renderGuidelinesList);
   var protocolSearch = document.getElementById('protocolSearch');
   if (protocolSearch) protocolSearch.addEventListener('input', renderProtocolList);
-  
+
   console.log('[Init] 初始化完成');
 }
 
