@@ -6,8 +6,9 @@
   'use strict';
 
   // 配置：需要加载的数据文件列表
-  const DATA_FILES = [
-    'data.js',
+  // 注意：data.js (7.4MB) 体积过大，从 GitHub Pages 下载需数分钟，
+  // 单独后台加载，不阻塞 complete 事件，避免量表搜索等功能被拖累。
+  const CORE_FILES = [
     'src/scales.js',
     'src/scales-extra.js',
     'src/scales-pro.js',
@@ -17,6 +18,8 @@
     'src/protocols-pro.js',
     'src/pain-protocols.js'
   ];
+  const BACKGROUND_FILES = ['data.js']; // 大文件，后台加载
+  const DATA_FILES = CORE_FILES.concat(BACKGROUND_FILES);
 
   // 加载状态
   const state = {
@@ -33,16 +36,16 @@
     return new Promise(function(resolve, reject) {
       const script = document.createElement('script');
       script.src = src + '?v=' + Date.now(); // 添加时间戳避免缓存
-      script.async = false; // 保持执行顺序
-      
+      script.async = true; // 并行加载，不阻塞其他脚本
+
       script.onload = function() {
         resolve();
       };
-      
+
       script.onerror = function(e) {
         reject(new Error('加载失败: ' + src));
       };
-      
+
       document.head.appendChild(script);
     });
   }
@@ -148,47 +151,64 @@
   }
 
   /**
-   * 加载所有数据文件
+   * 加载所有数据文件（并行加载；核心小文件完成即触发 complete，大文件后台加载）
    */
   function loadAllData() {
     showLoadingUI();
-    
-    let chain = Promise.resolve();
-    
-    DATA_FILES.forEach(function(file) {
-      chain = chain.then(function() {
+
+    // 1. 并行加载核心小文件：完成即触发 complete，不等待大文件
+    const corePromises = CORE_FILES.map(function(file) {
+      return loadScript(file).then(function() {
         state.loaded++;
         updateProgress(state.loaded, state.total, file);
-        return loadScript(file);
       }).catch(function(err) {
         state.errors.push(file);
-        console.warn('[DataLoader] 加载失败:', file, err.message);
-        // 继续加载下一个文件，不中断
+        state.loaded++;
+        updateProgress(state.loaded, state.total, file);
+        console.warn('[DataLoader] 核心文件加载失败:', file, err.message);
       });
     });
-    
-    chain.then(function() {
-      // 所有数据加载完成
+
+    // 2. 后台加载大文件（data.js）：不阻塞 complete 事件
+    BACKGROUND_FILES.forEach(function(file) {
+      loadScript(file).then(function() {
+        state.loaded++;
+        updateProgress(state.loaded, state.total, file);
+        console.log('[DataLoader] 后台大文件加载完成:', file);
+        // 大文件加载完成后触发单独事件，供肌肉查询等页面监听
+        window.dispatchEvent(new CustomEvent('data-loader-background-ready', {
+          detail: { file: file }
+        }));
+      }).catch(function(err) {
+        state.errors.push(file);
+        state.loaded++;
+        updateProgress(state.loaded, state.total, file);
+        console.warn('[DataLoader] 后台大文件加载失败:', file, err.message);
+      });
+    });
+
+    // 3. 核心文件全部完成后触发 complete（不等大文件）
+    return Promise.all(corePromises).then(function() {
       hideLoadingUI();
-      
-      if (state.errors.length > 0) {
-        console.warn('[DataLoader] 以下文件加载失败:', state.errors);
-        // 显示错误提示但继续初始化
+
+      const coreErrors = state.errors.filter(function(f) {
+        return CORE_FILES.indexOf(f) >= 0;
+      });
+      if (coreErrors.length > 0) {
+        console.warn('[DataLoader] 核心文件加载失败:', coreErrors);
         window.dispatchEvent(new CustomEvent('data-loader-error', {
-          detail: { errors: state.errors }
+          detail: { errors: coreErrors }
         }));
       }
-      
-      // 触发数据加载完成事件
+
       window.dispatchEvent(new CustomEvent('data-loader-complete', {
-        detail: { 
-          success: state.errors.length === 0,
-          failedFiles: state.errors 
+        detail: {
+          success: coreErrors.length === 0,
+          failedFiles: coreErrors,
+          backgroundPending: BACKGROUND_FILES
         }
       }));
     });
-    
-    return chain;
   }
 
   // 暴露到全局

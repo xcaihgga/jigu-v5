@@ -7551,18 +7551,34 @@ async function init() {
   await waitForDataReady();
 
   // 检查数据是否可用
-  const hasBasicData = typeof muscles !== 'undefined' && Array.isArray(muscles);
-  if (!hasBasicData) {
+  // 注意：data.js (muscles) 是 7.4MB 大文件，由 DataLoader 后台加载，
+  // 可能此时还未就绪。muscles 未加载时跳过肌肉查询页面渲染，
+  // 但量表搜索/分类筛选/循证方案等核心功能不依赖 muscles，照常初始化。
+  const hasMuscles = typeof muscles !== 'undefined' && Array.isArray(muscles);
+  const hasScales = typeof assessmentScales !== 'undefined' && Array.isArray(assessmentScales);
+  if (!hasMuscles && !hasScales) {
     console.error('[Init] 基础数据未加载，初始化失败');
     document.body.innerHTML += '<div style="padding:20px;text-align:center;color:#dc2626;">数据加载失败，请刷新页面重试</div>';
     return;
+  }
+  if (!hasMuscles) {
+    console.warn('[Init] muscles 数据未就绪（data.js 后台加载中），肌肉查询页面延迟渲染');
+    // data.js 后台加载完成后重新渲染肌肉查询页面
+    window.addEventListener('data-loader-background-ready', function() {
+      try {
+        renderMuscleBodyGrid();
+        console.log('[Init] muscles 数据就绪，肌肉查询页面已渲染');
+      } catch (e) {
+        console.error('[Init] muscles 就绪后渲染失败:', e);
+      }
+    }, { once: true });
   }
 
   initIcons();
   initAllScales();
   initAllProtocols();
   initDataVersionBar();
-  renderMuscleBodyGrid();
+  if (hasMuscles) renderMuscleBodyGrid();
   renderDiseaseBodyGrid();
   
   if (document.getElementById('btnScaleList')) {
