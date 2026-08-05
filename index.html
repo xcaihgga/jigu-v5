@@ -3172,15 +3172,8 @@ pre {
 
 <div id="modalContainer"></div>
 
-<script src="data/data.js?v=4.0"></script>
-<script src="src/scales.js?v=4.0"></script>
-<script src="src/scales-extra.js?v=4.0"></script>
-<script src="src/scales-pro.js?v=4.0"></script>
-<script src="src/clinical-tools.js?v=4.0"></script>
-<script src="src/knowledge-base.js?v=4.0"></script>
-<script src="src/rehab-protocols.js?v=4.0"></script>
-<script src="src/protocols-pro.js?v=4.0"></script>
-<script src="src/pain-protocols.js?v=4.0"></script>
+<!-- 懒加载：数据文件由 DataLoader 异步加载 -->
+<script src="src/data-loader.js"></script>
 <script>
 const iconSvg = {
   muscle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5L3 9v6l3.5 2.5L9 15h6l2.5 2.5 2.5-2.5L21 15V9l-3.5-2.5L15 9H9L6.5 6.5Z"/><circle cx="12" cy="12" r="2"/></svg>',
@@ -6584,7 +6577,53 @@ setIcon('dashboardDistIcon', 'chart', 22);
 setIcon('dashboardRankIcon', 'evidence', 22);
 setIcon('dashboardAvgIcon', 'assessment', 22);
 
-function init() {
+// 数据就绪标志（由 DataLoader 设置）
+let __dataReady = false;
+
+/**
+ * 等待数据就绪
+ * 支持两种模式：
+ * 1. 懒加载模式：等待 DataLoader 完成
+ * 2. 传统模式（单文件）：数据已同步加载，直接就绪
+ */
+function waitForDataReady() {
+  return new Promise(function(resolve) {
+    // 如果数据已经加载（单文件模式），直接就绪
+    if (typeof muscles !== 'undefined' && Array.isArray(muscles) && muscles.length > 0) {
+      __dataReady = true;
+      resolve();
+      return;
+    }
+
+    // 懒加载模式：等待 DataLoader 事件
+    window.addEventListener('data-loader-complete', function() {
+      __dataReady = true;
+      resolve();
+    }, { once: true });
+
+    // 超时保护：30秒后强制继续（显示错误状态）
+    setTimeout(function() {
+      if (!__dataReady) {
+        console.warn('[Init] 数据加载超时，尝试继续初始化');
+        __dataReady = true;
+        resolve();
+      }
+    }, 30000);
+  });
+}
+
+async function init() {
+  // 等待数据就绪
+  await waitForDataReady();
+
+  // 检查数据是否可用
+  const hasBasicData = typeof muscles !== 'undefined' && Array.isArray(muscles);
+  if (!hasBasicData) {
+    console.error('[Init] 基础数据未加载，初始化失败');
+    document.body.innerHTML += '<div style="padding:20px;text-align:center;color:#dc2626;">数据加载失败，请刷新页面重试</div>';
+    return;
+  }
+
   initIcons();
   initAllScales();
   initAllProtocols();
@@ -6611,10 +6650,12 @@ function init() {
   var protocolSearch = document.getElementById('protocolSearch');
   if (protocolSearch) protocolSearch.addEventListener('input', renderProtocolList);
   
-  // v5: 不使用 Service Worker，避免 404 错误
+  console.log('[Init] 初始化完成');
 }
 
-init();
+init().catch(function(e) {
+  console.error('[Init] 初始化异常:', e);
+});
 </script>
 </body>
 </html>
