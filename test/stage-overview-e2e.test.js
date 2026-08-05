@@ -231,13 +231,28 @@ describe('3. 滚动联动逻辑验证', function() {
 
 describe('4. 边界情况验证', function() {
   it('stageIndex 为 undefined 时安全返回', function() {
-    assert(html.indexOf('if (stageIndex === undefined) return') >= 0,
-      'stageIndex 为 undefined 时应 return');
+    // 埋点改造后，early-return 变为多语句块：先记 warn 日志，再 return
+    assert(html.indexOf('if (stageIndex === undefined)') >= 0,
+      '应有 stageIndex === undefined 判断');
+    assert(html.indexOf('stage.row.click.noIndex') >= 0,
+      '应埋点 stage.row.click.noIndex warn 事件');
+    // 验证 return 仍在 if 块内（埋点语句之后）
+    var idx = html.indexOf('stage.row.click.noIndex');
+    var returnIdx = html.indexOf('return;', idx);
+    assert(returnIdx > idx && returnIdx - idx < 200,
+      'noIndex 埋点后应紧接 return');
   });
 
   it('card 不存在时安全返回', function() {
-    assert(html.indexOf('if (!card) return') >= 0,
-      'card 查询失败时应 return');
+    // 埋点改造后，early-return 变为多语句块：先记 error 日志，再 return
+    assert(html.indexOf('if (!card)') >= 0,
+      '应有 !card 判断');
+    assert(html.indexOf('stage.row.click.cardNotFound') >= 0,
+      '应埋点 stage.row.click.cardNotFound error 事件');
+    var idx = html.indexOf('stage.row.click.cardNotFound');
+    var returnIdx = html.indexOf('return;', idx);
+    assert(returnIdx > idx && returnIdx - idx < 300,
+      'cardNotFound 埋点后应紧接 return');
   });
 
   it('content 容器不存在时降级到 window', function() {

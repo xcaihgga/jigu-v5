@@ -3468,6 +3468,50 @@ pre {
 <!-- 懒加载：数据文件由 DataLoader 异步加载 -->
 <script src="src/data-loader.js"></script>
 <script>
+// ═══════════════════════════════════════════════════════════════
+//  交互日志器（埋点）interactionLog
+//  - 级别：debug / info / warn / error
+//  - 默认 debug；通过 localStorage.interactionLogLevel='warn' 切生产模式
+//    或 URL 参数 ?log=warn 临时切换
+//  - 输出格式：[Interaction][LEVEL] event payload
+//  - 生产环境（非 localhost）自动降为 warn
+// ═══════════════════════════════════════════════════════════════
+(function() {
+  var LEVELS = { debug: 0, info: 1, warn: 2, error: 3 };
+  function detectLevel() {
+    try {
+      var urlMatch = (location.search || '').match(/[?&]log=([a-z]+)/);
+      if (urlMatch && LEVELS[urlMatch[1]] !== undefined) return urlMatch[1];
+      var stored = localStorage.getItem('interactionLogLevel');
+      if (stored && LEVELS[stored] !== undefined) return stored;
+      var host = location.hostname || '';
+      if (host && host !== 'localhost' && host !== '127.0.0.1' && host.indexOf('192.168.') !== 0) {
+        return 'warn';
+      }
+    } catch (e) {}
+    return 'debug';
+  }
+  var currentLevel = detectLevel();
+  function emit(level, event, payload) {
+    if (LEVELS[level] < LEVELS[currentLevel]) return;
+    var fn = level === 'error' ? console.error :
+             level === 'warn'  ? console.warn  :
+             level === 'info'  ? console.log   : console.debug;
+    fn('[Interaction][' + level.toUpperCase() + ']', event, payload || '');
+  }
+  window.interactionLog = {
+    level: currentLevel,
+    setLevel: function(l) {
+      if (LEVELS[l] !== undefined) { currentLevel = l; this.level = l; try { localStorage.setItem('interactionLogLevel', l); } catch(e){} }
+    },
+    debug: function(e, p) { emit('debug', e, p); },
+    info:  function(e, p) { emit('info',  e, p); },
+    warn:  function(e, p) { emit('warn',  e, p); },
+    error: function(e, p) { emit('error', e, p); }
+  };
+  window.interactionLog.info('logger.init', { level: currentLevel, ua: navigator.userAgent });
+})();
+
 const iconSvg = {
   muscle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5L3 9v6l3.5 2.5L9 15h6l2.5 2.5 2.5-2.5L21 15V9l-3.5-2.5L15 9H9L6.5 6.5Z"/><circle cx="12" cy="12" r="2"/></svg>',
   diagnosis: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
@@ -4914,9 +4958,35 @@ function renderScaleCategoryBar() {
 }
 
 function selectScaleCategory(cat) {
+  var previous = currentScaleCategory;
   currentScaleCategory = cat;
+  // 埋点：分类标签切换
+  window.interactionLog && window.interactionLog.info('scale.category.change', {
+    previous: previous,
+    current: cat,
+    timestamp: new Date().toISOString()
+  });
   renderScaleCategoryBar();
   renderScaleLibrary();
+}
+
+/**
+ * 量表筛选纯函数（便于单元测试）
+ * @param {Array} scales - 量表数组
+ * @param {string} category - 分类 key（'全部' 表示不限）
+ * @param {string} keyword - 搜索关键词（已 trim + toLowerCase，空串表示不限）
+ * @returns {Array} 过滤后的量表数组
+ */
+function filterScales(scales, category, keyword) {
+  var kw = (keyword || '').trim().toLowerCase();
+  return (scales || []).filter(function(s) {
+    var catMatch = !category || category === '全部' || s.category === category;
+    var searchMatch = !kw ||
+      (s.name && s.name.toLowerCase().indexOf(kw) >= 0) ||
+      (s.shortName && s.shortName.toLowerCase().indexOf(kw) >= 0) ||
+      (s.description && s.description.toLowerCase().indexOf(kw) >= 0);
+    return catMatch && searchMatch;
+  });
 }
 
 let currentToolCategory = '全部';
@@ -5159,16 +5229,19 @@ function renderScaleLibrary() {
 
   var searchKw = '';
   var searchEl = document.getElementById('scaleSearch');
-  if (searchEl) searchKw = searchEl.value.trim().toLowerCase();
+  if (searchEl) searchKw = searchEl.value;
 
-  // 按分类过滤
-  var filtered = (typeof assessmentScales !== 'undefined' ? assessmentScales : []).filter(function(s) {
-    var catMatch = currentScaleCategory === '全部' || s.category === currentScaleCategory;
-    var searchMatch = !searchKw ||
-      (s.name && s.name.toLowerCase().indexOf(searchKw) >= 0) ||
-      (s.shortName && s.shortName.toLowerCase().indexOf(searchKw) >= 0) ||
-      (s.description && s.description.toLowerCase().indexOf(searchKw) >= 0);
-    return catMatch && searchMatch;
+  var allScales = typeof assessmentScales !== 'undefined' ? assessmentScales : [];
+  // 复用纯函数 filterScales，保证渲染与测试逻辑一致
+  var filtered = filterScales(allScales, currentScaleCategory, searchKw);
+
+  // 埋点：筛选结果统计（搜索 + 分类组合）
+  window.interactionLog && window.interactionLog.info('scale.library.filter', {
+    category: currentScaleCategory,
+    keyword: (searchKw || '').trim(),
+    totalScales: allScales.length,
+    matchedCount: filtered.length,
+    timestamp: new Date().toISOString()
   });
 
   if (filtered.length === 0) {
@@ -5249,32 +5322,54 @@ function hasEvidenceData(scale) {
  * 只渲染存在的字段，缺失字段自动跳过
  */
 function renderEvidenceHtml(scale) {
-  if (!hasEvidenceData(scale)) return '';
+  if (!hasEvidenceData(scale)) {
+    window.interactionLog && window.interactionLog.debug('evidence.render.skip', { scaleId: scale && scale.id, reason: 'no-evidence' });
+    return '';
+  }
 
   var ev = scale.evidence;
   var rows = [];
+  var renderedFields = [];
 
   if (ev.sensitivity) {
     rows.push('<tr><td>敏感度</td><td>' + ev.sensitivity + '</td><td>真阳性率，越高越不漏诊</td></tr>');
+    renderedFields.push('sensitivity');
   }
   if (ev.specificity) {
     rows.push('<tr><td>特异度</td><td>' + ev.specificity + '</td><td>真阴性率，越高越不误诊</td></tr>');
+    renderedFields.push('specificity');
   }
   if (ev.mcid !== undefined && ev.mcid !== null) {
     rows.push('<tr><td>MCID</td><td>' + ev.mcid + ' 分</td><td>最小临床重要差异</td></tr>');
+    renderedFields.push('mcid');
   }
   if (ev.reliability) {
     rows.push('<tr><td>内部一致性</td><td>' + ev.reliability + '</td><td>Cronbach α，≥0.8 为良好</td></tr>');
+    renderedFields.push('reliability');
   }
   if (ev.testRetest) {
     rows.push('<tr><td>重测信度</td><td>' + ev.testRetest + '</td><td>ICC，≥0.75 为良好</td></tr>');
+    renderedFields.push('testRetest');
   }
   if (ev.source) {
     var yearSuffix = ev.year ? ' (' + ev.year + ')' : '';
     rows.push('<tr><td>文献来源</td><td colspan="2">' + ev.source + yearSuffix + '</td></tr>');
+    renderedFields.push('source');
   }
 
-  if (rows.length === 0) return '';
+  if (rows.length === 0) {
+    window.interactionLog && window.interactionLog.warn('evidence.render.empty', { scaleId: scale.id, reason: 'has-object-no-fields' });
+    return '';
+  }
+
+  // 埋点：循证数据渲染事件
+  window.interactionLog && window.interactionLog.info('evidence.render', {
+    scaleId: scale.id,
+    scaleName: scale.name,
+    fields: renderedFields,
+    fieldCount: renderedFields.length,
+    timestamp: new Date().toISOString()
+  });
 
   return '<div class="result-detail-section">' +
     '<div class="result-detail-title">' + icon('evidence', 18) + '循证数据</div>' +
@@ -6745,12 +6840,25 @@ document.getElementById('btnScaleHistory').addEventListener('click', () => switc
 document.getElementById('btnScaleChart').addEventListener('click', () => switchAssessmentTab('chart'));
 
 // 量表搜索实时筛选
+var _scaleSearchLogTimer = null;
 document.getElementById('scaleSearch').addEventListener('input', function() {
+  var kw = this.value;
+  // 埋点：搜索输入（debounce 400ms，避免逐字符日志刷屏）
+  if (_scaleSearchLogTimer) clearTimeout(_scaleSearchLogTimer);
+  _scaleSearchLogTimer = setTimeout(function() {
+    window.interactionLog && window.interactionLog.info('scale.search.input', {
+      keyword: (kw || '').trim(),
+      keywordLength: (kw || '').trim().length,
+      timestamp: new Date().toISOString()
+    });
+  }, 400);
   renderScaleLibrary();
 });
 
 // ===== 循证方案库 =====
 var currentProtocolCat = 'ALL';
+// 当前查看的方案（用于交互日志埋点上下文）
+var currentProtocol = null;
 
 function renderProtocolCatBar() {
   var bar = document.getElementById('protocolCatBar');
@@ -6817,7 +6925,16 @@ function renderProtocolList() {
 function showProtocolDetail(id) {
   var p = rehabProtocols.find(function(x) { return x.id === id; });
   if (!p) return;
-  
+
+  // 记录当前方案，供 highlightStageRow 日志埋点使用
+  currentProtocol = p;
+  window.interactionLog && window.interactionLog.info('protocol.detail.open', {
+    protocolId: p.id,
+    protocolName: p.name,
+    stageCount: (p.stages || []).length,
+    timestamp: new Date().toISOString()
+  });
+
   var container = document.getElementById('page-protocol-detail');
   if (!container) {
     container = document.createElement('div');
@@ -6939,6 +7056,10 @@ function showProtocolDetail(id) {
  * @param {number} stageIndex - 阶段索引
  */
 function highlightStageRow(row, stageIndex) {
+  var protocolId = (typeof currentProtocol !== 'undefined' && currentProtocol) ? currentProtocol.id : null;
+  var protocolName = (typeof currentProtocol !== 'undefined' && currentProtocol) ? currentProtocol.name : null;
+  var willHighlight = !row.classList.contains('highlight');
+
   // 清除同表格内其他行的高亮
   var tbody = row.parentNode;
   tbody.querySelectorAll('tr.highlight').forEach(function(r) {
@@ -6947,14 +7068,34 @@ function highlightStageRow(row, stageIndex) {
   // 切换当前行高亮
   row.classList.toggle('highlight');
 
+  // 埋点：行点击事件
+  window.interactionLog && window.interactionLog.info('stage.row.click', {
+    stageIndex: stageIndex,
+    protocolId: protocolId,
+    protocolName: protocolName,
+    action: willHighlight ? 'select' : 'deselect',
+    timestamp: new Date().toISOString()
+  });
+
   // 滚动联动到对应详细卡片
-  if (stageIndex === undefined) return;
+  if (stageIndex === undefined) {
+    window.interactionLog && window.interactionLog.warn('stage.row.click.noIndex', { protocolId: protocolId });
+    return;
+  }
   var card = document.querySelector('.stage-card[data-stage-index="' + stageIndex + '"]');
-  if (!card) return;
+  if (!card) {
+    window.interactionLog && window.interactionLog.error('stage.row.click.cardNotFound', {
+      stageIndex: stageIndex,
+      protocolId: protocolId,
+      selector: '.stage-card[data-stage-index="' + stageIndex + '"]'
+    });
+    return;
+  }
 
   // 确保卡片内容展开
   var content = card.querySelector('.stage-content');
-  if (content && !content.classList.contains('open')) {
+  var wasOpen = content && content.classList.contains('open');
+  if (content && !wasOpen) {
     content.classList.add('open');
     var arrow = card.querySelector('.stage-arrow');
     if (arrow) arrow.classList.add('open');
@@ -6978,6 +7119,17 @@ function highlightStageRow(row, stageIndex) {
   } else {
     window.scrollTo({ top: offset, behavior: 'smooth' });
   }
+
+  // 埋点：滚动联动结果
+  window.interactionLog && window.interactionLog.info('stage.scroll.link', {
+    stageIndex: stageIndex,
+    protocolId: protocolId,
+    cardFound: true,
+    cardExpanded: !wasOpen,
+    scrollTarget: Math.round(offset),
+    scrollContainer: contentEl ? 'content' : 'window',
+    timestamp: new Date().toISOString()
+  });
 }
 
 // ===== 数据看板 =====
