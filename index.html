@@ -4937,21 +4937,44 @@ let currentScaleCategory = '全部';
 
 function renderScaleCategoryBar() {
   var bar = document.getElementById('scaleCategoryBar');
-  if (!bar) return;
+  if (!bar) {
+    window.interactionLog && window.interactionLog.warn('scale.categoryBar.render.noBar', {
+      timestamp: new Date().toISOString()
+    });
+    return;
+  }
   var scales = typeof assessmentScales !== 'undefined' ? assessmentScales : [];
   // 收集有量表的实际分类
   var usedCats = {};
+  var catCounts = { '全部': scales.length };
   scales.forEach(function(s) {
     var cat = s.category;
     if (!usedCats[cat]) {
       var info = scaleCategoryInfo[cat] || { name: cat, icon: 'other' };
       usedCats[cat] = info.name;
     }
+    catCounts[cat] = (catCounts[cat] || 0) + 1;
   });
   var cats = [{ key: '全部', name: '全部' }];
   Object.keys(usedCats).forEach(function(k) {
     cats.push({ key: k, name: usedCats[k] });
   });
+  // 埋点：分类标签栏渲染（debug 级别，记录每个分类的量表数）
+  window.interactionLog && window.interactionLog.debug('scale.categoryBar.render', {
+    totalScales: scales.length,
+    categoryCount: cats.length,
+    categories: cats.map(function(c) { return { key: c.key, name: c.name, count: catCounts[c.key] || 0 }; }),
+    activeCategory: currentScaleCategory,
+    timestamp: new Date().toISOString()
+  });
+  // 异常诊断：当前选中的分类已无量表（可能数据变更后失效）
+  if (currentScaleCategory !== '全部' && (catCounts[currentScaleCategory] || 0) === 0) {
+    window.interactionLog && window.interactionLog.warn('scale.categoryBar.activeEmpty', {
+      activeCategory: currentScaleCategory,
+      availableCategories: Object.keys(usedCats),
+      timestamp: new Date().toISOString()
+    });
+  }
   bar.innerHTML = cats.map(function(c) {
     return '<button class="quick-nav-item ' + (c.key === currentScaleCategory ? 'active' : '') + '" onclick="selectScaleCategory(\'' + c.key + '\')">' + c.name + '</button>';
   }).join('');
@@ -4959,11 +4982,22 @@ function renderScaleCategoryBar() {
 
 function selectScaleCategory(cat) {
   var previous = currentScaleCategory;
+  // 重复点击同一分类，记录但不再触发渲染
+  var isNoop = previous === cat;
   currentScaleCategory = cat;
+  // 诊断：切换前当前搜索框的关键词（影响切换后的筛选结果）
+  var searchEl = document.getElementById('scaleSearch');
+  var currentKeyword = searchEl ? (searchEl.value || '').trim() : '';
+  var allScales = typeof assessmentScales !== 'undefined' ? assessmentScales : [];
+  var scalesInNewCat = cat === '全部' ? allScales.length : allScales.filter(function(s) { return s.category === cat; }).length;
   // 埋点：分类标签切换
   window.interactionLog && window.interactionLog.info('scale.category.change', {
     previous: previous,
     current: cat,
+    isNoop: isNoop,
+    keywordAtSwitch: currentKeyword,
+    scalesInNewCategory: scalesInNewCat,
+    totalScales: allScales.length,
     timestamp: new Date().toISOString()
   });
   renderScaleCategoryBar();
@@ -4979,14 +5013,36 @@ function selectScaleCategory(cat) {
  */
 function filterScales(scales, category, keyword) {
   var kw = (keyword || '').trim().toLowerCase();
-  return (scales || []).filter(function(s) {
+  var input = scales || [];
+  var matched = [];
+  var dropped = [];
+  input.forEach(function(s) {
     var catMatch = !category || category === '全部' || s.category === category;
-    var searchMatch = !kw ||
-      (s.name && s.name.toLowerCase().indexOf(kw) >= 0) ||
-      (s.shortName && s.shortName.toLowerCase().indexOf(kw) >= 0) ||
-      (s.description && s.description.toLowerCase().indexOf(kw) >= 0);
-    return catMatch && searchMatch;
+    var hitFields = [];
+    if (kw) {
+      if (s.name && s.name.toLowerCase().indexOf(kw) >= 0) hitFields.push('name');
+      if (s.shortName && s.shortName.toLowerCase().indexOf(kw) >= 0) hitFields.push('shortName');
+      if (s.description && s.description.toLowerCase().indexOf(kw) >= 0) hitFields.push('description');
+    }
+    var searchMatch = !kw || hitFields.length > 0;
+    var kept = catMatch && searchMatch;
+    if (kept) {
+      matched.push(s);
+    } else {
+      dropped.push({ id: s.id, name: s.name, category: s.category, reason: !catMatch ? 'category-mismatch' : 'keyword-no-match', hitFields: hitFields });
+    }
   });
+  // 埋点：纯函数筛选明细（debug 级别，记录每条被丢弃量表的原因）
+  window.interactionLog && window.interactionLog.debug('scale.filter.detail', {
+    category: category,
+    keyword: kw,
+    inputCount: input.length,
+    matchedCount: matched.length,
+    droppedCount: dropped.length,
+    dropped: dropped,
+    timestamp: new Date().toISOString()
+  });
+  return matched;
 }
 
 let currentToolCategory = '全部';
@@ -5225,26 +5281,54 @@ function showGuidelineDetail(idx) {
 
 function renderScaleLibrary() {
   const container = document.getElementById('scaleListContainer');
-  if (!container) return;
+  if (!container) {
+    window.interactionLog && window.interactionLog.warn('scale.library.render.noContainer', {
+      timestamp: new Date().toISOString()
+    });
+    return;
+  }
 
   var searchKw = '';
   var searchEl = document.getElementById('scaleSearch');
   if (searchEl) searchKw = searchEl.value;
+  var kwTrimmed = (searchKw || '').trim();
+  var hasKeyword = kwTrimmed.length > 0;
+  var hasCategory = currentScaleCategory && currentScaleCategory !== '全部';
 
   var allScales = typeof assessmentScales !== 'undefined' ? assessmentScales : [];
   // 复用纯函数 filterScales，保证渲染与测试逻辑一致
   var filtered = filterScales(allScales, currentScaleCategory, searchKw);
 
+  // 统计当前分类下量表总数（用于区分"分类无量表" vs "搜索无匹配"）
+  var scalesInCategory = hasCategory ? allScales.filter(function(s) { return s.category === currentScaleCategory; }).length : allScales.length;
+
   // 埋点：筛选结果统计（搜索 + 分类组合）
   window.interactionLog && window.interactionLog.info('scale.library.filter', {
     category: currentScaleCategory,
-    keyword: (searchKw || '').trim(),
+    keyword: kwTrimmed,
     totalScales: allScales.length,
+    scalesInCategory: scalesInCategory,
     matchedCount: filtered.length,
     timestamp: new Date().toISOString()
   });
 
   if (filtered.length === 0) {
+    // 空结果用 warn 级别，便于排查；细分两种场景
+    var emptyReason = !hasKeyword && hasCategory && scalesInCategory === 0
+      ? 'category-empty'                 // 该分类本身无量表
+      : hasKeyword && scalesInCategory === 0
+        ? 'category-empty-with-keyword'  // 该分类无量表且有关键词（分类问题为主）
+        : hasKeyword
+          ? 'keyword-no-match'           // 分类有量表，但关键词未命中
+          : 'unknown';                   // 兜底
+    window.interactionLog && window.interactionLog.warn('scale.library.empty', {
+      category: currentScaleCategory,
+      keyword: kwTrimmed,
+      totalScales: allScales.length,
+      scalesInCategory: scalesInCategory,
+      reason: emptyReason,
+      timestamp: new Date().toISOString()
+    });
     container.innerHTML = '<div class="dashboard-empty">未找到匹配的量表<br>试试其他关键词或分类</div>';
     return;
   }
@@ -6843,12 +6927,27 @@ document.getElementById('btnScaleChart').addEventListener('click', () => switchA
 var _scaleSearchLogTimer = null;
 document.getElementById('scaleSearch').addEventListener('input', function() {
   var kw = this.value;
-  // 埋点：搜索输入（debounce 400ms，避免逐字符日志刷屏）
+  var kwTrimmed = (kw || '').trim();
+  // 异常诊断：关键词过长（>50 字符）或含控制字符 → warn
+  if (kwTrimmed.length > 50) {
+    window.interactionLog && window.interactionLog.warn('scale.search.input.tooLong', {
+      keyword: kwTrimmed,
+      keywordLength: kwTrimmed.length,
+      timestamp: new Date().toISOString()
+    });
+  }
+  // 埋点：搜索输入（debounce 400ms，避免逐字符日志刷屏；记录筛选结果数）
   if (_scaleSearchLogTimer) clearTimeout(_scaleSearchLogTimer);
   _scaleSearchLogTimer = setTimeout(function() {
+    var allScales = typeof assessmentScales !== 'undefined' ? assessmentScales : [];
+    var matched = filterScales(allScales, currentScaleCategory, kw);
     window.interactionLog && window.interactionLog.info('scale.search.input', {
-      keyword: (kw || '').trim(),
-      keywordLength: (kw || '').trim().length,
+      keyword: kwTrimmed,
+      keywordLength: kwTrimmed.length,
+      category: currentScaleCategory,
+      totalScales: allScales.length,
+      matchedCount: matched.length,
+      isEmpty: matched.length === 0,
       timestamp: new Date().toISOString()
     });
   }, 400);
