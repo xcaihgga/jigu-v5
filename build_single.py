@@ -159,6 +159,7 @@ def build_deploy():
     # 2. 复制数据文件
     data_files = [
         ('data.js', 'data.js'),
+        ('src/app-config.js', 'src/app-config.js'),
         ('src/scales.js', 'src/scales.js'),
         ('src/scales-extra.js', 'src/scales-extra.js'),
         ('src/scales-pro.js', 'src/scales-pro.js'),
