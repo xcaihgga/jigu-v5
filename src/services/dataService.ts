@@ -54,27 +54,42 @@ const listeners = new Set<(state: DataServiceState) => void>();
  * @param rawProtocols 原始协议数据（来自 protocols-*.js 等）
  */
 export function initializeDataService(rawScales: any[], rawProtocols: any[]): DataServiceState {
+  const startTime = Date.now();
   try {
     console.log('🚀 [DataService] 开始初始化...');
+    console.log(`📥 [DataService] 输入数据: ${rawScales.length} 个原始量表, ${rawProtocols.length} 个原始协议`);
     emitStateChange('initializing');
     
     // 1. 适配数据（运行时校验）
     console.log('📊 [DataService] 适配量表数据...');
     const { scales, errors: scaleErrors } = adaptScales(rawScales);
+    if (scaleErrors.length > 0) {
+      console.warn(`⚠️ [DataService] 有 ${scaleErrors.length} 个量表适配失败:`, 
+        scaleErrors.map(e => `${e.id}: ${e.errors[0]?.message}`).join('; ')
+      );
+    }
     
     console.log('📋 [DataService] 适配协议数据...');
-    const { protocols } = adaptProtocols(rawProtocols);
+    const { protocols, errors: protocolErrors } = adaptProtocols(rawProtocols);
+    if (protocolErrors.length > 0) {
+      console.warn(`⚠️ [DataService] 有 ${protocolErrors.length} 个协议适配失败:`,
+        protocolErrors.map(e => `${e.id}: ${e.message}`).join('; ')
+      );
+    }
     
     // 2. 运行自检
     console.log('🔍 [DataService] 运行数据自检...');
     const selfCheckReport = runSelfCheck(scales, protocols);
+    console.log(`📊 [DataService] 自检结果: 量表 ${selfCheckReport.scaleResults.summary.valid}/${selfCheckReport.scaleResults.summary.total} 通过, 协议 ${selfCheckReport.protocolResults.valid}/${selfCheckReport.protocolResults.total} 通过`);
     
     // 3. 生成版本信息
     const versionInfo = getDataVersionInfo(scales, protocols);
+    console.log(`🏷️ [DataService] 版本信息: 量表 ${versionInfo.scales.versions.join(', ')}, 协议 ${versionInfo.protocols.versions.join(', ')}`);
     
     // 4. 更新状态
+    const finalStatus: DataServiceStatus = selfCheckReport.status === 'healthy' ? 'ready' : 'degraded';
     state = {
-      status: selfCheckReport.status === 'healthy' ? 'ready' : 'degraded',
+      status: finalStatus,
       scales,
       protocols,
       invalidScales: selfCheckReport.scaleResults.invalid,
@@ -84,11 +99,17 @@ export function initializeDataService(rawScales: any[], rawProtocols: any[]): Da
       initializedAt: new Date().toISOString()
     };
     
+    const elapsed = Date.now() - startTime;
+    
     // 5. 记录结果
-    console.log(`✅ [DataService] 初始化完成: ${scales.length} 个量表, ${protocols.length} 个协议`);
+    console.log(`✅ [DataService] 初始化完成: ${scales.length} 个量表, ${protocols.length} 个协议 (耗时 ${elapsed}ms)`);
     console.log(`📈 [DataService] 数据状态: ${state.status}`);
-    console.log(`🏷️  [DataService] 量表版本: ${versionInfo.scales.versions.join(', ')}`);
-    console.log(`🏷️  [DataService] 协议版本: ${versionInfo.protocols.versions.join(', ')}`);
+    if (state.status === 'degraded') {
+      console.warn(`⚠️ [DataService] 系统降级运行，有 ${selfCheckReport.scaleResults.invalid.length} 个量表未通过校验`);
+      selfCheckReport.scaleResults.invalid.forEach(item => {
+        console.warn(`   - 量表 [${item.scale.id}] ${item.scale.name}: ${item.errors.map(e => e.message).join('; ')}`);
+      });
+    }
     
     // 6. 广播就绪事件
     eventBus.emit('system:ready', { 
@@ -101,7 +122,8 @@ export function initializeDataService(rawScales: any[], rawProtocols: any[]): Da
     return state;
     
   } catch (error) {
-    console.error('❌ [DataService] 初始化失败:', error);
+    const elapsed = Date.now() - startTime;
+    console.error(`❌ [DataService] 初始化失败 (耗时 ${elapsed}ms):`, error);
     state.status = 'error';
     emitStateChange('error');
     eventBus.emit('system:error', { 
@@ -130,14 +152,20 @@ export function getAllScales(): Scale[] {
  * 按 ID 获取量表
  */
 export function getScaleById(id: string): Scale | undefined {
-  return state.scales.find(s => s.id === id);
+  const scale = state.scales.find(s => s.id === id);
+  if (!scale) {
+    console.debug(`[DataService] getScaleById: 量表 "${id}" 未找到 (共 ${state.scales.length} 个量表)`);
+  }
+  return scale;
 }
 
 /**
  * 按类别获取量表
  */
 export function getScalesByCategory(category: string): Scale[] {
-  return state.scales.filter(s => s.category === category);
+  const filtered = state.scales.filter(s => s.category === category);
+  console.log(`[DataService] getScalesByCategory("${category}"): 返回 ${filtered.length}/${state.scales.length} 个量表`);
+  return filtered;
 }
 
 /**
@@ -151,13 +179,20 @@ export function getAllProtocols(): Protocol[] {
  * 按 ID 获取协议
  */
 export function getProtocolById(id: string): Protocol | undefined {
-  return state.protocols.find(p => p.id === id);
+  const protocol = state.protocols.find(p => p.id === id);
+  if (!protocol) {
+    console.debug(`[DataService] getProtocolById: 协议 "${id}" 未找到 (共 ${state.protocols.length} 个协议)`);
+  }
+  return protocol;
 }
 
 /**
  * 获取版本信息
  */
 export function getVersionInfo() {
+  if (!state.versionInfo) {
+    console.warn('[DataService] getVersionInfo: 版本信息不可用（数据服务可能未初始化）');
+  }
   return state.versionInfo;
 }
 

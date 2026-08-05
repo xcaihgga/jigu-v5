@@ -17,10 +17,25 @@ import { DataValidator, createScale, createProtocol, Scale, Protocol } from './v
  */
 export function adaptScale(raw: any): Scale {
   if (!raw || !raw.id || !raw.name) {
+    console.warn('[Adapter] adaptScale: 量表缺少必要的 id 或 name 字段', {
+      hasId: !!(raw && raw.id),
+      hasName: !!(raw && raw.name),
+      rawKeys: raw ? Object.keys(raw).slice(0, 8) : null
+    });
     throw new Error('量表缺少必要的 id 和 name 字段');
   }
 
   // 预处理：将基于数组索引的 calculate 函数包装为基于 questionId 的访问
+  console.log(`[Adapter] adaptScale: 适配量表 "${raw.name}" [${raw.id}]`, {
+    category: raw.category || 'uncategorized',
+    hasQuestions: Array.isArray(raw.questions),
+    questionCount: Array.isArray(raw.questions) ? raw.questions.length : 0,
+    hasCalculate: typeof raw.calculate === 'function',
+    hasTotalScore: raw.totalScore !== undefined,
+    hasInterpretation: Array.isArray(raw.interpretation),
+    hasReference: !!(raw.reference || raw.source)
+  });
+
   const wrappedCalculate = wrapCalculateFunction(raw);
   
   const scaleConfig: any = {
@@ -65,7 +80,15 @@ export function adaptScale(raw: any): Scale {
   }
   
   // 使用工厂创建，自动触发校验
-  return createScale(scaleConfig);
+  const created = createScale(scaleConfig);
+  console.log(`[Adapter] adaptScale: 量表 "${raw.name}" [${raw.id}] 适配成功`, {
+    finalCategory: created.category,
+    finalVersion: created.version,
+    finalSource: created.source,
+    questionCount: Array.isArray(created.questions) ? created.questions.length : 0,
+    interpretationCount: Array.isArray(created.interpretation) ? created.interpretation.length : 0
+  });
+  return created;
 }
 
 /**
@@ -75,15 +98,19 @@ export function adaptScales(rawScales: any[]): {
   scales: Scale[];
   errors: { id: string; name: string; errors: ReturnType<typeof DataValidator.validateScale> }[];
 } {
+  console.log(`[Adapter] adaptScales: 开始批量适配 ${rawScales.length} 个量表`);
   const scales: Scale[] = [];
   const errors: any[] = [];
   
-  for (const raw of rawScales) {
+  for (let i = 0; i < rawScales.length; i++) {
+    const raw = rawScales[i];
     try {
       const scale = adaptScale(raw);
       scales.push(scale);
     } catch (e: any) {
-      console.error(`❌ 量表适配失败 [${raw.id}]:`, e.message);
+      console.error(`[Adapter] adaptScales: 第${i + 1}/${rawScales.length}个量表适配失败 [${raw?.id}]:`, e.message, {
+        fieldErrors: e.message?.split('；') || e.message
+      });
       errors.push({
         id: raw.id,
         name: raw.name,
@@ -95,9 +122,10 @@ export function adaptScales(rawScales: any[]): {
   // 全局验证
   const validation = DataValidator.validateAllScales(scales);
   if (validation.summary.invalid > 0) {
-    console.warn(`⚠️ 有 ${validation.summary.invalid} 个量表未通过二次验证`);
+    console.warn(`[Adapter] adaptScales: 二次验证发现 ${validation.summary.invalid}/${scales.length} 个无效量表`);
   }
   
+  console.log(`[Adapter] adaptScales: 适配完成 - 成功 ${scales.length}, 失败 ${errors.length}`);
   return { scales, errors };
 }
 
@@ -111,7 +139,7 @@ export function adaptScales(rawScales: any[]): {
 function wrapCalculateFunction(raw: any): (answers: Record<string, number | string>) => { score: number; maxScore: number; details?: Record<string, any> } {
   const originalCalc = raw.calculate;
   if (typeof originalCalc !== 'function') {
-    // 返回一个安全的默认计算函数
+    console.warn(`[Adapter] wrapCalculateFunction: 量表 ${raw.id} 无 calculate 函数，使用默认求和计算`);
     return (answers: any) => {
       const values = Object.values(answers).map(v => typeof v === 'number' ? v : 0);
       const score = values.reduce((a, b) => a + b, 0);
@@ -121,8 +149,6 @@ function wrapCalculateFunction(raw: any): (answers: Record<string, number | stri
   
   // 如果原始函数接受数组参数，保持向后兼容
   return function(answers: Record<string, number | string>) {
-    // 将对象格式的 answers 转换为数组格式
-    // 优先使用 questions 定义的顺序
     let arrayAnswers: any[] = [];
     
     if (raw.questions && Array.isArray(raw.questions)) {
@@ -135,7 +161,6 @@ function wrapCalculateFunction(raw: any): (answers: Record<string, number | stri
       // 简单量表：直接取 values 作为数组
       const values = Object.values(answers);
       arrayAnswers = values.map(v => typeof v === 'number' || typeof v === 'string' ? v : 0);
-      // 如果只有一个键（如 VAS/NRS），直接取第一个值
       if (arrayAnswers.length === 0) {
         arrayAnswers = [answers['q0'] ?? answers[0] ?? 0];
       }
@@ -145,7 +170,7 @@ function wrapCalculateFunction(raw: any): (answers: Record<string, number | stri
       const result = originalCalc(arrayAnswers);
       return normalizeResult(result, raw.totalScore);
     } catch (e) {
-      console.error(`[Calculator Error] 量表 ${raw.id} 计算失败:`, e);
+      console.error(`[Adapter] wrapCalculateFunction: 量表 ${raw.id} 计算异常，返回默认 0 分:`, e);
       return { score: 0, maxScore: raw.totalScore || 10 };
     }
   };
@@ -178,27 +203,45 @@ function normalizeResult(result: any, totalScore: number): { score: number; maxS
  */
 export function adaptProtocol(raw: any): Protocol {
   if (!raw || !raw.id || !raw.name) {
+    console.warn('[Adapter] adaptProtocol: 协议缺少必要的 id 或 name 字段', {
+      hasId: !!(raw && raw.id),
+      hasName: !!(raw && raw.name),
+      rawKeys: raw ? Object.keys(raw).slice(0, 8) : null
+    });
     throw new Error('协议缺少必要的 id 和 name 字段');
   }
 
   // 识别并转换阶段数据
+  const phaseSource = Array.isArray(raw.phases) && raw.phases.length > 0 && raw.phases[0]?.name
+    ? 'phases'
+    : (Array.isArray(raw.stages) && raw.stages.length > 0 ? 'stages'
+    : (Array.isArray(raw.phase) ? 'phase' : 'none'));
+
   const rawPhases: any[] = 
     (Array.isArray(raw.phases) && raw.phases.length > 0 && raw.phases[0]?.name) ? raw.phases :
     (Array.isArray(raw.stages) && raw.stages.length > 0 ? raw.stages :
     (Array.isArray(raw.phase) ? raw.phase : []));
 
+  console.log(`[Adapter] adaptProtocol: 适配协议 "${raw.name}" [${raw.id}]`, {
+    phaseSource,
+    phaseCount: rawPhases.length,
+    hasGoal: !!raw.goal,
+    hasExercises: Array.isArray(raw.exercises),
+    hasEvidence: !!raw.evidence,
+    hasSource: !!(raw.source || raw.reference)
+  });
+
   if (rawPhases.length === 0) {
     throw new Error(`协议 "${raw.name}" 缺少分期数据 (phases/stages/phase)`);
   }
 
-  const phases = rawPhases.map((phase: any) => {
-    // 统一字段命名
+  const phases = rawPhases.map((phase: any, idx: number) => {
     const goals = phase.goals || phase.therapeuticGoals || (phase.goal ? [phase.goal] : []);
     const interventions = phase.interventions || phase.treatments || phase.exercises || [];
     const criteria = phase.criteria || phase.progressCriteria || phase.cautions || [];
     
     return {
-      name: phase.name || phase.phaseName || '未知分期',
+      name: phase.name || phase.phaseName || `未知分期${idx + 1}`,
       duration: phase.duration || '',
       goals: Array.isArray(goals) ? goals : [String(goals)],
       interventions: Array.isArray(interventions) ? interventions : [String(interventions)],
@@ -214,6 +257,7 @@ export function adaptProtocol(raw: any): Protocol {
     else if (idStr.includes('postop') || idStr.includes('术后')) type = 'postop';
     else if (idStr.includes('pain') || idStr.includes('疼痛')) type = 'pain';
     else type = 'rehab';
+    console.log(`[Adapter] adaptProtocol: 协议 "${raw.name}" 类型自动推导为 "${type}"`);
   }
 
   // 推导 indications / contraindications（从描述中提取或留空）
@@ -227,7 +271,7 @@ export function adaptProtocol(raw: any): Protocol {
   // 推导来源
   const source = raw.source || raw.evidence || raw.reference || '临床指南';
 
-  return createProtocol({
+  const created = createProtocol({
     id: raw.id,
     name: raw.name,
     type,
@@ -239,6 +283,15 @@ export function adaptProtocol(raw: any): Protocol {
     contraindications,
     phases
   });
+
+  console.log(`[Adapter] adaptProtocol: 协议 "${raw.name}" [${raw.id}] 适配成功`, {
+    finalType: created.type,
+    finalVersion: created.version,
+    phaseCount: created.phases.length,
+    indicationCount: created.indications.length,
+    contraindicationCount: created.contraindications.length
+  });
+  return created;
 }
 
 /**
@@ -248,19 +301,22 @@ export function adaptProtocols(rawProtocols: any[]): {
   protocols: Protocol[];
   errors: { id: string; name: string; message: string }[];
 } {
+  console.log(`[Adapter] adaptProtocols: 开始批量适配 ${rawProtocols.length} 个协议`);
   const protocols: Protocol[] = [];
   const errors: any[] = [];
   
-  for (const raw of rawProtocols) {
+  for (let i = 0; i < rawProtocols.length; i++) {
+    const raw = rawProtocols[i];
     try {
       const protocol = adaptProtocol(raw);
       protocols.push(protocol);
     } catch (e: any) {
-      console.error(`❌ 协议适配失败 [${raw.id}]:`, e.message);
+      console.error(`[Adapter] adaptProtocols: 第${i + 1}/${rawProtocols.length}个协议适配失败 [${raw?.id}]:`, e.message);
       errors.push({ id: raw.id, name: raw.name, message: e.message });
     }
   }
   
+  console.log(`[Adapter] adaptProtocols: 适配完成 - 成功 ${protocols.length}, 失败 ${errors.length}`);
   return { protocols, errors };
 }
 
