@@ -3142,6 +3142,7 @@ pre {
   <div class="desktop-nav-item" data-tab="protocol">方案</div>
   <div class="desktop-nav-item" data-tab="dashboard">看板</div>
   <div class="desktop-nav-item" data-tab="patient">病例</div>
+  <div class="desktop-nav-item" data-tab="migration" style="color:var(--text-tertiary);">迁移报告</div>
 </div>
 
 <div class="content" id="content">
@@ -3280,6 +3281,25 @@ pre {
       <ul class="rank-list" id="dashboardAvgList"></ul>
     </div>
     <div class="dashboard-footer">数据来源：本地评定记录，仅统计已完成的量表评定</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       迁移报告页面（需管理员权限）
+       ═══════════════════════════════════════════════════ -->
+  <div class="page" id="page-migration">
+    <div id="migrationAccessDenied" style="display:none;padding:40px 20px;text-align:center;">
+      <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+      <h2 style="font-size:18px;font-weight:600;color:var(--text-default);margin-bottom:8px;">权限不足</h2>
+      <p style="font-size:14px;color:var(--text-tertiary);line-height:1.6;">迁移报告仅对管理员开放。请切换到管理员模式后重试。</p>
+      <button class="btn btn-primary" id="btnRetryMigration" style="margin-top:16px;" onclick="checkMigrationPermission()">重新验证权限</button>
+    </div>
+    <div id="migrationReportContainer" style="display:none;">
+      <div class="dashboard-header">
+        <div class="dashboard-title">数据迁移报告</div>
+        <div class="dashboard-subtitle" id="migrationSubtitle">加载中...</div>
+      </div>
+      <div id="migrationReportContent"></div>
+    </div>
   </div>
 </div>
 
@@ -3447,6 +3467,22 @@ let pageHistory = [];
 let currentPage = null;
 
 function switchTab(tab) {
+  // 迁移报告页面需要管理员权限
+  if (tab === 'migration') {
+    const pageEl = document.getElementById('page-migration');
+    if (pageEl) {
+      document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+      pageEl.classList.add('active');
+      document.querySelectorAll('.desktop-nav-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.tab === tab);
+      });
+      updateNavTitle(tab);
+      document.getElementById('navBack').style.display = 'none';
+      checkMigrationPermission();
+    }
+    return;
+  }
+
   currentTab = tab;
   pageHistory = [];
   currentPage = null;
@@ -3459,7 +3495,8 @@ function switchTab(tab) {
   document.querySelectorAll('.page').forEach(el => {
     el.classList.remove('active');
   });
-  document.getElementById('page-' + tab).classList.add('active');
+  const pageEl = document.getElementById('page-' + tab);
+  if (pageEl) pageEl.classList.add('active');
   document.getElementById('content').scrollTop = 0;
   updateNavTitle(tab);
   document.getElementById('navBack').style.display = 'none';
@@ -3478,6 +3515,7 @@ function updateNavTitle(tab) {
     protocol: '循证方案',
     dashboard: '数据看板',
     patient: '病例管理',
+    migration: '数据迁移报告',
   };
   document.getElementById('navTitle').textContent = titles[tab] || '肌骨速查';
 }
@@ -6933,6 +6971,266 @@ async function init() {
 init().catch(function(e) {
   console.error('[Init] 初始化异常:', e);
 });
+
+// ═══════════════════════════════════════════════════
+//  迁移报告 — 权限校验与页面渲染
+// ═══════════════════════════════════════════════════
+
+/**
+ * 用户角色枚举
+ */
+var USER_ROLES = {
+  GUEST: 'guest',
+  CLINICIAN: 'clinician',
+  ADMIN: 'admin'
+};
+
+/**
+ * 获取当前用户角色
+ * 从 localStorage 读取登录态；未登录默认为 guest
+ * @returns {string} 用户角色
+ */
+function getCurrentUserRole() {
+  try {
+    var stored = localStorage.getItem('userRole');
+    if (stored && [USER_ROLES.GUEST, USER_ROLES.CLINICIAN, USER_ROLES.ADMIN].indexOf(stored) >= 0) {
+      return stored;
+    }
+  } catch (e) {
+    // localStorage 不可用时降级
+  }
+  // 开发环境默认 admin，生产环境改为 GUEST
+  return typeof NODE_ENV !== 'undefined' && NODE_ENV === 'production' ? USER_ROLES.GUEST : USER_ROLES.ADMIN;
+}
+
+/**
+ * 设置用户角色（登录后调用）
+ * @param {string} role - 用户角色
+ */
+function setUserRole(role) {
+  try {
+    localStorage.setItem('userRole', role);
+  } catch (e) {
+    // localStorage 不可用时忽略
+  }
+}
+
+/**
+ * 检查迁移报告访问权限
+ * 仅 ADMIN 角色可访问；CLINICIAN 和 GUEST 显示拒绝页面
+ */
+function checkMigrationPermission() {
+  var role = getCurrentUserRole();
+  var deniedEl = document.getElementById('migrationAccessDenied');
+  var containerEl = document.getElementById('migrationReportContainer');
+
+  if (!deniedEl || !containerEl) return;
+
+  if (role === USER_ROLES.ADMIN) {
+    deniedEl.style.display = 'none';
+    containerEl.style.display = 'block';
+    renderMigrationReport();
+  } else {
+    deniedEl.style.display = 'block';
+    containerEl.style.display = 'none';
+  }
+}
+
+/**
+ * 渲染迁移报告内容
+ * 通过 fetch 加载 migration-report.json 并渲染摘要卡片
+ */
+function renderMigrationReport() {
+  var contentEl = document.getElementById('migrationReportContent');
+  var subtitleEl = document.getElementById('migrationSubtitle');
+  if (!contentEl) return;
+
+  // 尝试加载报告数据
+  fetch('src/migration-report.json')
+    .then(function(res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(function(data) {
+      var subtitle = data.systemStatus === 'healthy' ? '✅ 系统健康' :
+                     data.systemStatus === 'degraded' ? '⚠️ 降级运行' :
+                     '❌ 系统错误';
+      if (subtitleEl) subtitleEl.textContent = subtitle;
+
+      contentEl.innerHTML = buildMigrationReportHTML(data);
+
+      // 绑定导出按钮
+      var exportBtn = document.getElementById('migExportBtn');
+      if (exportBtn) {
+        exportBtn.addEventListener('click', function() {
+          exportMigrationCSV(data);
+        });
+      }
+    })
+    .catch(function(err) {
+      console.error('[Migration] 报告加载失败:', err);
+      contentEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-tertiary);">' +
+        '<p style="font-size:14px;">报告数据加载失败</p>' +
+        '<p style="font-size:12px;margin-top:4px;">' + (err.message || '未知错误') + '</p>' +
+        '<p style="font-size:12px;margin-top:8px;color:var(--text-disabled);">请运行 <code>migrate-data.ts</code> 生成报告</p>' +
+        '</div>';
+      if (subtitleEl) subtitleEl.textContent = '加载失败';
+    });
+}
+
+/**
+ * 构建迁移报告 HTML
+ * @param {Object} data - 报告数据
+ * @returns {string} HTML
+ */
+function buildMigrationReportHTML(data) {
+  var scalesPct = data.scales.total > 0 ? Math.round(data.scales.migrated / data.scales.total * 100) : 0;
+  var protocolsPct = data.protocols.total > 0 ? Math.round(data.protocols.migrated / data.protocols.total * 100) : 0;
+
+  var statusBadge = data.systemStatus === 'healthy' ?
+    '<span style="background:#10B981;color:white;padding:2px 8px;border-radius:999px;font-size:11px;">健康</span>' :
+    data.systemStatus === 'degraded' ?
+    '<span style="background:#F59E0B;color:white;padding:2px 8px;border-radius:999px;font-size:11px;">降级</span>' :
+    '<span style="background:#EF4444;color:white;padding:2px 8px;border-radius:999px;font-size:11px;">错误</span>';
+
+  var genTime = data.generatedAt ? new Date(data.generatedAt).toLocaleString('zh-CN') : '未知';
+
+  var html = '<div style="background:var(--bg-base-secondary);border-radius:12px;padding:16px;margin-bottom:16px;">';
+  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">';
+  html += '<span style="font-size:14px;font-weight:600;">系统状态</span>';
+  html += statusBadge;
+  html += '<span style="font-size:12px;color:var(--text-tertiary);margin-left:auto;">' + genTime + '</span>';
+  html += '</div>';
+
+  // 量表摘要
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">';
+  html += '<div style="background:white;border-radius:8px;padding:12px;">';
+  html += '<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px;">量表迁移</div>';
+  html += '<div style="font-size:20px;font-weight:600;color:#10B981;">' + data.scales.migrated + '<span style="font-size:14px;color:var(--text-tertiary);">/' + data.scales.total + '</span></div>';
+  html += '<div style="height:4px;background:#E5E5E5;border-radius:2px;margin-top:8px;"><div style="height:100%;width:' + scalesPct + '%;background:#10B981;border-radius:2px;"></div></div>';
+  html += '</div>';
+
+  // 协议摘要
+  html += '<div style="background:white;border-radius:8px;padding:12px;">';
+  html += '<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px;">协议迁移</div>';
+  html += '<div style="font-size:20px;font-weight:600;color:#10B981;">' + data.protocols.migrated + '<span style="font-size:14px;color:var(--text-tertiary);">/' + data.protocols.total + '</span></div>';
+  html += '<div style="height:4px;background:#E5E5E5;border-radius:2px;margin-top:8px;"><div style="height:100%;width:' + protocolsPct + '%;background:#10B981;border-radius:2px;"></div></div>';
+  html += '</div>';
+  html += '</div>';
+
+  // 计算抽检
+  if (data.calculationSpotCheck) {
+    html += '<div style="display:flex;gap:12px;font-size:12px;color:var(--text-secondary);margin-bottom:12px;">';
+    html += '<span>计算抽检通过: <strong style="color:#10B981;">' + (data.calculationSpotCheck.passed || 0) + '</strong></span>';
+    html += '<span>失败: <strong style="color:' + (data.calculationSpotCheck.failed > 0 ? '#EF4444' : 'var(--text-tertiary)') + ';">' + (data.calculationSpotCheck.failed || 0) + '</strong></span>';
+    html += '</div>';
+  }
+
+  // 警告
+  if (data.selfCheck && data.selfCheck.warnings > 0) {
+    html += '<div style="background:#FEF3C7;border-left:3px solid #F59E0B;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#92400E;margin-bottom:12px;">';
+    html += '⚠️ 检测到 <strong>' + data.selfCheck.warnings + '</strong> 条警告，部分字段使用默认值回填';
+    html += '</div>';
+  }
+
+  html += '</div>';
+
+  // 导出按钮
+  html += '<button class="btn btn-primary" id="migExportBtn" style="width:100%;margin-bottom:16px;">';
+  html += '导出迁移报告 CSV';
+  html += '</button>';
+
+  // 错误列表
+  var hasErrors = (data.scales.errors && data.scales.errors.length > 0) || (data.protocols.errors && data.protocols.errors.length > 0);
+  if (hasErrors) {
+    html += '<div style="background:#FEF2F2;border-radius:8px;padding:12px;margin-bottom:16px;">';
+    html += '<div style="font-size:13px;font-weight:600;color:#DC2626;margin-bottom:8px;">错误详情</div>';
+    if (data.scales.errors && data.scales.errors.length > 0) {
+      data.scales.errors.forEach(function(err) {
+        html += '<div style="font-size:12px;color:#7F1D1D;margin-bottom:4px;">' + (err.name || err.id) + ': ' + (err.errors || []).map(function(e) { return e.field + ' - ' + e.message; }).join('; ') + '</div>';
+      });
+    }
+    if (data.protocols.errors && data.protocols.errors.length > 0) {
+      data.protocols.errors.forEach(function(err) {
+        html += '<div style="font-size:12px;color:#7F1D1D;margin-bottom:4px;">' + (err.name || err.id) + ': ' + (err.message || '未知错误') + '</div>';
+      });
+    }
+    html += '</div>';
+  }
+
+  // 数据来源
+  if (data.scales.sources && data.scales.sources.length > 0) {
+    html += '<details style="margin-bottom:16px;"><summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--text-secondary);">数据来源 (' + data.scales.sources.length + ')</summary>';
+    html += '<ul style="margin-top:8px;padding-left:20px;font-size:12px;color:var(--text-tertiary);line-height:1.8;">';
+    data.scales.sources.forEach(function(src) {
+      html += '<li>' + src + '</li>';
+    });
+    html += '</ul></details>';
+  }
+
+  return html;
+}
+
+/**
+ * 导出迁移报告为 CSV（主应用内版本）
+ * @param {Object} data - 报告数据
+ */
+function exportMigrationCSV(data) {
+  if (!data || !data.scales || !data.protocols) {
+    alert('数据源未加载，无法导出');
+    return;
+  }
+
+  var lines = [];
+  lines.push('\uFEFF');
+  lines.push('分类,ID,名称,状态,详细信息');
+
+  // 量表
+  var scaleErrors = (data.scales.errors || []);
+  scaleErrors.forEach(function(err) {
+    var details = (err.errors || []).map(function(e) {
+      return '[' + (e.severity || '') + '] ' + (e.field || '') + ': ' + (e.message || '');
+    }).join('; ');
+    lines.push('量表,' + (err.id || '') + ',"' + (err.name || '') + '",失败,"' + details.replace(/"/g, '""') + '"');
+  });
+
+  var scaleSuccess = (data.scales.migrated || 0) - (data.scales.failed || 0);
+  if (scaleSuccess > 0) {
+    lines.push('量表,all,"' + scaleSuccess + ' 个量表",成功,"共 ' + (data.scales.total || 0) + ' 个原始数据全部通过验证"');
+  }
+
+  // 协议
+  var protocolErrors = (data.protocols.errors || []);
+  protocolErrors.forEach(function(err) {
+    lines.push('协议,' + (err.id || '') + ',"' + (err.name || '') + '",失败,"' + (err.message || '').replace(/"/g, '""') + '"');
+  });
+
+  lines.push('协议,all,"' + (data.protocols.migrated || 0) + ' 个协议",成功,"共 ' + (data.protocols.total || 0) + ' 个原始数据全部通过验证"');
+
+  // 警告
+  if (data.selfCheck && data.selfCheck.warnings > 0) {
+    lines.push('自检,warnings,自检警告,警告,"检测到 ' + data.selfCheck.warnings + ' 条警告，部分字段使用默认值回填"');
+  }
+
+  // 元信息
+  lines.push('');
+  lines.push('# 导出时间: ' + new Date().toLocaleString('zh-CN'));
+  lines.push('# 系统状态: ' + (data.systemStatus || 'unknown'));
+  lines.push('# 操作者角色: ' + getCurrentUserRole());
+
+  var csv = lines.join('\n');
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var link = document.createElement('a');
+  var d = new Date();
+  var ts = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + '_' + String(d.getHours()).padStart(2, '0') + String(d.getMinutes()).padStart(2, '0');
+  link.href = url;
+  link.download = 'migration-report-' + ts + '.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
 </script>
 </body>
 </html>

@@ -971,9 +971,19 @@ function applyFilter(filter) {
 }
 
 // ============ CSV 导出 ============
+function safeGet(obj, path, fallback = null) {
+  return path.split('.').reduce((acc, key) => (acc && acc[key] != null) ? acc[key] : fallback, obj);
+}
+
 function exportToCSV() {
+  // 防御性检查：确保数据源存在
+  if (!reportData || !reportData.scales || !reportData.protocols) {
+    showToast('数据源未加载，无法导出', true);
+    return;
+  }
+  
   const rows = [];
-  const filter = currentFilter;
+  const filter = currentFilter || 'all';
   
   // 构建数据行
   function addRow(category, id, name, status, description) {
@@ -983,48 +993,53 @@ function exportToCSV() {
       'warning': '警告'
     };
     rows.push({
-      '分类': category,
-      'ID': id,
-      '名称': name,
-      '状态': statusMap[status] || status,
-      '详细信息': description
+      '分类': category || '',
+      'ID': id || '',
+      '名称': name || '',
+      '状态': statusMap[status] || status || '',
+      '详细信息': description || ''
     });
   }
   
-  // 量表数据
-  for (const err of reportData.scales.errors) {
+  // 量表数据（防御 errors 为 undefined）
+  const scaleErrors = safeGet(reportData, 'scales.errors', []);
+  for (const err of scaleErrors) {
     if (filter === 'all' || filter === 'error') {
-      addRow('量表', err.id, err.name, 'error', err.errors.map(e => `[${e.severity}] ${e.field}: ${e.message}`).join('; '));
+      const errDetails = (err.errors || []).map(e => `[${e.severity || ''}] ${e.field || ''}: ${e.message || ''}`).join('; ');
+      addRow('量表', err.id, err.name, 'error', errDetails);
     }
   }
   
   if (filter === 'all' || filter === 'success') {
-    const successCount = reportData.scales.migrated - reportData.scales.failed;
+    const successCount = safeGet(reportData, 'scales.migrated', 0) - safeGet(reportData, 'scales.failed', 0);
     if (successCount > 0) {
-      addRow('量表', 'all', `${successCount} 个量表`, 'success', `共 ${reportData.scales.total} 个原始数据全部通过验证`);
+      addRow('量表', 'all', `${successCount} 个量表`, 'success', `共 ${safeGet(reportData, 'scales.total', 0)} 个原始数据全部通过验证`);
     }
   }
   
-  // 协议数据
-  for (const err of reportData.protocols.errors) {
+  // 协议数据（防御 errors 为 undefined）
+  const protocolErrors = safeGet(reportData, 'protocols.errors', []);
+  for (const err of protocolErrors) {
     if (filter === 'all' || filter === 'error') {
       addRow('协议', err.id, err.name, 'error', err.message);
     }
   }
   
   if (filter === 'all' || filter === 'success') {
-    addRow('协议', 'all', `${reportData.protocols.migrated} 个协议`, 'success', `共 ${reportData.protocols.total} 个原始数据全部通过验证`);
+    addRow('协议', 'all', `${safeGet(reportData, 'protocols.migrated', 0)} 个协议`, 'success', `共 ${safeGet(reportData, 'protocols.total', 0)} 个原始数据全部通过验证`);
   }
   
   // 警告数据
   if (filter === 'all' || filter === 'warning') {
-    if (reportData.selfCheck.warnings > 0) {
-      addRow('自检', 'warnings', '自检警告', 'warning', `检测到 ${reportData.selfCheck.warnings} 条警告，部分字段使用默认值回填`);
+    const warningCount = safeGet(reportData, 'selfCheck.warnings', 0);
+    if (warningCount > 0) {
+      addRow('自检', 'warnings', '自检警告', 'warning', `检测到 ${warningCount} 条警告，部分字段使用默认值回填`);
     }
   }
   
   // 计算抽检数据
   if (filter === 'all' || filter === 'success') {
+    const spotCheckPassed = safeGet(reportData, 'calculationSpotCheck.passed', 0);
     const spotCheckItems = [
       { id: 'vas', name: 'VAS 视觉模拟评分' },
       { id: 'nrs', name: 'NRS 数字疼痛评分' },
@@ -1125,34 +1140,41 @@ function updateFilterCounts() {
 }
 
 // 绑定筛选事件
-document.getElementById('filterBar').addEventListener('click', (e) => {
-  const tab = e.target.closest('.filter-tab');
-  if (tab) applyFilter(tab.dataset.filter);
-});
+const filterBar = document.getElementById('filterBar');
+if (filterBar) {
+  filterBar.addEventListener('click', (e) => {
+    const tab = e.target.closest('.filter-tab');
+    if (tab) applyFilter(tab.dataset.filter);
+  });
+}
 
 // 绑定导出事件
-document.getElementById('exportBtn').addEventListener('click', exportToCSV);
+const exportBtn = document.getElementById('exportBtn');
+if (exportBtn) {
+  exportBtn.addEventListener('click', exportToCSV);
+}
 
 // 更新导出信息
 function updateExportInfo() {
   const exportInfo = document.getElementById('exportInfo');
-  const filter = currentFilter;
+  if (!exportInfo) return;
+  const filter = currentFilter || 'all';
   const parts = [];
   
   if (filter === 'all') {
-    parts.push(`量表 ${reportData.scales.total}`);
-    parts.push(`协议 ${reportData.protocols.total}`);
-    parts.push(`计算抽检 ${reportData.calculationSpotCheck.passed}`);
-    if (reportData.selfCheck.warnings > 0) parts.push(`警告 ${reportData.selfCheck.warnings}`);
+    parts.push(`量表 ${safeGet(reportData, 'scales.total', 0)}`);
+    parts.push(`协议 ${safeGet(reportData, 'protocols.total', 0)}`);
+    parts.push(`计算抽检 ${safeGet(reportData, 'calculationSpotCheck.passed', 0)}`);
+    if (safeGet(reportData, 'selfCheck.warnings', 0) > 0) parts.push(`警告 ${reportData.selfCheck.warnings}`);
   } else if (filter === 'success') {
-    parts.push(`量表 ${reportData.scales.migrated}`);
-    parts.push(`协议 ${reportData.protocols.migrated}`);
-    parts.push(`计算抽检 ${reportData.calculationSpotCheck.passed}`);
+    parts.push(`量表 ${safeGet(reportData, 'scales.migrated', 0)}`);
+    parts.push(`协议 ${safeGet(reportData, 'protocols.migrated', 0)}`);
+    parts.push(`计算抽检 ${safeGet(reportData, 'calculationSpotCheck.passed', 0)}`);
   } else if (filter === 'error') {
-    parts.push(`量表失败 ${reportData.scales.failed}`);
-    parts.push(`协议失败 ${reportData.protocols.failed}`);
+    parts.push(`量表失败 ${safeGet(reportData, 'scales.failed', 0)}`);
+    parts.push(`协议失败 ${safeGet(reportData, 'protocols.failed', 0)}`);
   } else if (filter === 'warning') {
-    parts.push(`警告 ${reportData.selfCheck.warnings}`);
+    parts.push(`警告 ${safeGet(reportData, 'selfCheck.warnings', 0)}`);
   }
   
   exportInfo.textContent = `筛选「${getFilterLabel(filter)}」：${parts.join(' / ')} 条记录可导出`;
