@@ -2203,6 +2203,16 @@ body { display: flex; flex-direction: column; width: 100%; max-width: 100%; marg
 .freq-tag.mid { background: rgba(245,158,11,0.1); color: #d97706; }
 .freq-tag.low { background: rgba(16,185,129,0.1); color: #059669; }
 
+/* 阶段卡片脉冲高亮动画 */
+@keyframes stage-card-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(8,145,178,0.4); border-color: var(--primary); }
+  50%  { box-shadow: 0 0 0 6px rgba(8,145,178,0.15); border-color: var(--primary); }
+  100% { box-shadow: 0 0 0 0 rgba(8,145,178,0); border-color: var(--border); }
+}
+.stage-card.stage-card-pulse {
+  animation: stage-card-pulse 0.8s ease-out;
+}
+
 /* 方案卡片样式 */
 .protocol-card {
   background: rgba(255,255,255,0.8);
@@ -6824,7 +6834,7 @@ function showProtocolDetail(id) {
     }).join('');
     var caution = s.cautions ? '<div class="stage-caution"><strong>⚠ 注意事项</strong><br>' + s.cautions + '</div>' : '';
     var criteria = s.criteria ? '<div class="stage-criteria"><strong>✓ 进阶标准</strong><br>' + s.criteria + '</div>' : '';
-    return '<div class="stage-card">' +
+    return '<div class="stage-card" data-stage-index="' + i + '">' +
       '<div class="stage-header" onclick="this.nextElementSibling.classList.toggle(\'open\');this.querySelector(\'.stage-arrow\').classList.toggle(\'open\')">' +
         '<div class="stage-number">' + (i + 1) + '</div>' +
         '<div class="stage-name">' + s.name + '</div>' +
@@ -6875,7 +6885,7 @@ function showProtocolDetail(id) {
       else if (freqText.indexOf('每周') >= 0 && freqText.indexOf('每周 2') < 0) { freqClass = 'mid'; }
       else if (freqText.indexOf('周以后') >= 0 || freqText.indexOf('每周 2') >= 0) { freqClass = 'low'; }
 
-      return '<tr onclick="highlightStageRow(this)">' +
+      return '<tr onclick="highlightStageRow(this, ' + i + ')">' +
         '<td><span class="stage-overview-num">' + (i + 1) + '</span></td>' +
         '<td><div class="stage-overview-name">' + stageNameShort + '</div>' +
         (durationText ? '<div class="stage-overview-duration">' + durationText + '</div>' : '') + '</td>' +
@@ -6924,10 +6934,11 @@ function showProtocolDetail(id) {
 }
 
 /**
- * 阶段概览表格行点击高亮（一期）
- * 二期将增加滚动联动到对应详细卡片
+ * 阶段概览表格行点击：高亮 + 滚动联动到对应详细卡片
+ * @param {HTMLElement} row - 被点击的表格行
+ * @param {number} stageIndex - 阶段索引
  */
-function highlightStageRow(row) {
+function highlightStageRow(row, stageIndex) {
   // 清除同表格内其他行的高亮
   var tbody = row.parentNode;
   tbody.querySelectorAll('tr.highlight').forEach(function(r) {
@@ -6935,6 +6946,38 @@ function highlightStageRow(row) {
   });
   // 切换当前行高亮
   row.classList.toggle('highlight');
+
+  // 滚动联动到对应详细卡片
+  if (stageIndex === undefined) return;
+  var card = document.querySelector('.stage-card[data-stage-index="' + stageIndex + '"]');
+  if (!card) return;
+
+  // 确保卡片内容展开
+  var content = card.querySelector('.stage-content');
+  if (content && !content.classList.contains('open')) {
+    content.classList.add('open');
+    var arrow = card.querySelector('.stage-arrow');
+    if (arrow) arrow.classList.add('open');
+  }
+
+  // 触发高亮脉冲动画
+  card.classList.remove('stage-card-pulse');
+  // 强制 reflow 以重启动画
+  void card.offsetWidth;
+  card.classList.add('stage-card-pulse');
+
+  // 平滑滚动到卡片位置（偏移 80px 避免被固定导航遮挡）
+  var contentEl = document.getElementById('content');
+  var scrollTarget = contentEl || window;
+  var cardTop = card.getBoundingClientRect().top;
+  var containerTop = contentEl ? contentEl.getBoundingClientRect().top : 0;
+  var offset = cardTop - containerTop + (contentEl ? contentEl.scrollTop : window.scrollY) - 80;
+
+  if (contentEl) {
+    contentEl.scrollTo({ top: offset, behavior: 'smooth' });
+  } else {
+    window.scrollTo({ top: offset, behavior: 'smooth' });
+  }
 }
 
 // ===== 数据看板 =====
