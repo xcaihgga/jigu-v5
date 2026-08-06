@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>集成示例 C — 纯数据 API（自定义 UI）</title>
+<style>
+  body { font-family: -apple-system, "PingFang SC", sans-serif; margin: 0; padding: 20px; background: #f9fafb; color: #1f2937; }
+  h1 { font-size: 18px; margin-bottom: 4px; }
+  .desc { color: #6b7280; font-size: 13px; margin-bottom: 16px; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid #e5e7eb; }
+  .tab { padding: 8px 16px; cursor: pointer; border-bottom: 2px solid transparent; font-size: 14px; }
+  .tab.active { border-bottom-color: #2563eb; color: #2563eb; font-weight: 600; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .item { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; }
+  .item-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .item-meta { color: #6b7280; font-size: 12px; }
+  .item-body { margin-top: 8px; font-size: 13px; line-height: 1.6; color: #374151; }
+  .tag { display: inline-block; background: #eff6ff; color: #1d4ed8; padding: 2px 8px; border-radius: 10px; font-size: 11px; margin-right: 4px; }
+  pre { background: #1f2937; color: #f9fafb; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; }
+  .search-box { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; width: 100%; margin-bottom: 12px; box-sizing: border-box; }
+</style>
+</head>
+<body>
+  <h1>集成示例 C：纯数据 API</h1>
+  <p class="desc">只引入数据文件，完全自定义 UI。适合已有自己界面的应用。</p>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="scales">量表（88）</div>
+    <div class="tab" data-tab="protocols">康复方案（36）</div>
+    <div class="tab" data-tab="tools">临床工具（25）</div>
+    <div class="tab" data-tab="code">代码示例</div>
+  </div>
+
+  <div class="panel active" id="panel-scales">
+    <input class="search-box" id="scaleSearch" placeholder="搜索量表名称..." />
+    <div id="scaleList"></div>
+  </div>
+
+  <div class="panel" id="panel-protocols">
+    <div id="protocolList"></div>
+  </div>
+
+  <div class="panel" id="panel-tools">
+    <div id="toolList"></div>
+  </div>
+
+  <div class="panel" id="panel-code">
+    <pre>// 1. 获取所有量表
+var allScales = assessmentScales.concat(scalesExtra || []);
+
+// 2. 筛选疼痛类
+var painScales = filterScales(allScales, 'pain', '');
+
+// 3. 搜索
+var results = filterScales(allScales, '全部', 'berg');
+
+// 4. 计算得分
+var berg = allScales.find(s =&gt; s.id === 'berg-balance');
+var result = berg.calculate([4,3,2,2,2,3]);
+// → { score: 16, maxScore: 56 }
+
+// 5. 获取解读
+var interp = getInterpretation(16, 56, berg.interpretation);
+// → { level: '...', color: '...', desc: '...' }
+
+// 6. 康复方案
+var p = rehabProtocols.find(p =&gt; p.id === 'shoulder-impingement');
+p.stages.forEach((s, i) =&gt; console.log(i+1, s.name, s.goal));
+
+// 7. 临床工具
+var tool = clinicalTools.find(t =&gt; t.id === 'rom-shoulder');
+tool.content.movements.forEach(m =&gt; console.log(m.name, m.normal));</pre>
+  </div>
+
+  <!-- 只引入数据文件 + utils -->
+  <script src="https://xcaihgga.github.io/jigu-v5/src/utils.js"></script>
+  <script src="https://xcaihgga.github.io/jigu-v5/src/scales.js"></script>
+  <script src="https://xcaihgga.github.io/jigu-v5/src/scales-extra.js"></script>
+  <script src="https://xcaihgga.github.io/jigu-v5/src/clinical-tools.js"></script>
+  <script src="https://xcaihgga.github.io/jigu-v5/src/rehab-protocols.js"></script>
+
+  <script>
+    var allScales = assessmentScales.concat(scalesExtra || []);
+
+    // ── 量表列表 ──
+    function renderScales(keyword) {
+      var filtered = filterScales(allScales, '全部', keyword || '');
+      var html = filtered.map(function(s) {
+        var catInfo = scaleCategoryInfo[s.category] || { name: s.category };
+        var interpInfo = '';
+        if (s.interpretation && s.interpretation.length > 0) {
+          interpInfo = '<div class="item-meta">分度: ' + s.interpretation.map(function(i) { return i.level; }).join(' / ') + '</div>';
+        }
+        return '<div class="item">' +
+          '<div class="item-title">' + escapeHtml(s.name) + '</div>' +
+          '<div class="item-meta"><span class="tag">' + escapeHtml(catInfo.name) + '</span>满分 ' + s.totalScore + ' · ' + (s.questions ? s.questions.length + ' 题' : s.type) + '</div>' +
+          '<div class="item-body">' + escapeHtml(s.description || '') + '</div>' +
+          interpInfo +
+        '</div>';
+      }).join('');
+      document.getElementById('scaleList').innerHTML = html || '<div class="item-meta">无匹配量表</div>';
+    }
+    renderScales('');
+    document.getElementById('scaleSearch').addEventListener('input', function() {
+      renderScales(this.value);
+    });
+
+    // ── 康复方案 ──
+    var protocolHtml = rehabProtocols.map(function(p) {
+      var stages = p.stages || [];
+      var stageHtml = stages.map(function(s, i) {
+        return '<div style="margin:6px 0;padding-left:12px;border-left:2px solid #e5e7eb;">' +
+          '<strong>阶段' + (i+1) + ': ' + escapeHtml(s.name) + '</strong>' +
+          '<div class="item-meta">目标: ' + escapeHtml(s.goal || '') + '</div>' +
+          '<div class="item-meta">频率: ' + escapeHtml(s.duration || '') + '</div>' +
+        '</div>';
+      }).join('');
+      return '<div class="item">' +
+        '<div class="item-title">' + escapeHtml(p.name) + '</div>' +
+        '<div class="item-meta"><span class="tag">' + escapeHtml(p.categoryName || p.category) + '</span>' + stages.length + ' 个阶段</div>' +
+        '<div class="item-body">' + stageHtml + '</div>' +
+      '</div>';
+    }).join('');
+    document.getElementById('protocolList').innerHTML = protocolHtml;
+
+    // ── 临床工具 ──
+    var toolHtml = clinicalTools.map(function(t) {
+      return '<div class="item">' +
+        '<div class="item-title">' + escapeHtml(t.name) + '</div>' +
+        '<div class="item-meta"><span class="tag">' + escapeHtml(t.category) + '</span><span class="tag">' + escapeHtml(t.type || '工具') + '</span></div>' +
+        '<div class="item-body">' + escapeHtml(t.description || '') + '</div>' +
+      '</div>';
+    }).join('');
+    document.getElementById('toolList').innerHTML = toolHtml;
+
+    // ── Tab 切换 ──
+    document.querySelectorAll('.tab').forEach(function(el) {
+      el.addEventListener('click', function() {
+        document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+        document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+        this.classList.add('active');
+        document.getElementById('panel-' + this.dataset.tab).classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

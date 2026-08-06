@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>集成示例 B — 模块引入（调用 API）</title>
+<style>
+  body { font-family: -apple-system, "PingFang SC", sans-serif; margin: 0; padding: 20px; background: #f5f5f5; color: #333; }
+  h1 { font-size: 18px; }
+  .desc { color: #666; font-size: 13px; margin-bottom: 16px; }
+  .card { background: #fff; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .card h3 { margin: 0 0 8px; font-size: 14px; }
+  .stat { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 4px 12px; border-radius: 12px; font-size: 13px; margin-right: 8px; }
+  #scaleList { max-height: 400px; overflow-y: auto; }
+  .scale-item { padding: 10px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+  .scale-item:hover { background: #f8fafc; }
+  .scale-name { font-weight: 600; font-size: 14px; }
+  .scale-desc { color: #666; font-size: 12px; margin-top: 2px; }
+  #status { padding: 8px 12px; background: #fef3c7; border-radius: 6px; font-size: 13px; margin-bottom: 12px; }
+  #status.ready { background: #d1fae5; color: #065f46; }
+</style>
+</head>
+<body>
+  <h1>集成示例 B：模块引入</h1>
+  <p class="desc">引入核心模块，调用 filterScales / startScale 等 API，自定义 UI。</p>
+
+  <div id="status">正在加载康复数据...</div>
+
+  <div class="card">
+    <h3>量表库统计</h3>
+    <div id="stats"></div>
+  </div>
+
+  <div class="card">
+    <h3>疼痛类量表（点击启动评估）</h3>
+    <div id="scaleList"></div>
+  </div>
+
+  <!-- 1. 引入核心模块（按依赖顺序） -->
+  <script src="https://xcaihgga.github.io/jigu-v5/src/utils.js"></script>
+  <script src="https://xcaihgga.github.io/jigu-v5/src/scales.js"></script>
+  <script src="https://xcaihgga.github.io/jigu-v5/src/scales-extra.js"></script>
+
+  <script>
+    // 2. 数据已同步加载完成（scales.js 用 window.xxx 挂载）
+    var allScales = assessmentScales.concat(scalesExtra || []);
+
+    // 3. 更新状态
+    var statusEl = document.getElementById('status');
+    statusEl.textContent = '数据加载完成，共 ' + allScales.length + ' 个量表';
+    statusEl.className = 'ready';
+
+    // 4. 渲染统计
+    var stats = {};
+    allScales.forEach(function(s) { stats[s.category] = (stats[s.category] || 0) + 1; });
+    var statsHtml = '';
+    Object.keys(stats).forEach(function(cat) {
+      var info = scaleCategoryInfo[cat] || { name: cat };
+      statsHtml += '<span class="stat">' + info.name + ': ' + stats[cat] + '</span>';
+    });
+    document.getElementById('stats').innerHTML = statsHtml;
+
+    // 5. 使用纯函数 filterScales 筛选疼痛类量表
+    var painScales = filterScales(allScales, 'pain', '');
+
+    // 6. 渲染列表
+    var listHtml = painScales.map(function(s) {
+      return '<div class="scale-item" onclick="startAssessment(\'' + s.id + '\')">' +
+        '<div class="scale-name">' + escapeHtml(s.name) + '</div>' +
+        '<div class="scale-desc">' + escapeHtml(s.description || '') + '</div>' +
+      '</div>';
+    }).join('');
+    document.getElementById('scaleList').innerHTML = listHtml || '<div class="scale-desc">无疼痛类量表</div>';
+
+    // 7. 自定义评估入口（不使用原应用 UI，仅调用评分逻辑）
+    function startAssessment(scaleId) {
+      var scale = allScales.find(function(s) { return s.id === scaleId; });
+      if (!scale) return alert('未找到量表');
+
+      // 模拟用户作答：取每个问题的中间选项
+      var mockAnswers = [];
+      if (scale.questions) {
+        scale.questions.forEach(function(q) {
+          var midIdx = Math.floor(q.scores.length / 2);
+          mockAnswers.push(q.scores[midIdx]);
+        });
+      } else if (scale.type === 'slider') {
+        mockAnswers = [Math.round(scale.totalScore / 2)];
+      }
+
+      // 调用量表内置的 calculate 函数计算得分
+      var result = scale.calculate
+        ? scale.calculate(mockAnswers)
+        : { score: mockAnswers.reduce(function(a, b) { return a + b; }, 0), maxScore: scale.totalScore };
+
+      // 调用 getInterpretation 获取结果解读
+      var interp = getInterpretation(result.score, result.maxScore, scale.interpretation || []);
+
+      alert(
+        scale.name + '\n' +
+        '模拟作答: ' + mockAnswers.join(', ') + '\n' +
+        '得分: ' + result.score + ' / ' + result.maxScore + '\n' +
+        '等级: ' + interp.level + '\n' +
+        '解读: ' + interp.desc
+      );
+    }
+  </script>
+</body>
+</html>
