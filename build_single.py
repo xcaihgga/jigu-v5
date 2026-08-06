@@ -156,10 +156,20 @@ def build_deploy():
     print(f"\n  ✅ 核心页面已生成: {output_html}")
     print(f"     大小: {html_size / 1024:.1f} KB (首屏加载)")
 
-    # 2. 复制数据文件
+    # 2. 复制数据文件 + 核心模块脚本（index.html 直接引用的全部 src）
     data_files = [
         ('data.js', 'data.js'),
         ('src/app-config.js', 'src/app-config.js'),
+        # 拆分模块（被 index.html 直接 <script src> 引用，必须部署）
+        ('src/logger.js', 'src/logger.js'),
+        ('src/utils.js', 'src/utils.js'),
+        ('src/realtime-bar.js', 'src/realtime-bar.js'),
+        ('src/router.js', 'src/router.js'),
+        ('src/muscle-disease.js', 'src/muscle-disease.js'),
+        ('src/scales-ui.js', 'src/scales-ui.js'),
+        ('src/protocols-tools-guidelines.js', 'src/protocols-tools-guidelines.js'),
+        ('src/dashboard.js', 'src/dashboard.js'),
+        # 数据文件（由 data-loader.js 异步加载）
         ('src/scales.js', 'src/scales.js'),
         ('src/scales-extra.js', 'src/scales-extra.js'),
         ('src/scales-pro.js', 'src/scales-pro.js'),
@@ -189,6 +199,16 @@ def build_deploy():
     if os.path.exists(loader_src):
         shutil.copy2(loader_src, os.path.join(deploy_dir, 'src/data-loader.js'))
         print(f"  ✅ 加载器已复制: src/data-loader.js")
+
+    # 3.5 复制 assets 目录（解剖插图，被 muscle-disease.js 的 illustrationHtml 引用）
+    assets_src = os.path.join(base_dir, 'assets')
+    assets_dst = os.path.join(deploy_dir, 'assets')
+    if os.path.exists(assets_src):
+        shutil.copytree(assets_src, assets_dst)
+        asset_count = sum(len(files) for _, _, files in os.walk(assets_dst))
+        print(f"  ✅ 静态资源已复制: assets/ ({asset_count} 个文件)")
+    else:
+        print(f"  ⚠️  assets 目录不存在: {assets_src}")
 
     # 4. 创建 .nojekyll（GitHub Pages 需要）
     with open(os.path.join(deploy_dir, '.nojekyll'), 'w') as f:
