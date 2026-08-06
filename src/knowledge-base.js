@@ -8,7 +8,8 @@
 // core(🔴)        : 核心评定量表，建议所有患者常规使用
 // recommended(🟡) : 推荐评定量表，根据病情和阶段选用
 // optional(🔵)    : 可选评定量表，用于特殊场景或深入研究
-const diseaseScaleMap = {
+if (typeof diseaseScaleMap === 'undefined') {
+window.diseaseScaleMap = {
   '脑卒中': {
     core: ['Fugl-Meyer上肢', 'Fugl-Meyer下肢', 'Berg平衡量表', 'Barthel指数', '改良Ashworth量表'],
     recommended: ['TUG起立行走', 'MMSE简易精神状态', '洼田饮水试验', 'FIM功能独立性', 'Brunnstrom分期'],
@@ -135,13 +136,15 @@ const diseaseScaleMap = {
     optional: ['Weiss功能缺陷量表WFIRS', 'NICHQ Vanderbilt随访', '儿童焦虑量表SCARED', '感觉统合评定量表']
   }
 };
+}
 
 // ==================== 临床指南核心推荐摘要 ====================
 // 证据等级说明：
 //   A — 高质量证据，强烈推荐（多项RCT或Meta分析支持）
 //   B — 中等质量证据，推荐（单项RCT或高质量观察性研究）
 //   C — 低质量证据，可选（专家共识或病例报告）
-const clinicalGuidelines = [
+if (typeof clinicalGuidelines === 'undefined') {
+window.clinicalGuidelines = [
   {
     id: 'stroke_2024',
     title: '中国脑卒中康复指南（2024版）',
@@ -443,3 +446,4 @@ const clinicalGuidelines = [
     relatedScales: ['洼田饮水试验', 'GUSS吞咽功能评估', 'VFSS吞咽造影', 'FOIS功能经口摄入', 'EAT-10吞咽评估', '容积-黏度测试VVST']
   }
 ];
+}

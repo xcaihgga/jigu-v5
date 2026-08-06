@@ -1,4 +1,7 @@
 /**
+ * ⚠️ 状态：TypeScript 架构草稿，**不在当前 index.html 单文件主链路运行**。
+ * ⚠️ 启用条件：需添加 tsconfig.json + 构建脚本（如 tsc/esbuild），编译输出到 src/ 目录后由 index.html 引入。
+ *
  * 集成入口：连接原始数据与新数据服务
  * 
  * 这是应用启动时的入口点，负责：

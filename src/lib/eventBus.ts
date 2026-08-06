@@ -1,4 +1,7 @@
 /**
+ * ⚠️ 状态：TypeScript 架构草稿，**不在当前 index.html 单文件主链路运行**。
+ * ⚠️ 启用条件：需添加 tsconfig.json + 构建脚本（如 tsc/esbuild），编译输出到 src/ 目录后由 index.html 引入。
+ *
  * 轻量级事件总线（Event Emitter）
  * 用于解耦 Services 层（数据写入）与 UI 层（状态更新）
  * 

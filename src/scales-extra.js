@@ -1,7 +1,8 @@
 // 补充康复评估量表数据（scalesExtra）
 // 涵盖平衡与协调、运动功能、肌力与痉挛、关节活动度、日常生活、疼痛评估、认知与心理、吞咽与言语共55个量表
 // 注：以下量表均为公共领域的医学标准量表，数据结构采用 questions[].options[].score + scoring.levels 形式
-const scalesExtra = [
+if (typeof scalesExtra === 'undefined') {
+window.scalesExtra = [
 
   // ===================== 平衡与协调（8个） =====================
 
@@ -1838,3 +1839,4 @@ const scalesExtra = [
     }
   }
 ];
+}

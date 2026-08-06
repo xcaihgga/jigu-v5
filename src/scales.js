@@ -1,4 +1,5 @@
-const assessmentScales = [
+if (typeof assessmentScales === 'undefined') {
+window.assessmentScales = [
   {
     id: 'vas',
     name: 'VAS 视觉模拟疼痛评分',
@@ -1090,8 +1091,10 @@ const assessmentScales = [
     }
   }
 ];
+}
 
-const scaleCategoryInfo = {
+if (typeof scaleCategoryInfo === 'undefined') {
+window.scaleCategoryInfo = {
   pain: { name: '疼痛评估', icon: 'pain' },
   neck: { name: '颈肩评估', icon: 'cervical' },
   back: { name: '腰背评估', icon: 'lumbar' },
@@ -1105,3 +1108,4 @@ const scaleCategoryInfo = {
   muscle: { name: '肌肉与关节功能', icon: 'muscleTest' },
   mental: { name: '心理状态', icon: 'mental' }
 };
+}

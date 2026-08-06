@@ -1,4 +1,7 @@
 /**
+ * ⚠️ 状态：TypeScript 架构草稿，**不在当前 index.html 单文件主链路运行**。
+ * ⚠️ 启用条件：需添加 tsconfig.json + 构建脚本（如 tsc/esbuild），编译输出后执行。
+ *
  * 数据迁移脚本
  * 
  * 将旧格式的 scales.js 和 protocols-pro.js 数据

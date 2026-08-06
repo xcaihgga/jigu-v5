@@ -3754,6 +3754,7 @@ function switchTab(tab) {
     return;
   }
 
+  var prevTab = currentTab; // 先保存旧 tab
   currentTab = tab;
   pageHistory = [];
   currentPage = null;
@@ -3773,7 +3774,8 @@ function switchTab(tab) {
   document.getElementById('navBack').style.display = 'none';
 
   // 更新实时操作栏
-  rtSession.tabSwitches++;
+  if (prevTab !== tab) rtSession.tabSwitches++; // 点同一个 tab 不计数
+  __rtViewedTabs.add(tab);
   var tabNames = (window.AppConfig && AppConfig.NAV_TITLES) || {
     muscle: '肌肉查询', diagnosis: '临床诊断', assessment: '评估量表',
     tools: '临床工具', guidelines: '临床指南', protocol: '循证方案',
@@ -3783,11 +3785,24 @@ function switchTab(tab) {
   rtSetAction('切换到' + (tabNames[tab] || tab));
 
   if (tab === 'dashboard') {
-    setTimeout(function() {
+    // 用 token 防止用户快速切 tab 导致重复/过期渲染
+    var __dashToken = ++__dashboardRenderToken;
+    function _doRenderDash() {
+      if (__dashToken !== __dashboardRenderToken) return; // 用户已切走，作废
       try { renderDashboard(); } catch (e) { console.warn('[Dashboard] renderDashboard 失败:', e && e.message ? e.message : e); }
       try { renderDashboardSources(); } catch (e) { console.warn('[Dashboard] renderDashboardSources 失败:', e && e.message ? e.message : e); }
-    }, 100);
+    }
+    // 数据已就绪直接渲染（绝大多数情况）；否则等 data-loader-complete
+    if (typeof assessmentScales !== 'undefined' && Array.isArray(assessmentScales)) {
+      _doRenderDash();
+    } else {
+      window.addEventListener('data-loader-complete', function onDashData() {
+        window.removeEventListener('data-loader-complete', onDashData);
+        _doRenderDash();
+      });
+    }
   }
+  updateSessionStats();
 }
 
 function updateNavTitle(tab) {
@@ -3862,6 +3877,8 @@ function showPage(pageName, pushHistory) {
   }
   document.getElementById('content').scrollTop = 0;
   document.getElementById('navBack').style.display = 'flex';
+  rtSession.pageViews++;
+  updateSessionStats();
 }
 
 function formatContent(text) {
@@ -4799,23 +4816,39 @@ function initAllScales() {
   } else {
     window.assessmentScales = assessmentScales;
   }
+  // name 归一化：去掉空格/括号/短横线/大小写，用于语义重复去重
+  function normName(n) { return (n || '').replace(/[\s\(\)\[\]\-\—_（）【】]/g, '').toLowerCase(); }
+  const existingIds = new Set(assessmentScales.map(s => s.id));
+  const existingNames = new Set(assessmentScales.map(s => normName(s.name)));
   if (typeof scalesExtra !== 'undefined' && scalesExtra.length > 0) {
-    const existingIds = new Set(assessmentScales.map(s => s.id));
     scalesExtra.forEach(extra => {
-      if (!existingIds.has(extra.id)) {
-        const converted = convertExtraScale(extra);
-        assessmentScales.push(converted);
-        existingIds.add(converted.id);
+      const convId = extra.id; // convertExtraScale 不改动 id
+      if (existingIds.has(convId)) return;
+      const converted = convertExtraScale(extra);
+      const nm = normName(converted.name);
+      if (nm && existingNames.has(nm)) {
+        console.log('[Scales] 跳过语义重复(extra): ' + converted.name + ' (id=' + convId + ')');
+        return;
       }
+      assessmentScales.push(converted);
+      existingIds.add(convId);
+      if (nm) existingNames.add(nm);
     });
   }
   if (typeof scalesPro !== 'undefined' && scalesPro.length > 0) {
-    const existingIds = new Set(assessmentScales.map(s => s.id));
     scalesPro.forEach(pro => {
-      if (!existingIds.has(pro.id)) {
-        pro.isPro = true;
-        assessmentScales.push(pro);
+      if (existingIds.has(pro.id)) return;
+      const nm = normName(pro.name);
+      // PRO 版：若简版已存在则仍保留（name 带"完整版"标签是有意区分），
+      // 但若 name 完全相同，算重复跳过
+      if (nm && existingNames.has(nm)) {
+        console.log('[Scales] 跳过语义重复(pro): ' + pro.name + ' (id=' + pro.id + ')');
+        return;
       }
+      pro.isPro = true;
+      assessmentScales.push(pro);
+      existingIds.add(pro.id);
+      if (nm) existingNames.add(nm);
     });
   }
   window.assessmentScales = assessmentScales;
@@ -4861,7 +4894,20 @@ function initAllProtocols() {
  * 实时操作信息栏
  * 显示：当前模块名、实时时钟、最近操作、会话统计
  */
-var rtSession = { assessments: 0, protocols: 0, tabSwitches: 0, lastAction: '就绪' };
+var rtSession = {
+  // 去重计数（Set 放外面方便 .size 取数）
+  tabSwitches: 0,        // 实际切换 tab 次数（点同一个 tab 不算）
+  assessments: 0,        // 提交评定总次数（包含重复量表）
+  protocols: 0,          // 查看方案总次数（包含重复方案）
+  pageViews: 0,          // 进入二级详情页总次数（量表/方案/肌肉/疾病/工具/指南/病例等）
+  lastAction: '就绪'
+};
+// 去重集合（会话内不同 id 的数量，刷新后重置属正常行为）
+var __rtAssessedIds = new Set();   // 已评定过的不同量表 id
+var __rtViewedProtoIds = new Set(); // 已查看过的不同方案 id
+var __rtViewedTabs = new Set();     // 已访问过的不同 tab
+var __dashboardRenderToken = 0; // 看板渲染防重入/过期 token
+var __rtClockTimer = null; // 实时时钟 interval id，用于页面隐藏时暂停省电
 
 function initDataVersionBar() {
   var bar = document.getElementById('dataVersionBar');
@@ -4887,7 +4933,16 @@ function initDataVersionBar() {
       String(d.getSeconds()).padStart(2, '0');
   }
   updateClock();
-  setInterval(updateClock, 1000);
+  __rtClockTimer = setInterval(updateClock, 1000);
+  // 页面隐藏时暂停时钟，页面切回时立即更新并重启（省电）
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      if (__rtClockTimer) { clearInterval(__rtClockTimer); __rtClockTimer = null; }
+    } else {
+      updateClock();
+      if (!__rtClockTimer) { __rtClockTimer = setInterval(updateClock, 1000); }
+    }
+  });
 
   // 数据概况（展开面板里）
   var scales = Array.isArray(window.assessmentScales) ? window.assessmentScales : [];
@@ -4930,11 +4985,25 @@ function rtSetModule(name) {
   if (el) el.textContent = name || '肌骨速查';
 }
 
-/** 更新会话统计 */
+/** 更新会话统计（语义一致：去重计数 + 总数，一目了然） */
 function updateSessionStats() {
   var el = document.getElementById('rtSessionStats');
   if (el) {
-    el.textContent = '评定 ' + rtSession.assessments + ' 次 · 查看 ' + rtSession.protocols + ' 个方案 · 切换 ' + rtSession.tabSwitches + ' 次';
+    var uniqScales = __rtAssessedIds.size;     // 不同量表数
+    var uniqProtos = __rtViewedProtoIds.size;  // 不同方案数
+    var uniqTabs = __rtViewedTabs.size;        // 覆盖 tab 数
+    var parts = [];
+    if (rtSession.assessments > 0) {
+      parts.push('评定 ' + rtSession.assessments + ' 次' + (uniqScales > 0 && uniqScales !== rtSession.assessments ? '（' + uniqScales + ' 种）' : ''));
+    }
+    if (rtSession.protocols > 0) {
+      parts.push('方案 ' + rtSession.protocols + ' 次' + (uniqProtos > 0 && uniqProtos !== rtSession.protocols ? '（' + uniqProtos + ' 种）' : ''));
+    }
+    parts.push('tab ' + rtSession.tabSwitches + ' 次（覆盖 ' + uniqTabs + '）');
+    if (rtSession.pageViews > 0) {
+      parts.push('详情 ' + rtSession.pageViews + ' 次');
+    }
+    el.textContent = parts.join(' · ');
   }
 }
 
@@ -5936,7 +6005,9 @@ function saveAssessment() {
 
   // 更新实时操作栏
   rtSession.assessments++;
+  __rtAssessedIds.add(currentScale.id); // 去重：不同量表数
   rtSetAction('完成评定: ' + currentScale.name);
+  updateSessionStats();
 
   closeModal();
   alert('评估记录已保存！');
@@ -7182,7 +7253,9 @@ function showProtocolDetail(id) {
 
   // 更新实时操作栏
   rtSession.protocols++;
+  __rtViewedProtoIds.add(p.id); // 去重：不同方案数
   rtSetAction('查看方案: ' + p.name);
+  updateSessionStats();
 
   // 记录当前方案，供 highlightStageRow 日志埋点使用
   currentProtocol = p;

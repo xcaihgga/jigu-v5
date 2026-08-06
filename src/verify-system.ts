@@ -1,4 +1,7 @@
 /**
+ * ⚠️ 状态：TypeScript 架构草稿，**不在当前 index.html 单文件主链路运行**。
+ * ⚠️ 启用条件：需添加 tsconfig.json + 构建脚本（如 tsc/esbuild），编译输出后执行。
+ *
  * 临床数据系统 - 快速验证脚本
  * 
  * 运行方式：node --loader ts-node/esm src/verify-system.ts

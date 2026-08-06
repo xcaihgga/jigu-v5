@@ -1,7 +1,8 @@
 // 循证康复方案库数据
 // 基于中国康复医学会专家共识、ISAKOS指南、中国脑血管病临床管理指南等循证来源
 
-const rehabProtocols = [
+if (typeof rehabProtocols === 'undefined') {
+window.rehabProtocols = [
   // ==================== 物理治疗（PT） ====================
   {
     id: 'pt-cmt',
@@ -568,10 +569,13 @@ const rehabProtocols = [
     ]
   }
 ];
+}
 
 // 方案分类配置
-const protocolCategories = [
+if (typeof protocolCategories === 'undefined') {
+window.protocolCategories = [
   { id: 'PT', name: '物理治疗', color: '#2563eb', icon: 'body' },
   { id: 'OT', name: '作业治疗', color: '#10b981', icon: 'hand' },
   { id: 'ST', name: '言语治疗', color: '#f59e0b', icon: 'mouth' },
 ];
+}

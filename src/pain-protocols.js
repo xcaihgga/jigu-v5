@@ -1,7 +1,8 @@
 // 疼痛治疗方案库数据
 // 基于肌骨疼痛评估与治疗的循证实践
 
-const painProtocols = [
+if (typeof painProtocols === 'undefined') {
+window.painProtocols = [
   // ==================== 踝足部疼痛 ====================
   {
     id: 'pain-plantar-fasciitis',
@@ -763,8 +764,11 @@ const painProtocols = [
     ]
   }
 ];
+}
 
 // 疼痛方案分类配置
-const painProtocolCategories = [
+if (typeof painProtocolCategories === 'undefined') {
+window.painProtocolCategories = [
   { id: '疼痛', name: '疼痛治疗', color: '#ef4444', icon: 'pain' },
 ];
+}

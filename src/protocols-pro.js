@@ -1,5 +1,6 @@
 // 专业版康复方案库
-const protocolsPro = [
+if (typeof protocolsPro === 'undefined') {
+window.protocolsPro = [
   {
     id: 'pro-lumbar-disc-herniation',
     name: '腰椎间盘突出症系统化康复方案',
@@ -190,3 +191,4 @@ const protocolsPro = [
     ]
   }
 ];
+}

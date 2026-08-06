@@ -556,10 +556,12 @@ class ClinicalDataService {
 
 // ========== 导出全局 API ==========
 
-// 创建全局单例
-const clinicalDataService = new ClinicalDataService();
+// 创建全局单例（防重复创建导致 SyntaxError）
+if (typeof clinicalDataService === 'undefined') {
+  window.clinicalDataService = new ClinicalDataService();
+}
 
-// 挂载到 window 对象（浏览器环境）
+// 挂载到 window 对象（浏览器环境）——每次都执行，确保命名空间存在
 if (typeof window !== 'undefined') {
   window.ClinicalData = {
     // 核心类
@@ -569,16 +571,16 @@ if (typeof window !== 'undefined') {
     ClinicalDataService,
     
     // 单例服务
-    service: clinicalDataService,
+    service: window.clinicalDataService,
     
     // 便捷方法
-    init: (scales, protocols) => clinicalDataService.initialize(scales, protocols),
-    getScales: () => clinicalDataService.getScales(),
-    getProtocols: () => clinicalDataService.getProtocols(),
-    getVersionInfo: () => clinicalDataService.getVersionInfo(),
-    getReport: () => clinicalDataService.getReport(),
-    getState: () => clinicalDataService.getState(),
-    subscribe: (cb) => clinicalDataService.subscribe(cb),
+    init: (scales, protocols) => window.clinicalDataService.initialize(scales, protocols),
+    getScales: () => window.clinicalDataService.getScales(),
+    getProtocols: () => window.clinicalDataService.getProtocols(),
+    getVersionInfo: () => window.clinicalDataService.getVersionInfo(),
+    getReport: () => window.clinicalDataService.getReport(),
+    getState: () => window.clinicalDataService.getState(),
+    subscribe: (cb) => window.clinicalDataService.subscribe(cb),
     
     // 独立验证工具
     validateScale: (scale) => DataValidator.validateScale(scale),
@@ -607,6 +609,6 @@ if (typeof module !== 'undefined' && module.exports) {
     DataAdapter,
     MigrationReporter,
     ClinicalDataService,
-    clinicalDataService
+    clinicalDataService: (typeof window !== 'undefined') ? window.clinicalDataService : undefined
   };
 }

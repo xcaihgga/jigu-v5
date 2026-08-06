@@ -1,4 +1,5 @@
-const scalesPro = [
+if (typeof scalesPro === 'undefined') {
+window.scalesPro = [
   {
     id: 'neck-disability-index-pro',
     name: '颈椎功能障碍指数(NDI)完整版',
@@ -902,3 +903,4 @@ const scalesPro = [
     }
   }
 ];
+}

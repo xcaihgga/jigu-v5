@@ -6,7 +6,8 @@
 //           Bohannon《改良Ashworth量表》、Perry《步态分析》等
 // ============================================================
 
-const clinicalTools = [
+if (typeof clinicalTools === 'undefined') {
+window.clinicalTools = [
 
   // ==================== 一、关节活动度参考值 ====================
 
@@ -742,3 +743,4 @@ const clinicalTools = [
   }
 
 ];
+}
