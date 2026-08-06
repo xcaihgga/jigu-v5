@@ -129,11 +129,13 @@ def build_deploy():
     # 移除数据脚本引用（这些将作为独立文件部署）
     data_script_patterns = [
         r'<script\s+src="(?:data/)?data\.js[^"]*"[^>]*></script>',
-        r'<script\s+src="src/scales[^"]*"[^>]*></script>',
+        r'<script\s+src="src/scales\.js[^"]*"[^>]*></script>',
+        r'<script\s+src="src/scales-extra\.js[^"]*"[^>]*></script>',
+        r'<script\s+src="src/scales-pro\.js[^"]*"[^>]*></script>',
         r'<script\s+src="src/clinical-tools[^"]*"[^>]*></script>',
         r'<script\s+src="src/knowledge-base[^"]*"[^>]*></script>',
         r'<script\s+src="src/rehab-protocols[^"]*"[^>]*></script>',
-        r'<script\s+src="src/protocols-pro[^"]*"[^>]*></script>',
+        r'<script\s+src="src/protocols-pro\.js[^"]*"[^>]*></script>',
         r'<script\s+src="src/pain-protocols[^"]*"[^>]*></script>',
     ]
 
