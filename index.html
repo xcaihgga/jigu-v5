@@ -3741,7 +3741,10 @@ function switchTab(tab) {
   rtSetAction('切换到' + (tabNames[tab] || tab));
 
   if (tab === 'dashboard') {
-    setTimeout(function() { renderDashboard(); renderDashboardSources(); }, 100);
+    setTimeout(function() {
+      try { renderDashboard(); } catch (e) { console.warn('[Dashboard] renderDashboard 失败:', e && e.message ? e.message : e); }
+      try { renderDashboardSources(); } catch (e) { console.warn('[Dashboard] renderDashboardSources 失败:', e && e.message ? e.message : e); }
+    }, 100);
   }
 }
 
@@ -7553,7 +7556,7 @@ function drawDashboardChart(records) {
     var y = padding.top + chartH - barH;
     
     var gradient = ctx.createLinearGradient(0, y, 0, padding.top + chartH);
-    gradient.addColorStop(0, 'var(--accent-blue)');
+    gradient.addColorStop(0, '#3F85FF');
     gradient.addColorStop(1, '#2563eb');
     ctx.fillStyle = gradient;
     ctx.beginPath();
