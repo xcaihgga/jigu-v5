@@ -3270,26 +3270,26 @@ pre {
   </div>
 </div>
 
-<!-- 临床数据版本信息栏 -->
+<!-- 实时操作信息栏 -->
 <div class="data-version-bar" id="dataVersionBar">
   <span class="version-label">
     <span class="version-dot" id="versionStatusDot"></span>
-    临床数据
+    <span id="rtModule">肌肉查询</span>
   </span>
-  <span class="version-info" id="versionInfoText">v1.0.0</span>
   <span class="divider"></span>
-  <span class="source-label">来源:</span>
-  <span class="source-info" id="sourceInfoText">加载中...</span>
-  <span class="meta-link" id="versionMetaToggle" title="查看详细版本与来源信息">
-    详情 <span class="chevron">▶</span>
+  <span class="source-label">时间</span>
+  <span class="version-info" id="rtTime">--:--:--</span>
+  <span class="divider"></span>
+  <span class="source-label">操作</span>
+  <span class="source-info" id="rtAction">就绪</span>
+  <span class="meta-link" id="rtDetailToggle" title="查看会话统计">
+    统计 <span class="chevron">▶</span>
   </span>
-  <div class="expanded-panel" id="versionMetaPanel">
-    <h4>量表来源（部分）</h4>
-    <ul id="scaleSourceList"></ul>
-    <h4>协议来源</h4>
-    <ul id="protocolSourceList"></ul>
-    <h4>数据统计</h4>
-    <div id="dataStatsText">量表 0 个 · 协议 0 个 · 状态未知</div>
+  <div class="expanded-panel" id="rtDetailPanel">
+    <h4>本次会话</h4>
+    <div id="rtSessionStats">评定 0 次 · 查看 0 个方案 · 切换 0 次</div>
+    <h4>数据概况</h4>
+    <div id="rtDataStats">量表 0 个 · 协议 0 个</div>
   </div>
 </div>
 
@@ -3446,6 +3446,19 @@ pre {
         常用量表平均分（≥2次评定）
       </div>
       <ul class="rank-list" id="dashboardAvgList"></ul>
+    </div>
+    <div class="dashboard-section">
+      <div class="dashboard-section-title">
+        <span class="icon" id="dashboardSourceIcon"></span>
+        临床数据来源
+      </div>
+      <div id="dashboardSourceArea" style="font-size:13px;line-height:1.8;color:var(--text-secondary);">
+        <div id="dashboardDataStats" style="margin-bottom:10px;font-weight:600;color:var(--text-default);">量表 0 个 · 协议 0 个</div>
+        <div style="font-weight:600;font-size:12px;margin-bottom:4px;color:var(--text-tertiary);">量表来源</div>
+        <ul id="dashboardScaleSources" style="margin:0 0 10px 0;padding-left:18px;font-size:12px;"></ul>
+        <div style="font-weight:600;font-size:12px;margin-bottom:4px;color:var(--text-tertiary);">协议来源</div>
+        <ul id="dashboardProtocolSources" style="margin:0;padding-left:18px;font-size:12px;"></ul>
+      </div>
     </div>
     <div class="dashboard-footer">数据来源：本地评定记录，仅统计已完成的量表评定</div>
   </div>
@@ -3716,8 +3729,19 @@ function switchTab(tab) {
   document.getElementById('content').scrollTop = 0;
   updateNavTitle(tab);
   document.getElementById('navBack').style.display = 'none';
+
+  // 更新实时操作栏
+  rtSession.tabSwitches++;
+  var tabNames = (window.AppConfig && AppConfig.NAV_TITLES) || {
+    muscle: '肌肉查询', diagnosis: '临床诊断', assessment: '评估量表',
+    tools: '临床工具', guidelines: '临床指南', protocol: '循证方案',
+    dashboard: '数据看板', patient: '病例管理', migration: '数据迁移',
+  };
+  rtSetModule(tabNames[tab] || tab);
+  rtSetAction('切换到' + (tabNames[tab] || tab));
+
   if (tab === 'dashboard') {
-    setTimeout(renderDashboard, 100);
+    setTimeout(function() { renderDashboard(); renderDashboardSources(); }, 100);
   }
 }
 
@@ -4777,114 +4801,52 @@ function initAllProtocols() {
 }
 
 /**
- * 初始化临床数据版本信息栏
+ * 实时操作信息栏
+ * 显示：当前模块名、实时时钟、最近操作、会话统计
  */
+var rtSession = { assessments: 0, protocols: 0, tabSwitches: 0, lastAction: '就绪' };
+
 function initDataVersionBar() {
-  const bar = document.getElementById('dataVersionBar');
+  var bar = document.getElementById('dataVersionBar');
   if (!bar) return;
 
-  const dot = document.getElementById('versionStatusDot');
-  const versionText = document.getElementById('versionInfoText');
-  const sourceText = document.getElementById('sourceInfoText');
-  const toggle = document.getElementById('versionMetaToggle');
-  const scaleSourceList = document.getElementById('scaleSourceList');
-  const protocolSourceList = document.getElementById('protocolSourceList');
-  const statsText = document.getElementById('dataStatsText');
-  const panel = document.getElementById('versionMetaPanel');
+  var dot = document.getElementById('versionStatusDot');
+  var toggle = document.getElementById('rtDetailToggle');
+  var panel = document.getElementById('rtDetailPanel');
 
-  const scales = Array.isArray(window.assessmentScales) ? window.assessmentScales : [];
-  const protocols = Array.isArray(window.rehabProtocols) ? window.rehabProtocols : [];
-
-  const scaleVersions = new Set();
-  const scaleSources = new Set();
-  scales.forEach(s => {
-    if (s && s.version) scaleVersions.add(s.version);
-    if (s) {
-      const src = s.source || s.reference || s.evidence || '';
-      if (src) scaleSources.add(src);
-    }
-  });
-
-  const protocolVersions = new Set();
-  const protocolSources = new Set();
-  protocols.forEach(p => {
-    if (p && p.version) protocolVersions.add(p.version);
-    if (p) {
-      const src = p.source || p.reference || p.evidence || '';
-      if (src) protocolSources.add(src);
-    }
-  });
-
-  const scaleSourceArr = [...scaleSources];
-  const protocolSourceArr = [...protocolSources];
-  const allVersions = [...scaleVersions, ...protocolVersions].filter(Boolean);
-  const allSources = [...scaleSources, ...protocolSources].filter(Boolean);
-
-  const primaryVersion = allVersions[0] || '1.0.0';
-  versionText.textContent = 'v' + primaryVersion;
-
-  if (allSources.length > 0) {
-    const primarySource = allSources[0];
-    sourceText.textContent = allSources.length > 1
-      ? primarySource + ' 等 ' + allSources.length + ' 项临床指南/文献'
-      : primarySource;
-    sourceText.title = allSources.join(' | ');
-  } else {
-    sourceText.textContent = '临床常规应用 · 基于循证医学证据';
-    sourceText.title = '基于循证医学证据';
-  }
-
+  // 状态点
   if (dot) {
-    if (scales.length === 0) {
-      dot.className = 'version-dot error';
-      dot.title = '无临床数据';
-    } else if (allSources.length === 0) {
-      dot.className = 'version-dot warn';
-      dot.title = '数据缺少来源信息';
-    } else {
-      dot.className = 'version-dot';
-      dot.title = '数据状态良好';
-    }
+    dot.className = 'version-dot';
+    dot.title = '运行中';
   }
 
-  if (scaleSourceList) {
-    scaleSourceList.innerHTML = '';
-    scaleSourceArr.slice(0, 8).forEach(src => {
-      const li = document.createElement('li');
-      li.textContent = src;
-      scaleSourceList.appendChild(li);
-    });
-    if (scaleSourceArr.length === 0) {
-      scaleSourceList.innerHTML = '<li style="color:#9CA3AF;">暂无来源信息</li>';
-    }
+  // 时钟
+  function updateClock() {
+    var el = document.getElementById('rtTime');
+    if (!el) return;
+    var d = new Date();
+    el.textContent = String(d.getHours()).padStart(2, '0') + ':' +
+      String(d.getMinutes()).padStart(2, '0') + ':' +
+      String(d.getSeconds()).padStart(2, '0');
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // 数据概况（展开面板里）
+  var scales = Array.isArray(window.assessmentScales) ? window.assessmentScales : [];
+  var protocols = Array.isArray(window.rehabProtocols) ? window.rehabProtocols : [];
+  var statsEl = document.getElementById('rtDataStats');
+  if (statsEl) {
+    statsEl.textContent = '量表 ' + scales.length + ' 个 · 协议 ' + protocols.length + ' 个';
   }
 
-  if (protocolSourceList) {
-    protocolSourceList.innerHTML = '';
-    protocolSourceArr.forEach(src => {
-      const li = document.createElement('li');
-      li.textContent = src;
-      protocolSourceList.appendChild(li);
-    });
-    if (protocolSourceArr.length === 0) {
-      protocolSourceList.innerHTML = '<li style="color:#9CA3AF;">暂无来源信息</li>';
-    }
-  }
-
-  if (statsText) {
-    statsText.textContent = '量表 ' + scales.length + ' 个 · 协议 ' + protocols.length + ' 个 · 状态 ' +
-      (dot && dot.classList.contains('version-dot.warn') ? '⚠️ 降级（有警告）' : '✅ 健康');
-  }
-
+  // 展开面板切换
   if (toggle && panel) {
     toggle.addEventListener('click', function (e) {
       e.stopPropagation();
       bar.classList.toggle('expanded');
-      if (panel.style.display === 'block') {
-        panel.style.display = 'none';
-      } else {
-        panel.style.display = 'block';
-      }
+      panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+      updateSessionStats();
     });
   }
 
@@ -4895,7 +4857,72 @@ function initDataVersionBar() {
     }
   });
 
-  console.log('[DataVersionBar] 临床数据版本: v' + primaryVersion + ', 量表 ' + scales.length + ' 个, 协议 ' + protocols.length + ' 个');
+  console.log('[RealtimeBar] 实时操作信息栏已启动');
+}
+
+/** 更新顶部栏的操作文本和模块名 */
+function rtSetAction(action) {
+  rtSession.lastAction = action;
+  var el = document.getElementById('rtAction');
+  if (el) el.textContent = action;
+}
+
+/** 更新顶部栏模块名 */
+function rtSetModule(name) {
+  var el = document.getElementById('rtModule');
+  if (el) el.textContent = name || '肌骨速查';
+}
+
+/** 更新会话统计 */
+function updateSessionStats() {
+  var el = document.getElementById('rtSessionStats');
+  if (el) {
+    el.textContent = '评定 ' + rtSession.assessments + ' 次 · 查看 ' + rtSession.protocols + ' 个方案 · 切换 ' + rtSession.tabSwitches + ' 次';
+  }
+}
+
+/** 看板页：渲染临床数据来源 */
+function renderDashboardSources() {
+  var scales = Array.isArray(window.assessmentScales) ? window.assessmentScales : [];
+  var protocols = Array.isArray(window.rehabProtocols) ? window.rehabProtocols : [];
+
+  // 统计
+  var statsEl = document.getElementById('dashboardDataStats');
+  if (statsEl) {
+    statsEl.textContent = '量表 ' + scales.length + ' 个 · 协议 ' + protocols.length + ' 个';
+  }
+
+  // 量表来源
+  var scaleSources = new Set();
+  scales.forEach(function(s) {
+    if (s) {
+      var src = s.source || s.reference || s.evidence || '';
+      if (src) scaleSources.add(src);
+    }
+  });
+  var scaleUl = document.getElementById('dashboardScaleSources');
+  if (scaleUl) {
+    var scaleArr = [...scaleSources];
+    scaleUl.innerHTML = scaleArr.slice(0, 12).map(function(src) {
+      return '<li>' + src + '</li>';
+    }).join('') || '<li style="color:#9CA3AF;">暂无来源信息</li>';
+  }
+
+  // 协议来源
+  var protocolSources = new Set();
+  protocols.forEach(function(p) {
+    if (p) {
+      var src = p.source || p.reference || p.evidence || '';
+      if (src) protocolSources.add(src);
+    }
+  });
+  var protoUl = document.getElementById('dashboardProtocolSources');
+  if (protoUl) {
+    var protoArr = [...protocolSources];
+    protoUl.innerHTML = protoArr.slice(0, 12).map(function(src) {
+      return '<li>' + src + '</li>';
+    }).join('') || '<li style="color:#9CA3AF;">暂无来源信息</li>';
+  }
 }
 
 function showModal(title, contentHtml, footerHtml) {
@@ -5849,7 +5876,11 @@ function saveAssessment() {
   const history = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
   history.unshift(record);
   localStorage.setItem('assessmentHistory', JSON.stringify(history));
-  
+
+  // 更新实时操作栏
+  rtSession.assessments++;
+  rtSetAction('完成评定: ' + currentScale.name);
+
   closeModal();
   alert('评估记录已保存！');
   
@@ -7091,6 +7122,10 @@ function renderProtocolList() {
 function showProtocolDetail(id) {
   var p = rehabProtocols.find(function(x) { return x.id === id; });
   if (!p) return;
+
+  // 更新实时操作栏
+  rtSession.protocols++;
+  rtSetAction('查看方案: ' + p.name);
 
   // 记录当前方案，供 highlightStageRow 日志埋点使用
   currentProtocol = p;
