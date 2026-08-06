@@ -3650,6 +3650,48 @@ function icon(name, size) {
   return '<span class="icon" style="width:' + s + 'px;height:' + s + 'px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">' + (iconSvg[name] || iconSvg.other) + '</span>';
 }
 
+/**
+ * HTML 转义：防止用户输入字段注入 HTML/脚本
+ * 用于任何把用户可控数据（患者姓名、诊断、主诉、备注等）拼进 innerHTML 的场景
+ */
+function escapeHtml(val) {
+  if (val === null || val === undefined) return '';
+  return String(val)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * 安全读取 localStorage 的 JSON 数据
+ * - 解析失败时清理损坏数据、返回 fallback、一次性提示用户
+ * - 避免 JSON.parse 抛 SyntaxError 导致整个业务函数中断
+ * @param {string} key localStorage 键名
+ * @param {*} fallback 解析失败时的返回值（默认 []）
+ */
+var __lsCorruptWarned = false;
+function safeGetJSON(key, fallback) {
+  var fb = (fallback === undefined) ? [] : fallback;
+  try {
+    var raw = localStorage.getItem(key);
+    if (raw === null) return fb;
+    return JSON.parse(raw);
+  } catch (e) {
+    console.warn('[Storage] localStorage["' + key + '"] 数据损坏，已重置:', e && e.message ? e.message : e);
+    try { localStorage.removeItem(key); } catch (_) {}
+    if (!__lsCorruptWarned) {
+      __lsCorruptWarned = true;
+      setTimeout(function() {
+        alert('检测到本地存储数据损坏，已自动重置受影响的数据。此前保存的部分记录可能丢失。');
+        __lsCorruptWarned = false;
+      }, 0);
+    }
+    return fb;
+  }
+}
+
 function setIcon(elementId, name, size) {
   const el = document.getElementById(elementId);
   if (el) {
@@ -4035,6 +4077,12 @@ const diseaseDetailSections = [
 
 function renderMuscleBodyGrid() {
   const grid = document.getElementById('muscleBodyGrid');
+  if (!grid) return;
+  // data.js 后台加载未完成时 muscleBodyParts 未定义，兜底避免 ReferenceError
+  if (typeof muscleBodyParts === 'undefined' || !Array.isArray(muscleBodyParts)) {
+    console.warn('[Muscle] muscleBodyParts 未就绪，跳过肌肉网格渲染');
+    return;
+  }
   const counts = {};
   muscleBodyParts.forEach(p => counts[p.id] = 0);
   const muscleData = typeof muscles !== 'undefined' ? muscles : [];
@@ -4042,11 +4090,11 @@ function renderMuscleBodyGrid() {
     const region = getMuscleRegion(m['身体区域']);
     counts[region.id] = (counts[region.id] || 0) + 1;
   });
-  
-  grid.innerHTML = muscleBodyParts.map(part => 
-    '<div class="body-card" data-part="' + part.id + '" onclick="showMuscleList(\'' + part.id + '\', \'' + part.name + '\')">' +
+
+  grid.innerHTML = muscleBodyParts.map(part =>
+    '<div class="body-card" data-part="' + part.id + '" onclick="showMuscleList(\'' + part.id + '\', \'' + escapeHtml(part.name) + '\')">' +
       '<div class="icon-wrap">' + icon(part.icon, 22) + '</div>' +
-      '<div class="body-card-name">' + part.name + '</div>' +
+      '<div class="body-card-name">' + escapeHtml(part.name) + '</div>' +
       '<div class="body-card-count">' + (counts[part.id] || 0) + ' 块</div>' +
     '</div>'
   ).join('');
@@ -4307,6 +4355,12 @@ function showMuscleDetail(index) {
 
 function renderDiseaseBodyGrid() {
   const grid = document.getElementById('diseaseBodyGrid');
+  if (!grid) return;
+  // data.js 后台加载未完成时 diseaseBodyParts 未定义，兜底避免 ReferenceError
+  if (typeof diseaseBodyParts === 'undefined' || !Array.isArray(diseaseBodyParts)) {
+    console.warn('[Disease] diseaseBodyParts 未就绪，跳过疾病网格渲染');
+    return;
+  }
   const counts = {};
   diseaseBodyParts.forEach(p => counts[p.id] = 0);
   const diseaseData = typeof diseases !== 'undefined' ? diseases : [];
@@ -4314,11 +4368,11 @@ function renderDiseaseBodyGrid() {
     const region = getDiseaseRegion(d['部位']);
     counts[region.id] = (counts[region.id] || 0) + 1;
   });
-  
-  grid.innerHTML = diseaseBodyParts.map(part => 
-    '<div class="body-card" data-part="' + part.id + '" onclick="showDiseaseList(\'' + part.id + '\', \'' + part.name + '\')">' +
+
+  grid.innerHTML = diseaseBodyParts.map(part =>
+    '<div class="body-card" data-part="' + part.id + '" onclick="showDiseaseList(\'' + part.id + '\', \'' + escapeHtml(part.name) + '\')">' +
       '<div class="icon-wrap">' + icon(part.icon, 22) + '</div>' +
-      '<div class="body-card-name">' + part.name + '</div>' +
+      '<div class="body-card-name">' + escapeHtml(part.name) + '</div>' +
       '<div class="body-card-count">' + (counts[part.id] || 0) + ' 种</div>' +
     '</div>'
   ).join('');
@@ -4907,7 +4961,7 @@ function renderDashboardSources() {
   if (scaleUl) {
     var scaleArr = [...scaleSources];
     scaleUl.innerHTML = scaleArr.slice(0, 12).map(function(src) {
-      return '<li>' + src + '</li>';
+      return '<li>' + escapeHtml(src) + '</li>';
     }).join('') || '<li style="color:#9CA3AF;">暂无来源信息</li>';
   }
 
@@ -4923,7 +4977,7 @@ function renderDashboardSources() {
   if (protoUl) {
     var protoArr = [...protocolSources];
     protoUl.innerHTML = protoArr.slice(0, 12).map(function(src) {
-      return '<li>' + src + '</li>';
+      return '<li>' + escapeHtml(src) + '</li>';
     }).join('') || '<li style="color:#9CA3AF;">暂无来源信息</li>';
   }
 }
@@ -5876,7 +5930,7 @@ function saveAssessment() {
     patientId: currentPatientId || null
   };
   
-  const history = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  const history = safeGetJSON('assessmentHistory');
   history.unshift(record);
   localStorage.setItem('assessmentHistory', JSON.stringify(history));
 
@@ -5894,8 +5948,8 @@ function saveAssessment() {
 
 function renderScaleHistory() {
   const container = document.getElementById('scaleListContainer');
-  const history = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
-  const patients = JSON.parse(localStorage.getItem('patients') || '[]');
+  const history = safeGetJSON('assessmentHistory');
+  const patients = safeGetJSON('patients');
 
   let html =
     '<div class="page-head">' +
@@ -5960,8 +6014,8 @@ function renderScaleHistory() {
     html +=
       '<div class="history-card ' + statusClass + '" onclick="viewHistoryDetail(' + record.id + ')">' +
         '<div class="history-card-top">' +
-          '<div class="history-card-name">' + record.scaleName + '</div>' +
-          (interp ? '<span class="status-tag status-' + statusClass + '">' + interp.level + '</span>' : '') +
+          '<div class="history-card-name">' + escapeHtml(record.scaleName) + '</div>' +
+          (interp ? '<span class="status-tag status-' + statusClass + '">' + escapeHtml(interp.level) + '</span>' : '') +
         '</div>' +
         '<div class="history-card-body">' +
           '<span class="history-card-score text-' + textColor + '">' + record.score + '</span>' +
@@ -5969,7 +6023,7 @@ function renderScaleHistory() {
         '</div>' +
         '<div class="history-card-meta">' +
           '<span class="history-card-meta-item">' + icon('calendar', 14) + formatDate(record.date) + '</span>' +
-          (patient ? '<span class="history-card-patient">' + icon('patient', 12) + (patient.name || '未知患者') + '</span>' : '') +
+          (patient ? '<span class="history-card-patient">' + icon('patient', 12) + escapeHtml(patient.name || '未知患者') + '</span>' : '') +
         '</div>' +
       '</div>';
   });
@@ -5983,7 +6037,7 @@ function setHistoryTimeRange(range) {
 }
 
 function viewHistoryDetail(recordId) {
-  const history = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  const history = safeGetJSON('assessmentHistory');
   const record = history.find(r => r.id === recordId);
   if (!record) return;
   
@@ -6067,7 +6121,7 @@ function viewHistoryDetail(recordId) {
 function deleteHistory(recordId) {
   if (!confirm('确定要删除这条评估记录吗？')) return;
   
-  let history = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  let history = safeGetJSON('assessmentHistory');
   history = history.filter(r => r.id !== recordId);
   localStorage.setItem('assessmentHistory', JSON.stringify(history));
   
@@ -6091,7 +6145,7 @@ function switchAssessmentTab(tab) {
 
 function renderScaleChart() {
   const container = document.getElementById('scaleListContainer');
-  const history = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  const history = safeGetJSON('assessmentHistory');
 
   const scaleMap = {};
   history.forEach(r => {
@@ -6355,7 +6409,7 @@ function drawTrendChart(scaleMap) {
 }
 
 function showExportOptions(recordId) {
-  const history = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  const history = safeGetJSON('assessmentHistory');
   const record = history.find(r => r.id === recordId);
   if (!record) return;
   
@@ -6387,7 +6441,7 @@ function showExportOptions(recordId) {
 }
 
 function exportAsText(recordId) {
-  const history = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  const history = safeGetJSON('assessmentHistory');
   const record = history.find(r => r.id === recordId);
   if (!record) return;
   
@@ -6445,7 +6499,7 @@ function fallbackCopy(text) {
 }
 
 function exportAsImage(recordId) {
-  const history = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  const history = safeGetJSON('assessmentHistory');
   const record = history.find(r => r.id === recordId);
   if (!record) return;
   
@@ -6574,7 +6628,7 @@ function renderPatientList() {
   const container = document.getElementById('patientListContainer');
   if (!container) return;
   
-  const patients = JSON.parse(localStorage.getItem('patients') || '[]');
+  const patients = safeGetJSON('patients');
   const kw = document.getElementById('patientSearch') ? document.getElementById('patientSearch').value.trim().toLowerCase() : '';
   
   let filtered = patients;
@@ -6598,30 +6652,30 @@ function renderPatientList() {
   
   let html = '';
   filtered.forEach(p => {
-    const assessments = JSON.parse(localStorage.getItem('assessmentHistory') || '[]').filter(a => a.patientId === p.id);
-    const name = p.name || '未命名';
+    const assessments = safeGetJSON('assessmentHistory').filter(a => a.patientId === p.id);
+    const name = escapeHtml(p.name || '未命名');
     const genderSym = p.gender === '男' ? '♂' : (p.gender === '女' ? '♀' : '');
     const genderClass = p.gender === '男' ? 'gender-male' : (p.gender === '女' ? 'gender-female' : '');
-    
+
     let metaHtml = '<div class="patient-card-meta">';
     if (genderSym) {
-      metaHtml += '<span class="meta-item ' + genderClass + '">' + genderSym + ' ' + (p.gender || '') + '</span>';
+      metaHtml += '<span class="meta-item ' + genderClass + '">' + genderSym + ' ' + escapeHtml(p.gender || '') + '</span>';
     }
     if (p.age) {
-      metaHtml += '<span class="meta-item">' + p.age + '岁</span>';
+      metaHtml += '<span class="meta-item">' + escapeHtml(p.age) + '岁</span>';
     }
     if (p.bedNumber) {
-      metaHtml += '<span class="meta-item">床位 ' + p.bedNumber + '</span>';
+      metaHtml += '<span class="meta-item">床位 ' + escapeHtml(p.bedNumber) + '</span>';
     }
     metaHtml += '</div>';
-    
-    html += 
+
+    html +=
       '<div class="patient-card" onclick="showPatientDetail(' + p.id + ')">' +
         '<div class="patient-card-header">' +
           '<div class="patient-card-name">' + name + '</div>' +
           icon('chevronRight', 18) +
         '</div>' +
-        '<div class="patient-card-info">' + (p.diagnosis || p.chiefComplaint || '暂无诊断') + '</div>' +
+        '<div class="patient-card-info">' + escapeHtml(p.diagnosis || p.chiefComplaint || '暂无诊断') + '</div>' +
         metaHtml +
         '<div class="patient-card-tags">' +
           '<span class="assessment-tag">' + icon('assessment', 12) + ' ' + assessments.length + ' 条评估</span>' +
@@ -6639,7 +6693,7 @@ document.getElementById('btnAddPatient').addEventListener('click', function() {
 document.getElementById('btnExportPatientCsv').addEventListener('click', exportPatientCsv);
 
 function showPatientForm(patientId) {
-  const patients = JSON.parse(localStorage.getItem('patients') || '[]');
+  const patients = safeGetJSON('patients');
   const patient = patientId ? patients.find(p => p.id === patientId) : null;
   const isEdit = !!patient;
   
@@ -6656,7 +6710,7 @@ function showPatientForm(patientId) {
     '<div class="form-row">' +
       '<div class="form-group">' +
         '<label class="form-label">姓名<span class="required">*</span></label>' +
-        '<input type="text" class="form-input" id="pfName" value="' + (p.name || '') + '" placeholder="请输入姓名">' +
+        '<input type="text" class="form-input" id="pfName" value="' + escapeHtml(p.name || '') + '" placeholder="请输入姓名">' +
       '</div>' +
       '<div class="form-group">' +
         '<label class="form-label">性别<span class="required">*</span></label>' +
@@ -6670,16 +6724,16 @@ function showPatientForm(patientId) {
     '<div class="form-row">' +
       '<div class="form-group">' +
         '<label class="form-label">年龄<span class="required">*</span></label>' +
-        '<input type="number" class="form-input" id="pfAge" value="' + (p.age || '') + '" placeholder="请输入年龄">' +
+        '<input type="number" class="form-input" id="pfAge" value="' + escapeHtml(p.age || '') + '" placeholder="请输入年龄">' +
       '</div>' +
       '<div class="form-group">' +
         '<label class="form-label">床号</label>' +
-        '<input type="text" class="form-input" id="pfBedNumber" value="' + (p.bedNumber || '') + '" placeholder="如：12床">' +
+        '<input type="text" class="form-input" id="pfBedNumber" value="' + escapeHtml(p.bedNumber || '') + '" placeholder="如：12床">' +
       '</div>' +
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">联系电话</label>' +
-      '<input type="tel" class="form-input" id="pfPhone" value="' + (p.phone || '') + '" placeholder="请输入联系电话">' +
+      '<input type="tel" class="form-input" id="pfPhone" value="' + escapeHtml(p.phone || '') + '" placeholder="请输入联系电话">' +
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">评估阶段<span class="required">*</span></label>' +
@@ -6687,27 +6741,27 @@ function showPatientForm(patientId) {
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">诊断<span class="required">*</span></label>' +
-      '<input type="text" class="form-input" id="pfDiagnosis" value="' + (p.diagnosis || '') + '" placeholder="如：腰椎间盘突出症">' +
+      '<input type="text" class="form-input" id="pfDiagnosis" value="' + escapeHtml(p.diagnosis || '') + '" placeholder="如：腰椎间盘突出症">' +
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">部位</label>' +
-      '<input type="text" class="form-input" id="pfBodyPart" value="' + (p.bodyPart || '') + '" placeholder="如：腰椎L4-L5">' +
+      '<input type="text" class="form-input" id="pfBodyPart" value="' + escapeHtml(p.bodyPart || '') + '" placeholder="如：腰椎L4-L5">' +
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">主诉</label>' +
-      '<textarea class="form-textarea" id="pfComplaint" placeholder="主要症状、持续时间等">' + (p.chiefComplaint || '') + '</textarea>' +
+      '<textarea class="form-textarea" id="pfComplaint" placeholder="主要症状、持续时间等">' + escapeHtml(p.chiefComplaint || '') + '</textarea>' +
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">既往病史</label>' +
-      '<textarea class="form-textarea" id="pfMedicalHistory" placeholder="既往疾病、手术史、过敏史等">' + (p.medicalHistory || '') + '</textarea>' +
+      '<textarea class="form-textarea" id="pfMedicalHistory" placeholder="既往疾病、手术史、过敏史等">' + escapeHtml(p.medicalHistory || '') + '</textarea>' +
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">治疗方案</label>' +
-      '<textarea class="form-textarea" id="pfTreatment" placeholder="治疗方案、康复计划等">' + (p.treatmentPlan || '') + '</textarea>' +
+      '<textarea class="form-textarea" id="pfTreatment" placeholder="治疗方案、康复计划等">' + escapeHtml(p.treatmentPlan || '') + '</textarea>' +
     '</div>' +
     '<div class="form-group">' +
       '<label class="form-label">备注</label>' +
-      '<textarea class="form-textarea" id="pfNotes" placeholder="其他备注信息">' + (p.notes || '') + '</textarea>' +
+      '<textarea class="form-textarea" id="pfNotes" placeholder="其他备注信息">' + escapeHtml(p.notes || '') + '</textarea>' +
     '</div>';
   
   const footer = 
@@ -6757,7 +6811,7 @@ function savePatient(patientId) {
     return;
   }
   
-  const patients = JSON.parse(localStorage.getItem('patients') || '[]');
+  const patients = safeGetJSON('patients');
   
   const patientData = {
     name: name,
@@ -6798,7 +6852,7 @@ function savePatient(patientId) {
 }
 
 function exportPatientCsv() {
-  const patients = JSON.parse(localStorage.getItem('patients') || '[]');
+  const patients = safeGetJSON('patients');
   if (patients.length === 0) {
     alert('暂无患者数据可导出');
     return;
@@ -6832,41 +6886,41 @@ function exportPatientCsv() {
 }
 
 function showPatientDetail(patientId) {
-  const patients = JSON.parse(localStorage.getItem('patients') || '[]');
+  const patients = safeGetJSON('patients');
   const p = patients.find(x => x.id === patientId);
   if (!p) return;
   
   currentPatientId = patientId;
   
-  const allAssessments = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  const allAssessments = safeGetJSON('assessmentHistory');
   const patientAssessments = allAssessments.filter(a => a.patientId === patientId);
   
-  const title = (p.name || '未命名') + (p.age ? ' (' + p.age + '岁)' : '') + (p.gender ? ' · ' + p.gender : '');
-  
-  let content = 
+  const title = escapeHtml(p.name || '未命名') + (p.age ? ' (' + escapeHtml(p.age) + '岁)' : '') + (p.gender ? ' · ' + escapeHtml(p.gender) : '');
+
+  let content =
     '<div class="detail-header" style="margin:-16px -16px 16px -16px;border-radius:0;">' +
       '<div class="detail-header-title">' + title + '</div>' +
-      '<div class="detail-header-sub">' + (p.diagnosis || '暂无诊断') + '</div>' +
-      (p.bodyPart ? '<div class="detail-header-sub" style="margin-top:4px;">部位：' + p.bodyPart + '</div>' : '') +
+      '<div class="detail-header-sub">' + escapeHtml(p.diagnosis || '暂无诊断') + '</div>' +
+      (p.bodyPart ? '<div class="detail-header-sub" style="margin-top:4px;">部位：' + escapeHtml(p.bodyPart) + '</div>' : '') +
     '</div>';
-  
+
   content +=
     '<div class="result-detail-section">' +
       '<div class="result-detail-title">' + icon('basics', 18) + '基本信息</div>' +
-      '<div class="field-row"><div class="field-label">姓名</div><div class="field-value">' + (p.name || '-') + '</div></div>' +
-      '<div class="field-row"><div class="field-label">性别/年龄</div><div class="field-value">' + (p.gender || '-') + ' / ' + (p.age || '-') + '岁</div></div>' +
-      '<div class="field-row"><div class="field-label">床号</div><div class="field-value">' + (p.bedNumber || '-') + '</div></div>' +
-      '<div class="field-row"><div class="field-label">联系电话</div><div class="field-value">' + (p.phone || '-') + '</div></div>' +
-      '<div class="field-row"><div class="field-label">评估阶段</div><div class="field-value">' + (p.assessmentStage || '-') + '</div></div>' +
-      '<div class="field-row"><div class="field-label">诊断</div><div class="field-value">' + (p.diagnosis || '-') + '</div></div>' +
-      '<div class="field-row"><div class="field-label">部位</div><div class="field-value">' + (p.bodyPart || '-') + '</div></div>' +
+      '<div class="field-row"><div class="field-label">姓名</div><div class="field-value">' + escapeHtml(p.name || '-') + '</div></div>' +
+      '<div class="field-row"><div class="field-label">性别/年龄</div><div class="field-value">' + escapeHtml(p.gender || '-') + ' / ' + escapeHtml(p.age || '-') + '岁</div></div>' +
+      '<div class="field-row"><div class="field-label">床号</div><div class="field-value">' + escapeHtml(p.bedNumber || '-') + '</div></div>' +
+      '<div class="field-row"><div class="field-label">联系电话</div><div class="field-value">' + escapeHtml(p.phone || '-') + '</div></div>' +
+      '<div class="field-row"><div class="field-label">评估阶段</div><div class="field-value">' + escapeHtml(p.assessmentStage || '-') + '</div></div>' +
+      '<div class="field-row"><div class="field-label">诊断</div><div class="field-value">' + escapeHtml(p.diagnosis || '-') + '</div></div>' +
+      '<div class="field-row"><div class="field-label">部位</div><div class="field-value">' + escapeHtml(p.bodyPart || '-') + '</div></div>' +
     '</div>';
 
   if (p.chiefComplaint) {
     content +=
       '<div class="result-detail-section">' +
         '<div class="result-detail-title">' + icon('symptoms', 18) + '主诉</div>' +
-        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;">' + p.chiefComplaint + '</p>' +
+        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;">' + escapeHtml(p.chiefComplaint) + '</p>' +
       '</div>';
   }
 
@@ -6874,15 +6928,15 @@ function showPatientDetail(patientId) {
     content +=
       '<div class="result-detail-section">' +
         '<div class="result-detail-title">' + icon('info', 18) + '既往病史</div>' +
-        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;white-space:pre-wrap;">' + p.medicalHistory + '</p>' +
+        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;white-space:pre-wrap;">' + escapeHtml(p.medicalHistory) + '</p>' +
       '</div>';
   }
-  
+
   if (p.treatmentPlan) {
-    content += 
+    content +=
       '<div class="result-detail-section">' +
         '<div class="result-detail-title">' + icon('treatment', 18) + '治疗方案</div>' +
-        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;white-space:pre-wrap;">' + p.treatmentPlan + '</p>' +
+        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;white-space:pre-wrap;">' + escapeHtml(p.treatmentPlan) + '</p>' +
       '</div>';
   }
   
@@ -6904,10 +6958,10 @@ function showPatientDetail(patientId) {
       content += 
         '<div class="history-item" onclick="viewHistoryDetail(' + a.id + ')">' +
           '<div class="history-item-header">' +
-            '<div class="history-item-name">' + a.scaleName + '</div>' +
+            '<div class="history-item-name">' + escapeHtml(a.scaleName) + '</div>' +
             '<div class="history-item-score text-' + (interp ? interp.color : 'primary') + '">' + a.score + '分</div>' +
           '</div>' +
-          '<div class="history-item-date">' + formatDate(a.date) + (interp ? ' · ' + interp.level : '') + '</div>' +
+          '<div class="history-item-date">' + formatDate(a.date) + (interp ? ' · ' + escapeHtml(interp.level) : '') + '</div>' +
         '</div>';
     });
   }
@@ -6918,10 +6972,10 @@ function showPatientDetail(patientId) {
     '</button>';
   
   if (p.notes) {
-    content += 
+    content +=
       '<div class="result-detail-section">' +
         '<div class="result-detail-title">' + icon('other', 18) + '备注</div>' +
-        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;white-space:pre-wrap;">' + p.notes + '</p>' +
+        '<p style="font-size:14px;color:var(--text-2);line-height:1.7;white-space:pre-wrap;">' + escapeHtml(p.notes) + '</p>' +
       '</div>';
   }
   
@@ -6942,7 +6996,7 @@ function showPatientDetail(patientId) {
 }
 
 function showAddAssessmentToPatient() {
-  const allAssessments = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  const allAssessments = safeGetJSON('assessmentHistory');
   const unlinkedAssessments = allAssessments.filter(a => !a.patientId);
   
   if (unlinkedAssessments.length === 0) {
@@ -6955,13 +7009,13 @@ function showAddAssessmentToPatient() {
   unlinkedAssessments.forEach(a => {
     const scale = assessmentScales.find(s => s.id === a.scaleId);
     const interp = scale ? getInterpretation(a.score, a.maxScore, scale.interpretation) : null;
-    content += 
+    content +=
       '<div class="history-item" onclick="linkAssessmentToPatient(' + a.id + ')">' +
         '<div class="history-item-header">' +
-          '<div class="history-item-name">' + a.scaleName + '</div>' +
+          '<div class="history-item-name">' + escapeHtml(a.scaleName) + '</div>' +
           '<div class="history-item-score text-' + (interp ? interp.color : 'primary') + '">' + a.score + '分</div>' +
         '</div>' +
-        '<div class="history-item-date">' + formatDate(a.date) + (interp ? ' · ' + interp.level : '') + '</div>' +
+        '<div class="history-item-date">' + formatDate(a.date) + (interp ? ' · ' + escapeHtml(interp.level) : '') + '</div>' +
       '</div>';
   });
   
@@ -6976,14 +7030,14 @@ function showAddAssessmentToPatient() {
 }
 
 function linkAssessmentToPatient(assessmentId) {
-  const allAssessments = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  const allAssessments = safeGetJSON('assessmentHistory');
   const idx = allAssessments.findIndex(a => a.id === assessmentId);
   
   if (idx >= 0) {
     allAssessments[idx].patientId = currentPatientId;
     localStorage.setItem('assessmentHistory', JSON.stringify(allAssessments));
     
-    const patients = JSON.parse(localStorage.getItem('patients') || '[]');
+    const patients = safeGetJSON('patients');
     const pIdx = patients.findIndex(p => p.id === currentPatientId);
     if (pIdx >= 0) {
       if (!patients[pIdx].assessmentIds) patients[pIdx].assessmentIds = [];
@@ -7001,11 +7055,11 @@ function linkAssessmentToPatient(assessmentId) {
 function deletePatient(patientId) {
   if (!confirm('确定要删除这个病例吗？关联的评估记录不会被删除。')) return;
   
-  let patients = JSON.parse(localStorage.getItem('patients') || '[]');
+  let patients = safeGetJSON('patients');
   patients = patients.filter(p => p.id !== patientId);
   localStorage.setItem('patients', JSON.stringify(patients));
   
-  const allAssessments = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
+  const allAssessments = safeGetJSON('assessmentHistory');
   allAssessments.forEach(a => {
     if (a.patientId === patientId) a.patientId = null;
   });
@@ -7384,8 +7438,8 @@ var dashboardCategoryMap = {
 var dashboardCategoryColors = ['var(--accent-blue)', 'var(--accent-teal)', 'var(--accent-amber)', 'var(--accent-violet)', 'var(--accent-magenta)', 'var(--bg-brand)', 'var(--accent-teal)', 'var(--status-error-default)'];
 
 function renderDashboard() {
-  var records = JSON.parse(localStorage.getItem('assessmentHistory') || '[]');
-  var patients = JSON.parse(localStorage.getItem('patients') || '[]');
+  var records = safeGetJSON('assessmentHistory');
+  var patients = safeGetJSON('patients');
 
   var totalAssessments = records.length;
   var totalPatients = patients.length;
@@ -7669,14 +7723,20 @@ async function init() {
     return;
   }
   if (!hasMuscles) {
-    console.warn('[Init] muscles 数据未就绪（data.js 后台加载中），肌肉查询页面延迟渲染');
-    // data.js 后台加载完成后重新渲染肌肉查询页面
+    console.warn('[Init] muscles 数据未就绪（data.js 后台加载中），肌肉/疾病查询页面延迟渲染');
+    // data.js 后台加载完成后重新渲染依赖它的页面
     window.addEventListener('data-loader-background-ready', function() {
       try {
         renderMuscleBodyGrid();
         console.log('[Init] muscles 数据就绪，肌肉查询页面已渲染');
       } catch (e) {
         console.error('[Init] muscles 就绪后渲染失败:', e);
+      }
+      try {
+        renderDiseaseBodyGrid();
+        console.log('[Init] diseases 数据就绪，疾病查询页面已渲染');
+      } catch (e) {
+        console.error('[Init] diseases 就绪后渲染失败:', e);
       }
     }, { once: true });
   }
