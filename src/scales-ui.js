@@ -509,7 +509,13 @@ function saveAssessment() {
   
   const history = safeGetJSON('assessmentHistory');
   history.unshift(record);
-  localStorage.setItem('assessmentHistory', JSON.stringify(history));
+  try {
+    localStorage.setItem('assessmentHistory', JSON.stringify(history));
+  } catch (e) {
+    console.error('[Storage] 保存评估记录失败:', e);
+    alert('保存失败：本地存储空间不足。请清理数据后重试。');
+    return;
+  }
 
   // 更新实时操作栏
   rtSession.assessments++;
@@ -702,7 +708,13 @@ function deleteHistory(recordId) {
   
   let history = safeGetJSON('assessmentHistory');
   history = history.filter(r => r.id !== recordId);
-  localStorage.setItem('assessmentHistory', JSON.stringify(history));
+  try {
+    localStorage.setItem('assessmentHistory', JSON.stringify(history));
+  } catch (e) {
+    console.error('[Storage] 删除评估记录失败:', e);
+    alert('删除失败：本地存储空间不足。');
+    return;
+  }
   
   closeModal();
   renderScaleHistory();
