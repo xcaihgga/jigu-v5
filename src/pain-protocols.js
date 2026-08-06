@@ -8,6 +8,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '足底筋膜炎',
+    description: '足底筋膜炎症引起的足跟痛，分急性期消炎镇痛与改善期足背屈及肌力恢复两阶段干预。',
     icon: 'ankle',
     causes: ['超重/BMI高', '足弓塌陷(扁平足/足外翻)', '小腿后侧肌肉过紧(运动量大/足背屈受限/运动模式问题)'],
     symptoms: ['足底内侧足跟痛', '长时间不活动后的第一步痛', '长时间负重后加重', '支撑体重的运动症状增加'],
@@ -43,6 +44,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '跟腱炎',
+    description: '跟腱反复牵张导致的炎症，采用急性期减负、亚急性期离心训练、恢复期循序渐进三阶段方案。',
     icon: 'ankle',
     causes: ['腓肠肌比目鱼肌承受过多反复牵张', '突然增加训练强度/频率', '足弓塌陷', '过多高爆发力/高冲击训练'],
     symptoms: ['跟腱上方2-6cm按压痛', '清晨/剧烈运动后休息时疼痛明显', '训练量加大疼痛加重', '长时间不运动后小腿僵硬无力', '足背屈受限'],
@@ -89,6 +91,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '踝关节韧带扭伤',
+    description: '踝关节韧带损伤，按炎症期→增生期→重建期三阶段处理，侧重消肿、疤痕生成与本体感受恢复。',
     icon: 'ankle',
     symptoms: ['扭伤部位疼痛肿胀皮肤瘀斑', '疼痛水肿致承重困难', '外侧扭伤足内翻疼痛加剧/内侧扭伤足外翻疼痛加剧', '韧带松弛致踝关节不稳反复扭伤'],
     stages: [
@@ -137,6 +140,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '扁平足',
+    description: '足弓塌陷伴足背屈受限，通过基础改善期与进阶训练期增强足部肌力与足弓支撑。',
     icon: 'ankle',
     causes: ['足背屈受限', '跟骨内外翻不足或过大', '第一列活动度不足', '大拇指活动度不足', '胫骨前后肌/腓骨长短肌肌力不足'],
     stages: [
@@ -169,6 +173,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '高足弓',
+    description: '高足弓伴足底筋膜紧张与减震能力差，以缓解筋膜紧张和提升减震能力为主要目标。',
     icon: 'ankle',
     stages: [
       {
@@ -188,6 +193,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '足背屈受限',
+    description: '小腿后侧肌肉过紧或距骨前移导致足背屈受限，分松解期与造足背屈期恢复活动度。',
     icon: 'ankle',
     causes: ['小腿后侧肌肉过紧', '距骨前移', '胫骨前肌无力'],
     stages: [
@@ -219,6 +225,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '足跟内外翻',
+    description: '足跟排列异常，通过改善期恢复跟骨活动度与正常排列，手法扳动纠正内翻/外翻。',
     icon: 'ankle',
     stages: [
       {
@@ -240,6 +247,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '髌骨关节痛',
+    description: '髌骨外侧压力增高导致的膝前痛，按松解期→训练期→整合期纠正旋前综合症与肌力不平衡。',
     icon: 'knee',
     causes: ['旋前综合症(股骨内旋/胫骨外旋/足部旋前)', '膝关节过度屈曲(膝屈肌过紧/膝伸肌无力)', '内外侧肌力不平衡(内侧头弱外侧头强)'],
     symptoms: ['膝盖前方痛上下楼梯跑步后增加', '腿部近期训练量加大', '髌骨半脱位有受伤史', '髋膝踝骨骼排列不均'],
@@ -288,6 +296,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '膝关节韧带扭伤',
+    description: '膝关节韧带损伤，分评估松解期与强化期恢复下肢力线、纠正下蹲模式与加强关键肌群。',
     icon: 'knee',
     causes: ['旋前综合症(前十字韧带防胫骨前移/后十字韧带防胫骨后移/外侧副韧带维持外侧稳定/内侧副韧带维持内侧稳定)', '膝关节过度屈曲', '运动模式问题'],
     symptoms: ['膝关节有受伤史', '反复膝关节积液', '膝关节失稳', '单腿支撑时疼痛', '感觉运动缺失(本体感受)', '肌肉强度减少'],
@@ -320,6 +329,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '半月板损伤',
+    description: '半月板撕裂，按保守治疗期减重训练与进阶恢复期评估手术需求两阶段处理。',
     icon: 'knee',
     causes: ['体重过大', '过度使用', '突然轴向旋转力', '关节不对位', '常发于膝内扣人群'],
     symptoms: ['有受伤史', '急性期明显疼痛屈伸受限', '复发性膝关节渗出', '蹲行跑跳激惹疼痛(上下楼明显)', '绞锁/不能完全伸直或屈曲'],
@@ -356,6 +366,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '非关节炎性髋关节痛',
+    description: '髋臼股骨头撞击或关节囊过紧导致的髋痛，分关节囊松动期→松解拉伸期→强化整合期三阶段。',
     icon: 'hip',
     causes: ['骨盆偏移', '髋臼股骨头碰撞(姿态不正常单腿承重/肌力不平衡→梨状肌紧张→坐骨神经卡压→腘绳肌紧张→骨盆后倾→股骨头髋臼撞击)', '髋关节后关节囊过紧致股骨头髋臼活动受阻'],
     symptoms: ['髋关节前方/腹股沟痛', '髋关节外侧疼痛运动后加重', '髋关节屈曲内收内旋时症状加重', '坐下时髋关节痛加重', '可能出现髋关节弹响或绞锁'],
@@ -401,6 +412,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '腰痛伴牵涉痛（骶髂关节）',
+    description: '骶髂关节位置不对位引起的下腰痛伴牵涉痛，分骨盆调整期与稳定训练期恢复对位与稳定性。',
     icon: 'spine',
     causes: ['骨盆不稳定', '骶髂关节位置不对位致神经肌肉韧带疼痛'],
     symptoms: ['下腰段痛', '一侧屁股痛', '骶髂关节处疼痛', '疼痛沿大腿外侧一般不过膝盖'],
@@ -432,6 +444,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '腰痛伴全身痛（心理因素）',
+    description: '心理因素介导的慢性腰痛伴全身痛，按疼痛脱敏期与健康提升期结合认知行为干预。',
     icon: 'spine',
     symptoms: ['腰痛和/或腰部相关下肢疼痛持续3个月以上', '疼痛时间越长扩散到越多部位', '全身疼痛不符合活动度不足/运动协调障碍/放射痛的临床表现模式', '常见伴精神健康状态(抑郁/恐惧回避行为/焦虑/疼痛灾难化)'],
     stages: [
@@ -463,6 +476,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '腰痛伴活动度不足',
+    description: '腰椎活动度受限导致的腰痛，分基础改善期与针对性改善期恢复胸椎灵活度与核心稳定。',
     icon: 'spine',
     causes: ['胸椎灵活度不足代偿引起腰痛', '骶髂关节错乱引起腰痛(髋关节活动度不足)', '腹部核心弱臀部肌无力', '前屈/后仰/侧屈/旋转活动度不足'],
     symptoms: ['单侧腰/臀/大腿痛', '近期发作疼痛不超过一个月', '症状发作常跟近期未加保护/不流畅动作有关', '明显僵硬/动作受限'],
@@ -503,6 +517,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '腰痛伴协调性障碍（腰椎不稳）',
+    description: '腰椎失稳伴运动协调性障碍，分松解期与稳定训练期增强核心与臀部力量、改善运动模式。',
     icon: 'spine',
     causes: ['胸椎髋关节灵活度不足导致代偿', '臀部肌群无力', '背部肌肉无力', '腹部核心太弱'],
     symptoms: ['反复发作腰痛常跟下肢牵涉痛相关', '近几年多次发作腰痛', '腰椎活动度过大常跟髋/胸椎/胸廓活动度不足相关联', '躯干或盆底肌肉强健度和耐力减少', '日常活动时出现运动协调性障碍'],
@@ -533,6 +548,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '腰痛伴放射痛',
+    description: '腰痛伴下肢放射痛与感觉异常，以神经滑动期通过神经松动术缓解卡压症状。',
     icon: 'spine',
     evaluation: ['硬脊膜紧张测试：坐姿直腿放松双手背后交叉低头弓背做足背屈，背部发麻则硬脊膜紧张'],
     symptoms: ['腰痛伴下肢放射痛(窄条状疼痛)', '下肢感觉异常(针扎/刺痛/麻木/无力)', '姿势或运动对神经牵拉导致症状加重'],
@@ -555,6 +571,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '肩峰下撞击综合症',
+    description: '肩峰下间隙狭窄导致的肩部撞击痛，分肱二头肌长头肌腱炎与冈上肌肌腱炎两个治疗期。',
     icon: 'shoulder',
     subtypes: [
       '肱二头肌长头肌腱炎(评估：微肘曲向下施力对抗如肱二头长头出现疼痛)',
@@ -596,6 +613,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '网球肘（外上髁炎）',
+    description: '腕伸肌过度使用导致的肱骨外上髁炎，分局部治疗期与肩部稳定期恢复离心控制与上肢力链。',
     icon: 'hand',
     evaluation: ['会员做腕伸向下施力对抗如出现疼痛则为外上髁炎'],
     stages: [
@@ -625,6 +643,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '高尔夫球肘（内上髁炎）',
+    description: '腕屈肌过度使用导致的肱骨内上髁炎，分局部治疗期与上肢整合期恢复肌力平衡与肩胛骨稳定。',
     icon: 'hand',
     evaluation: ['会员做腕曲向下施力对抗如出现疼痛则为内上髁炎'],
     stages: [
@@ -655,6 +674,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '腕关节疼痛',
+    description: '腕关节各方向活动受限与疼痛，以活动度与强化期恢复腕关节活动度与前臂肌群功能。',
     icon: 'hand',
     stages: [
       {
@@ -682,6 +702,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '颈痛伴放射痛',
+    description: '颈部神经卡压导致的颈痛伴上肢放射痛，以神经松动与松解期通过神经松动术缓解卡压。',
     icon: 'neck',
     causes: ['斜角肌/锁骨下肌/胸小肌紧张容易卡压颈部到手臂的神经'],
     nerves: [
@@ -707,6 +728,7 @@ const painProtocols = [
     category: '疼痛',
     categoryName: '疼痛治疗',
     name: '颈痛伴活动度不足',
+    description: '颈部活动受限伴呼吸模式异常，分呼吸与核心期、灵活度与松解期纠正代偿与恢复活动度。',
     icon: 'neck',
     causes: [
       '呼吸模式错误(不会腹式呼吸/横向式呼吸/气沉丹田)',

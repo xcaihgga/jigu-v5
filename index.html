@@ -2191,6 +2191,50 @@ body { display: flex; flex-direction: column; width: 100%; max-width: 100%; marg
 .stage-overview-exercises ul { list-style: none; padding: 0; margin: 0; }
 .stage-overview-exercises li { padding: 1px 0; }
 .stage-overview-exercises li::before { content: "•"; color: var(--primary); margin-right: 4px; }
+.stage-overview-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+@media (max-width: 640px) {
+  .stage-overview-table thead { display: none; }
+  .stage-overview-table,
+  .stage-overview-table tbody,
+  .stage-overview-table tr,
+  .stage-overview-table td {
+    display: block;
+    width: 100% !important;
+  }
+  .stage-overview-table tr {
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    background: var(--card-bg);
+  }
+  .stage-overview-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border-subtle, #F3F4F6);
+  }
+  .stage-overview-table td:last-child {
+    border-bottom: none;
+  }
+  .stage-overview-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--text-2);
+    min-width: 80px;
+    flex-shrink: 0;
+  }
+  .stage-overview-table td > * {
+    flex: 1;
+    min-width: 0;
+  }
+  .stage-overview-num { margin: 0; }
+}
 .freq-tag {
   display: inline-block;
   padding: 2px 8px;
@@ -3306,7 +3350,7 @@ pre {
         <span class="icon" id="scaleSearchIcon"></span>
         <input type="text" id="scaleSearch" placeholder="搜索量表名称、描述...">
       </div>
-      <div id="scaleCategoryBar" style="display:flex;gap:8px;overflow-x:auto;padding:0 0 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none;"></div>
+      <div id="scaleCategoryBar" style="display:flex;flex-wrap:wrap;gap:8px;overflow-x:auto;padding:0 0 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none;"></div>
     </div>
     <div id="scaleListContainer"></div>
   </div>
@@ -4975,9 +5019,31 @@ function renderScaleCategoryBar() {
       timestamp: new Date().toISOString()
     });
   }
-  bar.innerHTML = cats.map(function(c) {
+  var group1Keys = ['pain', 'neck', 'back', 'upper', 'wrist', 'lower', 'ankle'];
+  var group2Keys = ['function', 'balance', 'quality', 'muscle', 'mental'];
+  var allCat = cats.filter(function(c) { return c.key === '全部'; })[0];
+  var group1Cats = cats.filter(function(c) { return group1Keys.indexOf(c.key) !== -1; });
+  var group2Cats = cats.filter(function(c) { return group2Keys.indexOf(c.key) !== -1; });
+  var otherCats = cats.filter(function(c) {
+    return c.key !== '全部' && group1Keys.indexOf(c.key) === -1 && group2Keys.indexOf(c.key) === -1;
+  });
+  var html = '';
+  if (allCat) {
+    html += '<button class="quick-nav-item ' + (allCat.key === currentScaleCategory ? 'active' : '') + '" onclick="selectScaleCategory(\'' + allCat.key + '\')">' + allCat.name + '</button>';
+  }
+  html += group1Cats.map(function(c) {
     return '<button class="quick-nav-item ' + (c.key === currentScaleCategory ? 'active' : '') + '" onclick="selectScaleCategory(\'' + c.key + '\')">' + c.name + '</button>';
   }).join('');
+  html += '<div style="flex-basis:100%;height:1px;background:var(--border-subtle);margin:8px 0;"></div>';
+  html += group2Cats.map(function(c) {
+    return '<button class="quick-nav-item ' + (c.key === currentScaleCategory ? 'active' : '') + '" onclick="selectScaleCategory(\'' + c.key + '\')">' + c.name + '</button>';
+  }).join('');
+  if (otherCats.length > 0) {
+    html += otherCats.map(function(c) {
+      return '<button class="quick-nav-item ' + (c.key === currentScaleCategory ? 'active' : '') + '" onclick="selectScaleCategory(\'' + c.key + '\')">' + c.name + '</button>';
+    }).join('');
+  }
+  bar.innerHTML = html;
 }
 
 function selectScaleCategory(cat) {
@@ -5498,6 +5564,7 @@ function showScaleQuestion(index) {
   
   if (scale.type === 'slider') {
     const val = currentScaleAnswers[0] !== null ? currentScaleAnswers[0] : 5;
+    if (currentScaleAnswers[0] === null) currentScaleAnswers[0] = val;
     content = 
       '<div class="scale-question">' +
         '<div class="scale-question-text">' + (scale.question || '') + '</div>' +
@@ -7102,19 +7169,20 @@ function showProtocolDetail(id) {
       else if (freqText.indexOf('周以后') >= 0 || freqText.indexOf('每周 2') >= 0) { freqClass = 'low'; }
 
       return '<tr onclick="highlightStageRow(this, ' + i + ')">' +
-        '<td><span class="stage-overview-num">' + (i + 1) + '</span></td>' +
-        '<td><div class="stage-overview-name">' + stageNameShort + '</div>' +
+        '<td data-label="#"><span class="stage-overview-num">' + (i + 1) + '</span></td>' +
+        '<td data-label="阶段"><div class="stage-overview-name">' + stageNameShort + '</div>' +
         (durationText ? '<div class="stage-overview-duration">' + durationText + '</div>' : '') + '</td>' +
-        '<td class="stage-overview-goal">' + (s.goal || '') + '</td>' +
-        '<td class="stage-overview-exercises"><ul>' + topExercises + '</ul></td>' +
-        '<td><span class="freq-tag ' + freqClass + '">' + freqText + '</span></td>' +
-        '<td style="font-size:11px;color:var(--accent-green, #10B981);">' + criteriaShort + '</td>' +
+        '<td class="stage-overview-goal" data-label="治疗目标">' + (s.goal || '') + '</td>' +
+        '<td class="stage-overview-exercises" data-label="核心训练动作"><ul>' + topExercises + '</ul></td>' +
+        '<td data-label="频率"><span class="freq-tag ' + freqClass + '">' + freqText + '</span></td>' +
+        '<td data-label="进阶标准" style="font-size:11px;color:var(--accent-green, #10B981);">' + criteriaShort + '</td>' +
       '</tr>';
     }).join('');
 
     overviewHtml = '<div style="padding:0 16px 16px;">' +
       '<div class="stage-overview">' +
         '<div class="stage-overview-title">📋 康复阶段概览（' + p.stages.length + ' 个阶段）</div>' +
+        '<div class="stage-overview-scroll">' +
         '<table class="stage-overview-table">' +
           '<thead><tr>' +
             '<th style="width:28px;">#</th>' +
@@ -7126,6 +7194,7 @@ function showProtocolDetail(id) {
           '</tr></thead>' +
           '<tbody>' + overviewRows + '</tbody>' +
         '</table>' +
+        '</div>' +
       '</div>' +
     '</div>';
   }

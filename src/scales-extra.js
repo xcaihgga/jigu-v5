@@ -1265,54 +1265,6 @@ const scalesExtra = [
   // ===================== 疼痛评估（6个） =====================
 
   {
-    id: 'vas-pain',
-    name: 'VAS视觉模拟量表',
-    category: '疼痛',
-    description: '通过0-10分视觉模拟尺评估疼痛强度,最常用疼痛评估工具',
-    instructions: '在0-10分中选择代表当前疼痛程度的数字,0=无痛,10=最剧烈疼痛',
-    questions: [
-      { text: '当前疼痛程度', type: 'single', options: [
-        { text: '0 无痛', score: 0 }, { text: '1', score: 1 }, { text: '2', score: 2 }, { text: '3 轻度', score: 3 },
-        { text: '4', score: 4 }, { text: '5', score: 5 }, { text: '6 中度', score: 6 },
-        { text: '7', score: 7 }, { text: '8', score: 8 }, { text: '9', score: 9 }, { text: '10 最剧烈', score: 10 }
-      ]}
-    ],
-    scoring: {
-      type: 'sum',
-      levels: [
-        { min: 0, max: 0, level: '无痛', advice: '无疼痛感觉' },
-        { min: 1, max: 3, level: '轻度疼痛', advice: '疼痛轻微,不影响日常生活和睡眠' },
-        { min: 4, max: 6, level: '中度疼痛', advice: '疼痛明显,影响部分日常活动,睡眠受干扰' },
-        { min: 7, max: 10, level: '重度疼痛', advice: '疼痛剧烈,严重影响日常生活和睡眠,需积极镇痛' }
-      ]
-    }
-  },
-
-  {
-    id: 'nrs-pain',
-    name: 'NRS数字疼痛评级',
-    category: '疼痛',
-    description: '0-10分数字评级法,操作简便,适合各年龄患者',
-    instructions: '用0-10的数字描述当前疼痛程度,0=无痛,10=最剧烈疼痛',
-    questions: [
-      { text: '当前疼痛程度(0-10)', type: 'single', options: [
-        { text: '0 无痛', score: 0 }, { text: '1', score: 1 }, { text: '2', score: 2 }, { text: '3 轻度', score: 3 },
-        { text: '4', score: 4 }, { text: '5', score: 5 }, { text: '6 中度', score: 6 },
-        { text: '7', score: 7 }, { text: '8', score: 8 }, { text: '9', score: 9 }, { text: '10 最剧烈', score: 10 }
-      ]}
-    ],
-    scoring: {
-      type: 'sum',
-      levels: [
-        { min: 0, max: 0, level: '无痛', advice: '无疼痛感觉' },
-        { min: 1, max: 3, level: '轻度疼痛', advice: '疼痛轻微,不影响日常生活' },
-        { min: 4, max: 6, level: '中度疼痛', advice: '疼痛明显,影响部分活动' },
-        { min: 7, max: 10, level: '重度疼痛', advice: '疼痛剧烈,难以忍受,需积极镇痛' }
-      ]
-    }
-  },
-
-  {
     id: 'mcgill',
     name: 'McGill疼痛问卷(简明SF-MPQ)',
     category: '疼痛',
