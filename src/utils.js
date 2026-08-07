@@ -149,6 +149,16 @@ function escapeHtml(val) {
     .replace(/'/g, '&#39;');
 }
 
+function escapeAttr(val) {
+  if (val === null || val === undefined) return '';
+  return String(val)
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 // ═══════════════════════════════════════════════════════════════
 //  3. 安全读取 localStorage 的 JSON 数据
 //     - 解析失败时清理损坏数据、返回 fallback、一次性提示用户
@@ -174,6 +184,35 @@ function safeGetJSON(key, fallback) {
       }, 0);
     }
     return fb;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  3b. 安全写入 localStorage 的 JSON 数据
+//     - 捕获 QuotaExceededError / SecurityError 等异常
+//     - 写入失败时返回 false 并提示，避免静默丢失数据
+//     - 与 safeGetJSON 对称，保证数据完整性
+//     @param {string} key localStorage 键名
+//     @param {*} value 要写入的值（会被 JSON.stringify）
+//     @returns {boolean} 是否写入成功
+// ═══════════════════════════════════════════════════════════════
+var __lsWriteWarned = {};
+function safeSetJSON(key, value) {
+  try {
+    var serialized = JSON.stringify(value);
+    localStorage.setItem(key, serialized);
+    return true;
+  } catch (e) {
+    var errMsg = e && e.message ? e.message : String(e);
+    console.warn('[Storage] localStorage["' + key + '"] 写入失败:', errMsg);
+    if (!__lsWriteWarned[key]) {
+      __lsWriteWarned[key] = true;
+      setTimeout(function() {
+        alert('本地存储写入失败：' + (errMsg || '未知错误') + '。可能是存储空间已满或浏览器隐私模式限制。请清除部分数据或导出备份后重试。');
+        __lsWriteWarned[key] = false;
+      }, 0);
+    }
+    return false;
   }
 }
 

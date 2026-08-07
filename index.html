@@ -4197,7 +4197,10 @@ function savePatient(patientId) {
     patients.unshift(patientData);
   }
   
-  localStorage.setItem('patients', JSON.stringify(patients));
+  if (!safeSetJSON('patients', patients)) {
+    alert('保存失败：无法写入本地存储。');
+    return;
+  }
   closeModal();
   renderPatientList();
   alert('保存成功！');
@@ -4386,8 +4389,8 @@ function linkAssessmentToPatient(assessmentId) {
   const idx = allAssessments.findIndex(a => a.id === assessmentId);
   
   if (idx >= 0) {
+    const oldPatientId = allAssessments[idx].patientId;
     allAssessments[idx].patientId = currentPatientId;
-    localStorage.setItem('assessmentHistory', JSON.stringify(allAssessments));
     
     const patients = safeGetJSON('patients');
     const pIdx = patients.findIndex(p => p.id === currentPatientId);
@@ -4396,7 +4399,17 @@ function linkAssessmentToPatient(assessmentId) {
       if (!patients[pIdx].assessmentIds.includes(assessmentId)) {
         patients[pIdx].assessmentIds.push(assessmentId);
       }
-      localStorage.setItem('patients', JSON.stringify(patients));
+    }
+    
+    if (!safeSetJSON('assessmentHistory', allAssessments)) {
+      alert('关联失败：无法写入评估记录。');
+      return;
+    }
+    if (!safeSetJSON('patients', patients)) {
+      allAssessments[idx].patientId = oldPatientId;
+      safeSetJSON('assessmentHistory', allAssessments);
+      alert('关联失败：无法更新患者信息。数据已回滚。');
+      return;
     }
     
     alert('关联成功！');
@@ -4409,13 +4422,22 @@ function deletePatient(patientId) {
   
   let patients = safeGetJSON('patients');
   patients = patients.filter(p => p.id !== patientId);
-  localStorage.setItem('patients', JSON.stringify(patients));
   
   const allAssessments = safeGetJSON('assessmentHistory');
+  const backupAssessments = JSON.parse(JSON.stringify(allAssessments));
   allAssessments.forEach(a => {
     if (a.patientId === patientId) a.patientId = null;
   });
-  localStorage.setItem('assessmentHistory', JSON.stringify(allAssessments));
+  
+  if (!safeSetJSON('patients', patients)) {
+    alert('删除失败：无法写入患者数据。');
+    return;
+  }
+  if (!safeSetJSON('assessmentHistory', allAssessments)) {
+    safeSetJSON('assessmentHistory', backupAssessments);
+    alert('删除失败：无法更新评估记录。数据已回滚。');
+    return;
+  }
   
   currentPatientId = null;
   closeModal();

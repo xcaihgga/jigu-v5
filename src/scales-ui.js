@@ -85,7 +85,7 @@ function renderScaleLibrary() {
     scales.forEach(scale => {
       const proBadge = scale.isPro ? '<span class="pro-badge">PRO</span>' : '';
       html +=
-        '<div class="list-item" onclick="startScale(\'' + scale.id + '\')">' +
+        '<div class="list-item" onclick="startScale(\'' + escapeAttr(scale.id) + '\')">' +
           icon(catInfo.icon, 36) +
           '<div class="list-item-content">' +
             '<div class="list-item-title">' + scale.name + proBadge + '</div>' +
@@ -258,7 +258,7 @@ function showScaleQuestion(index) {
       content += 
         '<div class="psfs-input-group">' +
           '<div class="form-label">活动 ' + (i + 1) + '</div>' +
-          '<input type="text" class="form-input psfs-activity-input" placeholder="请输入活动名称" value="' + activity + '" oninput="currentScaleAnswers[' + (i * 2) + ']=this.value">' +
+          '<input type="text" class="form-input psfs-activity-input" placeholder="请输入活动名称" value="' + escapeAttr(activity) + '" oninput="currentScaleAnswers[' + (i * 2) + ']=this.value">' +
           '<div class="psfs-slider">' +
             '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-3);margin-bottom:4px;">' +
               '<span>0分 完全不能做</span>' +
@@ -276,8 +276,8 @@ function showScaleQuestion(index) {
       content += 
         '<div class="scale-question">' +
           '<div class="scale-question-num">第 ' + (i + 1) + ' 题</div>' +
-          '<div class="scale-question-text">' + q.text + '</div>' +
-          '<input type="number" class="form-input" placeholder="' + (q.placeholder || '请输入') + '" value="' + val + '" min="' + (q.min || 0) + '" max="' + (q.max || 360) + '" oninput="currentScaleAnswers[' + i + ']=parseFloat(this.value)||0">' +
+          '<div class="scale-question-text">' + escapeHtml(q.text) + '</div>' +
+          '<input type="number" class="form-input" placeholder="' + escapeAttr(q.placeholder || '请输入') + '" value="' + escapeAttr(val) + '" min="' + (q.min || 0) + '" max="' + (q.max || 360) + '" oninput="currentScaleAnswers[' + i + ']=parseFloat(this.value)||0">' +
         '</div>';
     }
   } else if (scale.type === 'yesno') {
@@ -431,7 +431,7 @@ function showScaleResult(result) {
       const score = currentScaleAnswers[i * 2 + 1] || 0;
       content += 
         '<div class="field-row">' +
-          '<div class="field-label">' + activity + '</div>' +
+          '<div class="field-label">' + escapeHtml(activity) + '</div>' +
           '<div class="field-value">' + score + ' 分</div>' +
         '</div>';
     }
@@ -509,7 +509,10 @@ function saveAssessment() {
   
   const history = safeGetJSON('assessmentHistory');
   history.unshift(record);
-  localStorage.setItem('assessmentHistory', JSON.stringify(history));
+  if (!safeSetJSON('assessmentHistory', history)) {
+    alert('保存失败：无法写入本地存储。');
+    return;
+  }
 
   // 更新实时操作栏
   rtSession.assessments++;
@@ -702,7 +705,10 @@ function deleteHistory(recordId) {
   
   let history = safeGetJSON('assessmentHistory');
   history = history.filter(r => r.id !== recordId);
-  localStorage.setItem('assessmentHistory', JSON.stringify(history));
+  if (!safeSetJSON('assessmentHistory', history)) {
+    alert('删除失败：无法写入本地存储。');
+    return;
+  }
   
   closeModal();
   renderScaleHistory();
