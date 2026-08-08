@@ -178,6 +178,85 @@ function safeGetJSON(key, fallback) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+//  3b. 安全写入 localStorage 的 JSON 数据
+//     - 使用 try-catch 包裹，防止存储空间满等异常
+//     - 支持通过 backup 参数实现简单的回滚机制
+//     @param {string} key localStorage 键名
+//     @param {*} value 要存储的值（会被 JSON.stringify）
+//     @param {Object} [options] 可选配置
+//     @param {string} [options.backupKey] 备份键名，用于失败时回滚
+//     @param {*} [options.backupValue] 备份值
+//     @returns {boolean} 是否写入成功
+// ═══════════════════════════════════════════════════════════════
+function safeSetJSON(key, value, options) {
+  options = options || {};
+  try {
+    var jsonStr = JSON.stringify(value);
+    localStorage.setItem(key, jsonStr);
+    return true;
+  } catch (e) {
+    console.error('[Storage] localStorage.setItem("' + key + '") 失败:', e && e.message ? e.message : e);
+    if (options.backupKey && options.backupValue !== undefined) {
+      try {
+        localStorage.setItem(options.backupKey, JSON.stringify(options.backupValue));
+        console.warn('[Storage] 已回滚备份数据到 "' + options.backupKey + '"');
+      } catch (e2) {
+        console.error('[Storage] 回滚也失败了:', e2);
+      }
+    }
+    return false;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  3c. 原子性关联写入：保证两个 key 的写入要么都成功要么都失败
+//     @param {Array} operations 操作数组，每个元素 {key, value}
+//     @returns {Object} {success: boolean, failedKey?: string}
+// ═══════════════════════════════════════════════════════════════
+function safeAtomicSet(operations) {
+  if (!Array.isArray(operations) || operations.length === 0) {
+    return { success: true };
+  }
+  var backups = {};
+  try {
+    // 先备份所有要修改的 key
+    for (var i = 0; i < operations.length; i++) {
+      var op = operations[i];
+      try {
+        var old = localStorage.getItem(op.key);
+        backups[op.key] = old !== null ? old : null;
+      } catch (e) {
+        backups[op.key] = null;
+      }
+    }
+    // 逐个写入
+    for (var j = 0; j < operations.length; j++) {
+      var op2 = operations[j];
+      localStorage.setItem(op2.key, JSON.stringify(op2.value));
+    }
+    return { success: true };
+  } catch (err) {
+    // 失败时回滚所有已写入的 key
+    console.error('[Storage] 原子写入失败，正在回滚:', err);
+    for (var k = 0; k < operations.length; k++) {
+      var op3 = operations[k];
+      if (backups[op3.key] !== null) {
+        try {
+          localStorage.setItem(op3.key, backups[op3.key]);
+        } catch (e3) {
+          console.error('[Storage] 回滚失败:', op3.key, e3);
+        }
+      } else {
+        try {
+          localStorage.removeItem(op3.key);
+        } catch (e4) {}
+      }
+    }
+    return { success: false, failedKey: err.message || 'unknown' };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
 //  4. 文本 → HTML 格式化
 //     支持：标题(#/##/###)、有序/无序列表、分隔线、小标题、加粗、段落
 // ═══════════════════════════════════════════════════════════════

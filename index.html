@@ -4197,7 +4197,11 @@ function savePatient(patientId) {
     patients.unshift(patientData);
   }
   
-  localStorage.setItem('patients', JSON.stringify(patients));
+  const saveResult = safeSetJSON('patients', patients);
+  if (!saveResult) {
+    alert('保存失败：本地存储空间可能已满，请清理浏览器数据后重试。');
+    return;
+  }
   closeModal();
   renderPatientList();
   alert('保存成功！');
@@ -4387,7 +4391,6 @@ function linkAssessmentToPatient(assessmentId) {
   
   if (idx >= 0) {
     allAssessments[idx].patientId = currentPatientId;
-    localStorage.setItem('assessmentHistory', JSON.stringify(allAssessments));
     
     const patients = safeGetJSON('patients');
     const pIdx = patients.findIndex(p => p.id === currentPatientId);
@@ -4396,7 +4399,17 @@ function linkAssessmentToPatient(assessmentId) {
       if (!patients[pIdx].assessmentIds.includes(assessmentId)) {
         patients[pIdx].assessmentIds.push(assessmentId);
       }
-      localStorage.setItem('patients', JSON.stringify(patients));
+    }
+    
+    // 原子性关联写入：保证两个 key 要么都成功要么都失败
+    const result = safeAtomicSet([
+      { key: 'assessmentHistory', value: allAssessments },
+      { key: 'patients', value: patients }
+    ]);
+    
+    if (!result.success) {
+      alert('关联失败：本地存储空间可能已满，请清理浏览器数据后重试。');
+      return;
     }
     
     alert('关联成功！');
@@ -4409,13 +4422,22 @@ function deletePatient(patientId) {
   
   let patients = safeGetJSON('patients');
   patients = patients.filter(p => p.id !== patientId);
-  localStorage.setItem('patients', JSON.stringify(patients));
   
   const allAssessments = safeGetJSON('assessmentHistory');
   allAssessments.forEach(a => {
     if (a.patientId === patientId) a.patientId = null;
   });
-  localStorage.setItem('assessmentHistory', JSON.stringify(allAssessments));
+  
+  // 原子性关联写入：保证删除患者和清理关联要么都成功要么都失败
+  const result = safeAtomicSet([
+    { key: 'patients', value: patients },
+    { key: 'assessmentHistory', value: allAssessments }
+  ]);
+  
+  if (!result.success) {
+    alert('删除失败：本地存储空间可能已满，请清理浏览器数据后重试。');
+    return;
+  }
   
   currentPatientId = null;
   closeModal();
