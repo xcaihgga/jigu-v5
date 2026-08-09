@@ -157,6 +157,8 @@ function escapeHtml(val) {
 //     @param {*} fallback 解析失败时的返回值（默认 []）
 // ═══════════════════════════════════════════════════════════════
 var __lsCorruptWarned = false;
+var __lsQuotaWarned = false;
+
 function safeGetJSON(key, fallback) {
   var fb = (fallback === undefined) ? [] : fallback;
   try {
@@ -174,6 +176,23 @@ function safeGetJSON(key, fallback) {
       }, 0);
     }
     return fb;
+  }
+}
+
+function safeSetJSON(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (e) {
+    console.error('[Storage] localStorage.setItem["' + key + '"] 写入失败:', e && e.message ? e.message : e);
+    if (!__lsQuotaWarned) {
+      __lsQuotaWarned = true;
+      setTimeout(function() {
+        alert('本地存储空间不足，数据保存失败。请清理浏览器缓存或联系管理员。');
+        __lsQuotaWarned = false;
+      }, 0);
+    }
+    return false;
   }
 }
 

@@ -3549,6 +3549,7 @@ let currentScaleAnswers = [];
 let currentScaleChoiceIdx = [];
 let currentScale = null;
 let currentPatientId = null;
+let _savePatientDebounced = false;
 let chartHiddenScales = {};
 let chartTimeRange = 'all';
 let historyTimeRange = 'all';
@@ -4136,6 +4137,10 @@ function selectStage(btn, stage) {
 }
 
 function savePatient(patientId) {
+  if (_savePatientDebounced) return;
+  _savePatientDebounced = true;
+  setTimeout(() => { _savePatientDebounced = false; }, 500);
+  
   const name = document.getElementById('pfName').value.trim();
   if (!name) {
     alert('请输入患者姓名');
@@ -4197,7 +4202,11 @@ function savePatient(patientId) {
     patients.unshift(patientData);
   }
   
-  localStorage.setItem('patients', JSON.stringify(patients));
+  const saved = safeSetJSON('patients', patients);
+  if (!saved) {
+    alert('保存失败：本地存储空间不足');
+    return;
+  }
   closeModal();
   renderPatientList();
   alert('保存成功！');
@@ -4387,7 +4396,11 @@ function linkAssessmentToPatient(assessmentId) {
   
   if (idx >= 0) {
     allAssessments[idx].patientId = currentPatientId;
-    localStorage.setItem('assessmentHistory', JSON.stringify(allAssessments));
+    const saved1 = safeSetJSON('assessmentHistory', allAssessments);
+    if (!saved1) {
+      alert('关联失败：本地存储空间不足');
+      return;
+    }
     
     const patients = safeGetJSON('patients');
     const pIdx = patients.findIndex(p => p.id === currentPatientId);
@@ -4396,7 +4409,11 @@ function linkAssessmentToPatient(assessmentId) {
       if (!patients[pIdx].assessmentIds.includes(assessmentId)) {
         patients[pIdx].assessmentIds.push(assessmentId);
       }
-      localStorage.setItem('patients', JSON.stringify(patients));
+      const saved2 = safeSetJSON('patients', patients);
+      if (!saved2) {
+        alert('关联失败：患者数据写入异常，评估记录已关联但患者列表未更新');
+        return;
+      }
     }
     
     alert('关联成功！');
@@ -4409,13 +4426,17 @@ function deletePatient(patientId) {
   
   let patients = safeGetJSON('patients');
   patients = patients.filter(p => p.id !== patientId);
-  localStorage.setItem('patients', JSON.stringify(patients));
+  const saved1 = safeSetJSON('patients', patients);
+  if (!saved1) {
+    alert('删除失败：本地存储空间不足');
+    return;
+  }
   
   const allAssessments = safeGetJSON('assessmentHistory');
   allAssessments.forEach(a => {
     if (a.patientId === patientId) a.patientId = null;
   });
-  localStorage.setItem('assessmentHistory', JSON.stringify(allAssessments));
+  safeSetJSON('assessmentHistory', allAssessments);
   
   currentPatientId = null;
   closeModal();
