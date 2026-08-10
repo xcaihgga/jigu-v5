@@ -119,7 +119,7 @@
       var pct = Math.round(item.count / total * 100);
       var widthPct = Math.round(item.count / maxVal * 100);
       return '<div class="dist-item">' +
-        '<div class="dist-label">' + item.name + '</div>' +
+        '<div class="dist-label">' + escapeHtml(item.name) + '</div>' +
         '<div class="dist-bar-wrap"><div class="dist-bar-fill" style="width:' + widthPct + '%;background:' + item.color + ';"></div></div>' +
         '<div class="dist-count">' + item.count + ' · ' + pct + '%</div>' +
       '</div>';
@@ -155,7 +155,7 @@
 
     list.innerHTML = items.map(function (item) {
       return '<li class="avg-score-item">' +
-        '<div class="avg-score-name">' + item.name + '</div>' +
+        '<div class="avg-score-name">' + escapeHtml(item.name) + '</div>' +
         '<div class="avg-score-value">' + item.avg + (item.maxScore ? ' / ' + item.maxScore : '') + '</div>' +
         '<div class="avg-score-count">' + item.count + '次</div>' +
       '</li>';
@@ -278,7 +278,7 @@
       var numClass = i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : 'other';
       return '<li class="rank-item">' +
         '<div class="rank-num ' + numClass + '">' + (i + 1) + '</div>' +
-        '<div class="rank-name">' + item.name + '</div>' +
+        '<div class="rank-name">' + escapeHtml(item.name) + '</div>' +
         '<div class="rank-count">' + item.count + '次</div>' +
       '</li>';
     }).join('');
