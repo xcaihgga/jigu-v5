@@ -178,6 +178,30 @@ function safeGetJSON(key, fallback) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+//  3.5 安全写入 localStorage 的 JSON 数据
+//      - 对 JSON.stringify + setItem 全链路 try-catch
+//      - 避免 QuotaExceededError / 隐私模式禁用 localStorage 时中断业务
+//      @param {string} key localStorage 键名
+//      @param {*} value 要写入的值（会被 JSON.stringify）
+//      @returns {boolean} 是否写入成功
+// ═══════════════════════════════════════════════════════════════
+function safeSetJSON(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (e) {
+    var msg = e && e.message ? e.message : String(e);
+    console.error('[Storage] localStorage["' + key + '"] 写入失败:', msg);
+    if (/quota|exceed|storage/i.test(msg) || (e && e.name === 'QuotaExceededError')) {
+      alert('本地存储已满，无法保存数据。请清理浏览器存储后重试。');
+    } else {
+      alert('保存失败：' + msg);
+    }
+    return false;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
 //  4. 文本 → HTML 格式化
 //     支持：标题(#/##/###)、有序/无序列表、分隔线、小标题、加粗、段落
 // ═══════════════════════════════════════════════════════════════

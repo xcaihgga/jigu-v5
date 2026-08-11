@@ -4135,18 +4135,24 @@ function selectStage(btn, stage) {
   if (hidden) hidden.value = stage;
 }
 
+var __savePatientLock = false;
 function savePatient(patientId) {
-  const name = document.getElementById('pfName').value.trim();
+  if (__savePatientLock) return;
+  function val(id) {
+    var el = document.getElementById(id);
+    return el ? el.value : '';
+  }
+  const name = val('pfName').trim();
   if (!name) {
     alert('请输入患者姓名');
     return;
   }
-  const gender = document.getElementById('pfGender').value;
+  const gender = val('pfGender');
   if (!gender) {
     alert('请选择性别');
     return;
   }
-  const age = document.getElementById('pfAge').value.trim();
+  const age = val('pfAge').trim();
   if (!age) {
     alert('请输入年龄');
     return;
@@ -4157,50 +4163,55 @@ function savePatient(patientId) {
     alert('请选择评估阶段');
     return;
   }
-  const diagnosis = document.getElementById('pfDiagnosis').value.trim();
+  const diagnosis = val('pfDiagnosis').trim();
   if (!diagnosis) {
     alert('请输入诊断');
     return;
   }
-  
-  const patients = safeGetJSON('patients');
-  
-  const patientData = {
-    name: name,
-    gender: gender,
-    age: age,
-    bedNumber: document.getElementById('pfBedNumber').value.trim(),
-    phone: document.getElementById('pfPhone').value.trim(),
-    assessmentStage: stage,
-    diagnosis: diagnosis,
-    bodyPart: document.getElementById('pfBodyPart').value,
-    chiefComplaint: document.getElementById('pfComplaint').value,
-    medicalHistory: document.getElementById('pfMedicalHistory').value,
-    treatmentPlan: document.getElementById('pfTreatment').value,
-    notes: document.getElementById('pfNotes').value,
-    assessmentIds: []
-  };
-  
-  if (patientId) {
-    const idx = patients.findIndex(p => p.id === patientId);
-    if (idx >= 0) {
-      patientData.id = patientId;
-      patientData.assessmentIds = patients[idx].assessmentIds || [];
-      patientData.createdAt = patients[idx].createdAt;
+
+  __savePatientLock = true;
+  try {
+    const patients = safeGetJSON('patients');
+
+    const patientData = {
+      name: name,
+      gender: gender,
+      age: age,
+      bedNumber: val('pfBedNumber').trim(),
+      phone: val('pfPhone').trim(),
+      assessmentStage: stage,
+      diagnosis: diagnosis,
+      bodyPart: val('pfBodyPart'),
+      chiefComplaint: val('pfComplaint'),
+      medicalHistory: val('pfMedicalHistory'),
+      treatmentPlan: val('pfTreatment'),
+      notes: val('pfNotes'),
+      assessmentIds: []
+    };
+
+    if (patientId) {
+      const idx = patients.findIndex(p => p.id === patientId);
+      if (idx >= 0) {
+        patientData.id = patientId;
+        patientData.assessmentIds = patients[idx].assessmentIds || [];
+        patientData.createdAt = patients[idx].createdAt;
+        patientData.updatedAt = new Date().toISOString();
+        patients[idx] = patientData;
+      }
+    } else {
+      patientData.id = Date.now();
+      patientData.createdAt = new Date().toISOString();
       patientData.updatedAt = new Date().toISOString();
-      patients[idx] = patientData;
+      patients.unshift(patientData);
     }
-  } else {
-    patientData.id = Date.now();
-    patientData.createdAt = new Date().toISOString();
-    patientData.updatedAt = new Date().toISOString();
-    patients.unshift(patientData);
+
+    if (!safeSetJSON('patients', patients)) return;
+    closeModal();
+    renderPatientList();
+    alert('保存成功！');
+  } finally {
+    __savePatientLock = false;
   }
-  
-  localStorage.setItem('patients', JSON.stringify(patients));
-  closeModal();
-  renderPatientList();
-  alert('保存成功！');
 }
 
 function exportPatientCsv() {
@@ -4381,45 +4392,86 @@ function showAddAssessmentToPatient() {
   document.querySelector('#currentModal .modal-footer').innerHTML = footer;
 }
 
+var __linkAssessmentLock = false;
 function linkAssessmentToPatient(assessmentId) {
-  const allAssessments = safeGetJSON('assessmentHistory');
-  const idx = allAssessments.findIndex(a => a.id === assessmentId);
-  
-  if (idx >= 0) {
-    allAssessments[idx].patientId = currentPatientId;
-    localStorage.setItem('assessmentHistory', JSON.stringify(allAssessments));
-    
+  if (__linkAssessmentLock) return;
+  __linkAssessmentLock = true;
+  try {
+    const allAssessments = safeGetJSON('assessmentHistory');
     const patients = safeGetJSON('patients');
+
+    // 备份用于回滚
+    const assessmentsBackup = JSON.stringify(allAssessments);
+    const patientsBackup = JSON.stringify(patients);
+
+    const aIdx = allAssessments.findIndex(a => a.id === assessmentId);
     const pIdx = patients.findIndex(p => p.id === currentPatientId);
-    if (pIdx >= 0) {
+
+    if (aIdx < 0) { alert('评估记录不存在'); return; }
+    if (pIdx < 0) { alert('病例不存在'); return; }
+
+    allAssessments[aIdx].patientId = currentPatientId;
+    if (!safeSetJSON('assessmentHistory', allAssessments)) return;
+
+    try {
       if (!patients[pIdx].assessmentIds) patients[pIdx].assessmentIds = [];
       if (!patients[pIdx].assessmentIds.includes(assessmentId)) {
         patients[pIdx].assessmentIds.push(assessmentId);
       }
-      localStorage.setItem('patients', JSON.stringify(patients));
+      if (!safeSetJSON('patients', patients)) {
+        // 第二次写入失败 → 回滚第一次
+        try { localStorage.setItem('assessmentHistory', assessmentsBackup); } catch (_) {}
+        return;
+      }
+    } catch (e) {
+      // 任意异常 → 回滚第一次写入
+      try { localStorage.setItem('assessmentHistory', assessmentsBackup); } catch (_) {}
+      return;
     }
-    
+
     alert('关联成功！');
     showPatientDetail(currentPatientId);
+  } finally {
+    __linkAssessmentLock = false;
   }
 }
 
+var __deletePatientLock = false;
 function deletePatient(patientId) {
+  if (__deletePatientLock) return;
   if (!confirm('确定要删除这个病例吗？关联的评估记录不会被删除。')) return;
-  
-  let patients = safeGetJSON('patients');
-  patients = patients.filter(p => p.id !== patientId);
-  localStorage.setItem('patients', JSON.stringify(patients));
-  
-  const allAssessments = safeGetJSON('assessmentHistory');
-  allAssessments.forEach(a => {
-    if (a.patientId === patientId) a.patientId = null;
-  });
-  localStorage.setItem('assessmentHistory', JSON.stringify(allAssessments));
-  
-  currentPatientId = null;
-  closeModal();
-  renderPatientList();
+  __deletePatientLock = true;
+  try {
+    let patients = safeGetJSON('patients');
+    const allAssessments = safeGetJSON('assessmentHistory');
+
+    // 备份用于回滚
+    const patientsBackup = JSON.stringify(patients);
+    const assessmentsBackup = JSON.stringify(allAssessments);
+
+    patients = patients.filter(p => p.id !== patientId);
+    if (!safeSetJSON('patients', patients)) return;
+
+    try {
+      allAssessments.forEach(a => {
+        if (a.patientId === patientId) a.patientId = null;
+      });
+      if (!safeSetJSON('assessmentHistory', allAssessments)) {
+        // 第二次失败 → 回滚第一次
+        try { localStorage.setItem('patients', patientsBackup); } catch (_) {}
+        return;
+      }
+    } catch (e) {
+      try { localStorage.setItem('patients', patientsBackup); } catch (_) {}
+      return;
+    }
+
+    currentPatientId = null;
+    closeModal();
+    renderPatientList();
+  } finally {
+    __deletePatientLock = false;
+  }
 }
 
 document.getElementById('patientSearch').addEventListener('input', function() {

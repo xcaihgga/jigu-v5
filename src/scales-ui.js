@@ -476,52 +476,59 @@ function showScaleResult(result) {
   document.querySelector('#currentModal .modal-footer').innerHTML = footer;
 }
 
+var __saveAssessmentLock = false;
 function saveAssessment() {
-  const scale = currentScale;
-  let result;
-  
-  if (scale.customQuestions) {
-    const scores = [];
-    const activities = [];
-    for (let i = 0; i < (scale.questionCount || 3); i++) {
-      activities.push(currentScaleAnswers[i * 2] || ('活动' + (i + 1)));
-      scores.push(currentScaleAnswers[i * 2 + 1] || 0);
+  if (__saveAssessmentLock) return;
+  __saveAssessmentLock = true;
+  try {
+    const scale = currentScale;
+    let result;
+
+    if (scale.customQuestions) {
+      const scores = [];
+      const activities = [];
+      for (let i = 0; i < (scale.questionCount || 3); i++) {
+        activities.push(currentScaleAnswers[i * 2] || ('活动' + (i + 1)));
+        scores.push(currentScaleAnswers[i * 2 + 1] || 0);
+      }
+      result = scale.calculate(scores, activities);
+      result.activities = activities;
+    } else {
+      result = scale.calculate(currentScaleAnswers);
     }
-    result = scale.calculate(scores, activities);
-    result.activities = activities;
-  } else {
-    result = scale.calculate(currentScaleAnswers);
-  }
-  
-  const record = {
-    id: Date.now(),
-    scaleId: scale.id,
-    scaleName: scale.name,
-    shortName: scale.shortName,
-    category: scale.category,
-    score: result.score,
-    maxScore: result.maxScore,
-    answers: [...currentScaleAnswers],
-    activities: result.activities || null,
-    date: new Date().toISOString(),
-    patientId: currentPatientId || null
-  };
-  
-  const history = safeGetJSON('assessmentHistory');
-  history.unshift(record);
-  localStorage.setItem('assessmentHistory', JSON.stringify(history));
 
-  // 更新实时操作栏
-  rtSession.assessments++;
-  __rtAssessedIds.add(currentScale.id); // 去重：不同量表数
-  rtSetAction('完成评定: ' + currentScale.name);
-  updateSessionStats();
+    const record = {
+      id: Date.now(),
+      scaleId: scale.id,
+      scaleName: scale.name,
+      shortName: scale.shortName,
+      category: scale.category,
+      score: result.score,
+      maxScore: result.maxScore,
+      answers: [...currentScaleAnswers],
+      activities: result.activities || null,
+      date: new Date().toISOString(),
+      patientId: currentPatientId || null
+    };
 
-  closeModal();
-  alert('评估记录已保存！');
-  
-  if (currentAssessmentTab === 'history') {
-    renderScaleHistory();
+    const history = safeGetJSON('assessmentHistory');
+    history.unshift(record);
+    if (!safeSetJSON('assessmentHistory', history)) return;
+
+    // 更新实时操作栏
+    rtSession.assessments++;
+    __rtAssessedIds.add(currentScale.id); // 去重：不同量表数
+    rtSetAction('完成评定: ' + currentScale.name);
+    updateSessionStats();
+
+    closeModal();
+    alert('评估记录已保存！');
+
+    if (currentAssessmentTab === 'history') {
+      renderScaleHistory();
+    }
+  } finally {
+    __saveAssessmentLock = false;
   }
 }
 
@@ -697,15 +704,21 @@ function viewHistoryDetail(recordId) {
   showModal('评估详情', content, footer);
 }
 
+var __deleteHistoryLock = false;
 function deleteHistory(recordId) {
+  if (__deleteHistoryLock) return;
   if (!confirm('确定要删除这条评估记录吗？')) return;
-  
-  let history = safeGetJSON('assessmentHistory');
-  history = history.filter(r => r.id !== recordId);
-  localStorage.setItem('assessmentHistory', JSON.stringify(history));
-  
-  closeModal();
-  renderScaleHistory();
+  __deleteHistoryLock = true;
+  try {
+    let history = safeGetJSON('assessmentHistory');
+    history = history.filter(r => r.id !== recordId);
+    if (!safeSetJSON('assessmentHistory', history)) return;
+
+    closeModal();
+    renderScaleHistory();
+  } finally {
+    __deleteHistoryLock = false;
+  }
 }
 
 function switchAssessmentTab(tab) {
