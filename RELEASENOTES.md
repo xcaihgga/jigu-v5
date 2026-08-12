@@ -189,24 +189,25 @@ git push origin main
 > 推送说明：首次 `push_files` 调用时因 `files[]` 元素结构传错（`content` 字段为 `JSON.stringify({path,content})` 而不是文件原始内容），导致 3 个文件被写空；通过 `gh auth setup-git` 配置 gh 凭证助手，改用本地 git 直接 push 的方式完成最终推送，远端 4 个文件字节数与本地完全一致（30479 / 46387 / 200656 / 12202）。
 
 ### Push 最终状态回显（2026-08-12 UTC）
+> 注：以下 echo 对应 commit `8c66015`（含本回显块的上一次提交）；本次收尾 commit 仅更新此回显块中的 SHA，不再递归，不影响功能文件。
 
 ```
 $ git push origin main
 To https://github.com/xcaihgga/jigu-v5
-   4d9f246..128a9ce  main -> main
+   128a9ce..8c66015  main -> main
 
 $ git rev-parse HEAD
-128a9ce1b13f07b3ac56662c68a3f7367a5069d5
+8c66015af89d32fc02af6e002d984a1b4c069f46
 
-$ git cat-file -s origin/main:<path>   # 远端 blob 大小
+$ git cat-file -s origin/main:<path>   # 远端 blob 大小（8c66015 时）
   src/utils.js        30479
   src/scales-ui.js    46387
   index.html         200656
-  RELEASENOTES.md     12202
+  RELEASENOTES.md     ~13 KB (回显块在这个 commit 内加入)
 
-$ wc -c <local files>                   # 本地工作区大小
+$ wc -c <local 4 key files>             # 本地工作区大小 (功能文件保持不变)
   src/utils.js        30479   (一致 ✓)
   src/scales-ui.js    46387   (一致 ✓)
   index.html         200656   (一致 ✓)
-  RELEASENOTES.md     12202   (一致 ✓)
+  RELEASENOTES.md     (文档更新中)
 ```
