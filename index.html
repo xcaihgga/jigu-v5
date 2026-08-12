@@ -4420,12 +4420,12 @@ function linkAssessmentToPatient(assessmentId) {
       }
       if (!safeSetJSON('patients', patients)) {
         // 第二次写入失败 → 回滚第一次
-        try { localStorage.setItem('assessmentHistory', assessmentsBackup); } catch (_) {}
+        try { safeSetJSON('assessmentHistory', JSON.parse(assessmentsBackup)); } catch (_) {}
         return;
       }
     } catch (e) {
       // 任意异常 → 回滚第一次写入
-      try { localStorage.setItem('assessmentHistory', assessmentsBackup); } catch (_) {}
+      try { safeSetJSON('assessmentHistory', JSON.parse(assessmentsBackup)); } catch (_) {}
       return;
     }
 
@@ -4458,11 +4458,11 @@ function deletePatient(patientId) {
       });
       if (!safeSetJSON('assessmentHistory', allAssessments)) {
         // 第二次失败 → 回滚第一次
-        try { localStorage.setItem('patients', patientsBackup); } catch (_) {}
+        try { safeSetJSON('patients', JSON.parse(patientsBackup)); } catch (_) {}
         return;
       }
     } catch (e) {
-      try { localStorage.setItem('patients', patientsBackup); } catch (_) {}
+      try { safeSetJSON('patients', JSON.parse(patientsBackup)); } catch (_) {}
       return;
     }
 
@@ -4769,12 +4769,12 @@ function buildMigrationReportHTML(data) {
     html += '<div style="font-size:13px;font-weight:600;color:#DC2626;margin-bottom:8px;">错误详情</div>';
     if (data.scales.errors && data.scales.errors.length > 0) {
       data.scales.errors.forEach(function(err) {
-        html += '<div style="font-size:12px;color:#7F1D1D;margin-bottom:4px;">' + (err.name || err.id) + ': ' + (err.errors || []).map(function(e) { return e.field + ' - ' + e.message; }).join('; ') + '</div>';
+        html += '<div style="font-size:12px;color:#7F1D1D;margin-bottom:4px;">' + escapeHtml(err.name || err.id) + ': ' + (err.errors || []).map(function(e) { return escapeHtml(e.field) + ' - ' + escapeHtml(e.message); }).join('; ') + '</div>';
       });
     }
     if (data.protocols.errors && data.protocols.errors.length > 0) {
       data.protocols.errors.forEach(function(err) {
-        html += '<div style="font-size:12px;color:#7F1D1D;margin-bottom:4px;">' + (err.name || err.id) + ': ' + (err.message || '未知错误') + '</div>';
+        html += '<div style="font-size:12px;color:#7F1D1D;margin-bottom:4px;">' + escapeHtml(err.name || err.id) + ': ' + escapeHtml(err.message || '未知错误') + '</div>';
       });
     }
     html += '</div>';
@@ -4785,7 +4785,7 @@ function buildMigrationReportHTML(data) {
     html += '<details style="margin-bottom:16px;"><summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--text-secondary);">数据来源 (' + data.scales.sources.length + ')</summary>';
     html += '<ul style="margin-top:8px;padding-left:20px;font-size:12px;color:var(--text-tertiary);line-height:1.8;">';
     data.scales.sources.forEach(function(src) {
-      html += '<li>' + src + '</li>';
+      html += '<li>' + escapeHtml(src) + '</li>';
     });
     html += '</ul></details>';
   }
