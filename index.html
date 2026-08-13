@@ -3763,7 +3763,7 @@ function showModal(title, contentHtml, footerHtml) {
     '<div class="modal-content">' +
       '<div class="modal-header">' +
         '<div class="modal-close" onclick="closeModal()">' + icon('close', 20) + '</div>' +
-        '<div class="modal-title">' + title + '</div>' +
+        '<div class="modal-title">' + escapeHtml(title) + '</div>' +
         '<div style="width:32px;"></div>' +
       '</div>' +
       '<div class="modal-body" id="modalBody">' + contentHtml + '</div>' +
@@ -4258,7 +4258,8 @@ function showPatientDetail(patientId) {
   const allAssessments = safeGetJSON('assessmentHistory');
   const patientAssessments = allAssessments.filter(a => a.patientId === patientId);
   
-  const title = escapeHtml(p.name || '未命名') + (p.age ? ' (' + escapeHtml(p.age) + '岁)' : '') + (p.gender ? ' · ' + escapeHtml(p.gender) : '');
+  const rawTitle = (p.name || '未命名') + (p.age ? ' (' + p.age + '岁)' : '') + (p.gender ? ' · ' + p.gender : '');
+  const title = escapeHtml(rawTitle);
 
   let content =
     '<div class="detail-header" style="margin:-16px -16px 16px -16px;border-radius:0;">' +
@@ -4355,7 +4356,7 @@ function showPatientDetail(patientId) {
       icon('edit', 16) + '编辑' +
     '</button>';
   
-  showModal(title, content, footer);
+  showModal(rawTitle, content, footer);
 }
 
 function showAddAssessmentToPatient() {
@@ -4659,6 +4660,63 @@ function checkMigrationPermission() {
 }
 
 /**
+ * 校验 migration-report.json 数据结构完整性
+ * @param {Object} data - 解析后的 JSON 数据
+ * @returns {Object} { valid: boolean, errors: string[] }
+ */
+function validateMigrationReportData(data) {
+  var errors = [];
+
+  if (!data || typeof data !== 'object') {
+    return { valid: false, errors: ['数据必须为对象'] };
+  }
+
+  // systemStatus 必须为已知值
+  var validStatuses = ['healthy', 'degraded', 'error'];
+  if (data.systemStatus && validStatuses.indexOf(data.systemStatus) === -1) {
+    errors.push('systemStatus 不在允许列表中: ' + escapeHtml(data.systemStatus));
+  }
+
+  // scales / protocols 必须为对象
+  ['scales', 'protocols'].forEach(function(key) {
+    var section = data[key];
+    if (!section || typeof section !== 'object') {
+      errors.push(key + ' 字段缺失或类型错误');
+      return;
+    }
+    // total / migrated 必须为数字
+    ['total', 'migrated'].forEach(function(numKey) {
+      if (typeof section[numKey] !== 'number' || section[numKey] < 0) {
+        errors.push(key + '.' + numKey + ' 必须为非负数');
+      }
+    });
+    // errors 必须为数组
+    if (section.errors && !Array.isArray(section.errors)) {
+      errors.push(key + '.errors 必须为数组');
+    }
+    // sources 必须为字符串数组
+    if (section.sources) {
+      if (!Array.isArray(section.sources)) {
+        errors.push(key + '.sources 必须为数组');
+      } else {
+        section.sources.forEach(function(src, i) {
+          if (typeof src !== 'string') {
+            errors.push(key + '.sources[' + i + '] 必须为字符串');
+          }
+        });
+      }
+    }
+  });
+
+  // generatedAt 必须为有效日期字符串（若存在）
+  if (data.generatedAt && isNaN(Date.parse(data.generatedAt))) {
+    errors.push('generatedAt 不是有效的日期格式');
+  }
+
+  return { valid: errors.length === 0, errors: errors };
+}
+
+/**
  * 渲染迁移报告内容
  * 通过 fetch 加载 migration-report.json 并渲染摘要卡片
  */
@@ -4674,6 +4732,12 @@ function renderMigrationReport() {
       return res.json();
     })
     .then(function(data) {
+      // 数据校验
+      var validation = validateMigrationReportData(data);
+      if (!validation.valid) {
+        console.warn('[Migration] 数据校验警告:', validation.errors);
+      }
+
       var subtitle = data.systemStatus === 'healthy' ? '✅ 系统健康' :
                      data.systemStatus === 'degraded' ? '⚠️ 降级运行' :
                      '❌ 系统错误';
@@ -4693,7 +4757,7 @@ function renderMigrationReport() {
       console.error('[Migration] 报告加载失败:', err);
       contentEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-tertiary);">' +
         '<p style="font-size:14px;">报告数据加载失败</p>' +
-        '<p style="font-size:12px;margin-top:4px;">' + (err.message || '未知错误') + '</p>' +
+        '<p style="font-size:12px;margin-top:4px;">' + escapeHtml(err.message || '未知错误') + '</p>' +
         '<p style="font-size:12px;margin-top:8px;color:var(--text-disabled);">请运行 <code>migrate-data.ts</code> 生成报告</p>' +
         '</div>';
       if (subtitleEl) subtitleEl.textContent = '加载失败';
