@@ -258,7 +258,7 @@ function showScaleQuestion(index) {
       content += 
         '<div class="psfs-input-group">' +
           '<div class="form-label">活动 ' + (i + 1) + '</div>' +
-          '<input type="text" class="form-input psfs-activity-input" placeholder="请输入活动名称" value="' + activity + '" oninput="currentScaleAnswers[' + (i * 2) + ']=this.value">' +
+          '<input type="text" class="form-input psfs-activity-input" placeholder="请输入活动名称" value="' + escapeHtml(activity) + '" oninput="currentScaleAnswers[' + (i * 2) + ']=this.value">' +
           '<div class="psfs-slider">' +
             '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-3);margin-bottom:4px;">' +
               '<span>0分 完全不能做</span>' +
@@ -429,9 +429,9 @@ function showScaleResult(result) {
     for (let i = 0; i < result.activities.length; i++) {
       const activity = result.activities[i];
       const score = currentScaleAnswers[i * 2 + 1] || 0;
-      content += 
+      content +=
         '<div class="field-row">' +
-          '<div class="field-label">' + activity + '</div>' +
+          '<div class="field-label">' + escapeHtml(activity) + '</div>' +
           '<div class="field-value">' + score + ' 分</div>' +
         '</div>';
     }
@@ -667,9 +667,9 @@ function viewHistoryDetail(recordId) {
       '<div class="result-detail-section">' +
         '<div class="result-detail-title">' + icon('list', 18) + '各活动评分</div>';
     for (let i = 0; i < result.activities.length; i++) {
-      content += 
+      content +=
         '<div class="field-row">' +
-          '<div class="field-label">' + result.activities[i] + '</div>' +
+          '<div class="field-label">' + escapeHtml(result.activities[i]) + '</div>' +
           '<div class="field-value">' + (record.answers[i * 2 + 1] || 0) + ' 分</div>' +
         '</div>';
     }
