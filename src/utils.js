@@ -216,6 +216,10 @@ function formatContent(text) {
   html = html.replace(/^##\s+/gm, '');
   html = html.replace(/^#\s+/gm, '');
 
+  // 去除 markdown 标记后立即转义：用户可控文本中的 <>&"' 不会注入为 HTML。
+  // 转义不改变 \n / 数字 / - / · 等后续块级、列表、分隔线识别所用标记，格式逻辑不受影响。
+  html = escapeHtml(html);
+
   if (html.includes('\n')) {
     const blocks = html.split(/\n{2,}/);
     html = blocks.map(block => {

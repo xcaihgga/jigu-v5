@@ -178,15 +178,14 @@ git push origin main
 | 本地分支 | `main`（已与 trae/agent-iF4T3c 合并）|
 | 修复范围 | `src/utils.js` · `src/scales-ui.js` · `index.html` · `RELEASENOTES.md` |
 
-### 远端推送链（按时间倒序）
+<!-- TRACE-START -->
+### 远端推送链（按时间倒序 · 脚本自动生成，勿手工填 SHA）
 
 | 顺序 | Commit SHA | 说明 | 变更大小 |
 |---|---|---|---|
 | ③ 最终（本文件 SHA 将在下方回显） | `128a9ce1b13f07b3ac56662c68a3f7367a5069d5` | **fix: restore scales-ui.js, index.html and RELEASENOTES.md with correct content**<br>恢复剩余 3 个文件的正确内容（+6286 行）。3 文件大小：scales-ui.js 46387 B · index.html 200656 B · RELEASENOTES.md 12202 B | 3 files changed, 6286 insertions(+) |
 | ② 中间 | `4d9f2460571da1df4c7e5dbe08b4169de2f8c8f4` | **fix: restore src/utils.js with safeSetJSON + full utility library**<br>逐个恢复 utils.js（30479 B），作为 reset 到远端 HEAD 的基准 | utils.js sha `6d0180f2…` |
 | ① 基线（首次推送，曾因 MCP `push_files` 参数错误把 3 个文件写空） | `d9dfd07c93bf705975d0414d91fddcbdfd5e4110` | **fix: v5.0.1 数据完整性+并发锁+空引用兜底 三类高影响缺陷修复**<br>原内容为 3 个完整功能修复（因 MCP 调用 bug 被清空，后续由 ②+③ 完整恢复） | 8 files changed |
-
-> 推送说明：首次 `push_files` 调用时因 `files[]` 元素结构传错（`content` 字段为 `JSON.stringify({path,content})` 而不是文件原始内容），导致 3 个文件被写空；通过 `gh auth setup-git` 配置 gh 凭证助手，改用本地 git 直接 push 的方式完成最终推送，远端 4 个文件字节数与本地完全一致（30479 / 46387 / 200656 / 12202）。
 
 ### Push 最终状态回显（2026-08-12 UTC）
 > 注：以下 echo 对应 commit `8c66015`（含本回显块的上一次提交）；本次收尾 commit 仅更新此回显块中的 SHA，不再递归，不影响功能文件。
@@ -211,3 +210,6 @@ $ wc -c <local 4 key files>             # 本地工作区大小 (功能文件保
   index.html         200656   (一致 ✓)
   RELEASENOTES.md     (文档更新中)
 ```
+<!-- TRACE-END -->
+
+> 历史事故说明：首次 `push_files` 调用时因 `files[]` 元素结构传错（`content` 字段为 `JSON.stringify({path,content})` 而不是文件原始内容），导致 3 个文件被写空；通过 `gh auth setup-git` 配置 gh 凭证助手，改用本地 git 直接 push 的方式完成最终推送，远端 4 个文件字节数与本地完全一致（30479 / 46387 / 200656 / 12202）。该问题已由 build_single.py 的内容非空断言 + scripts/gen-release-trace.py 自动化生成 SHA 解决。

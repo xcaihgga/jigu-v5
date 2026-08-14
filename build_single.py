@@ -13,6 +13,38 @@ import shutil
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
+# 关键源文件（构建/部署门禁用）：防止 MCP push_files 等工具误把文件写空后继续构建上线。
+# 参考事故：2026-08-12 MCP push_files 参数错误把 utils.js / scales-ui.js / index.html 写空，
+# 直到下一轮修复才恢复。此断言在本地构建与 CI 构建（.github/workflows/deploy.yml）中都会执行。
+KEY_SOURCE_FILES = [
+    'index.html', 'data.js',
+    'src/app-config.js', 'src/logger.js', 'src/utils.js',
+    'src/realtime-bar.js', 'src/router.js', 'src/muscle-disease.js',
+    'src/scales-ui.js', 'src/protocols-tools-guidelines.js', 'src/dashboard.js',
+    'src/data-loader.js', 'src/scales.js', 'src/scales-extra.js',
+    'src/scales-pro.js', 'src/clinical-tools.js', 'src/knowledge-base.js',
+    'src/rehab-protocols.js', 'src/protocols-pro.js', 'src/pain-protocols.js',
+]
+
+
+def assert_sources_nonempty():
+    """推送前内容非空断言：任一关键源文件缺失或为空时中止构建。"""
+    bad = []
+    for f in KEY_SOURCE_FILES:
+        path = os.path.join(base_dir, f)
+        if not os.path.exists(path):
+            bad.append(f + '（文件缺失）')
+        elif os.path.getsize(path) == 0:
+            bad.append(f + '（空文件）')
+    if bad:
+        print("=" * 60)
+        print("❌ 构建中止：检测到缺失/被清空的关键源文件（疑似 MCP push_files 误写）")
+        for b in bad:
+            print("   - " + b)
+        print("=" * 60)
+        sys.exit(1)
+    print("✅ 内容非空断言通过：全部关键源文件均存在且非空")
+
 # 配置：需要内联的数据文件（用于单文件模式）
 DATA_SCRIPTS = {
     'data/data.js': 'data.js',
@@ -255,6 +287,7 @@ dist/
 
 
 if __name__ == '__main__':
+    assert_sources_nonempty()
     mode = 'deploy'  # 默认分离部署模式
     
     if '--single' in sys.argv:
