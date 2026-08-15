@@ -497,8 +497,9 @@ function saveAssessment() {
       result = scale.calculate(currentScaleAnswers);
     }
 
+    const recordId = Date.now();
     const record = {
-      id: Date.now(),
+      id: recordId,
       scaleId: scale.id,
       scaleName: scale.name,
       shortName: scale.shortName,
@@ -512,8 +513,33 @@ function saveAssessment() {
     };
 
     const history = safeGetJSON('assessmentHistory');
+    const patients = safeGetJSON('patients');
+    const historyBackup = JSON.stringify(history);
+    const patientsBackup = JSON.stringify(patients);
+
     history.unshift(record);
     if (!safeSetJSON('assessmentHistory', history)) return;
+
+    // 如果保存时关联了病例，同步双向索引（patients[].assessmentIds）
+    if (record.patientId) {
+      try {
+        const pIdx = patients.findIndex(p => p.id === record.patientId);
+        if (pIdx >= 0) {
+          if (!patients[pIdx].assessmentIds) patients[pIdx].assessmentIds = [];
+          if (!patients[pIdx].assessmentIds.includes(recordId)) {
+            patients[pIdx].assessmentIds.push(recordId);
+          }
+          if (!safeSetJSON('patients', patients)) {
+            // 第二次写入失败 → 回滚第一次
+            try { localStorage.setItem('assessmentHistory', historyBackup); } catch (_) {}
+            return;
+          }
+        }
+      } catch (e) {
+        try { localStorage.setItem('assessmentHistory', historyBackup); } catch (_) {}
+        return;
+      }
+    }
 
     // 更新实时操作栏
     rtSession.assessments++;
@@ -711,8 +737,32 @@ function deleteHistory(recordId) {
   __deleteHistoryLock = true;
   try {
     let history = safeGetJSON('assessmentHistory');
+    let patients = safeGetJSON('patients');
+    // 备份用于回滚
+    const historyBackup = JSON.stringify(history);
+    const patientsBackup = JSON.stringify(patients);
+
+    const targetRecord = history.find(r => r.id === recordId);
     history = history.filter(r => r.id !== recordId);
     if (!safeSetJSON('assessmentHistory', history)) return;
+
+    // 如果该评估关联了病例，同步清理 patients.assessmentIds
+    if (targetRecord && targetRecord.patientId) {
+      try {
+        const pIdx = patients.findIndex(p => p.id === targetRecord.patientId);
+        if (pIdx >= 0 && patients[pIdx].assessmentIds) {
+          patients[pIdx].assessmentIds = patients[pIdx].assessmentIds.filter(id => id !== recordId);
+        }
+        if (!safeSetJSON('patients', patients)) {
+          // 第二次写入失败 → 回滚第一次
+          try { localStorage.setItem('assessmentHistory', historyBackup); } catch (_) {}
+          return;
+        }
+      } catch (e) {
+        try { localStorage.setItem('assessmentHistory', historyBackup); } catch (_) {}
+        return;
+      }
+    }
 
     closeModal();
     renderScaleHistory();
