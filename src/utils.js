@@ -150,6 +150,22 @@ function escapeHtml(val) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+//  2.5 属性值转义：防止用户可控数据拼进 HTML 属性时打破属性边界
+//       用于任何把用户可控数据（PSFS 活动名、量表默认值等）拼进 value/placeholder/onclick 等属性的场景
+//       比 escapeHtml 额外覆盖反引号，兼容 HTML5 带引号属性的各种边界情况
+// ═══════════════════════════════════════════════════════════════
+function escapeAttr(val) {
+  if (val === null || val === undefined) return '';
+  return String(val)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/`/g, '&#96;');
+}
+
+// ═══════════════════════════════════════════════════════════════
 //  3. 安全读取 localStorage 的 JSON 数据
 //     - 解析失败时清理损坏数据、返回 fallback、一次性提示用户
 //     - 避免 JSON.parse 抛 SyntaxError 导致整个业务函数中断

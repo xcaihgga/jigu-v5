@@ -231,7 +231,7 @@ function showScaleQuestion(index) {
         '<div class="scale-question-text">' + (scale.question || '') + '</div>' +
         '<div class="scale-score-display" id="sliderValue">' + val + ' 分</div>' +
         '<div class="scale-slider">' +
-          '<input type="range" id="scaleSlider" min="' + (scale.min || 0) + '" max="' + (scale.max || 10) + '" value="' + val + '" step="1" oninput="updateSliderValue(this.value)">' +
+          '<input type="range" id="scaleSlider" min="' + (scale.min || 0) + '" max="' + (scale.max || 10) + '" value="' + escapeAttr(val) + '" step="1" oninput="updateSliderValue(this.value)">' +
           '<div class="scale-slider-labels">' +
             '<span>' + (scale.labels ? scale.labels[0] : '0') + '</span>' +
             '<span>' + (scale.labels ? scale.labels[1] : '10') + '</span>' +
@@ -244,7 +244,7 @@ function showScaleQuestion(index) {
       '<div class="scale-question">' +
         '<div class="scale-question-text">' + (scale.question || '') + '</div>' +
         '<div class="form-group">' +
-          '<input type="number" class="form-input" id="numberInput" value="' + val + '" placeholder="请输入分数" min="' + (scale.min || 0) + '" max="' + (scale.max || 100) + '" oninput="currentScaleAnswers[0]=parseFloat(this.value)||0">' +
+          '<input type="number" class="form-input" id="numberInput" value="' + escapeAttr(val) + '" placeholder="请输入分数" min="' + (scale.min || 0) + '" max="' + (scale.max || 100) + '" oninput="currentScaleAnswers[0]=parseFloat(this.value)||0">' +
         '</div>' +
       '</div>';
   } else if (scale.type === 'number' && scale.customQuestions) {
@@ -258,14 +258,14 @@ function showScaleQuestion(index) {
       content += 
         '<div class="psfs-input-group">' +
           '<div class="form-label">活动 ' + (i + 1) + '</div>' +
-          '<input type="text" class="form-input psfs-activity-input" placeholder="请输入活动名称" value="' + activity + '" oninput="currentScaleAnswers[' + (i * 2) + ']=this.value">' +
+          '<input type="text" class="form-input psfs-activity-input" placeholder="请输入活动名称" value="' + escapeAttr(activity) + '" oninput="currentScaleAnswers[' + (i * 2) + ']=this.value">' +
           '<div class="psfs-slider">' +
             '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-3);margin-bottom:4px;">' +
               '<span>0分 完全不能做</span>' +
               '<span id="psfsScore' + i + '">' + score + ' 分</span>' +
               '<span>10分 正常</span>' +
             '</div>' +
-            '<input type="range" min="0" max="10" value="' + score + '" step="1" style="width:100%;" oninput="updatePsfsScore(' + i + ', this.value)">' +
+            '<input type="range" min="0" max="10" value="' + escapeAttr(score) + '" step="1" style="width:100%;" oninput="updatePsfsScore(' + i + ', this.value)">' +
           '</div>' +
         '</div>';
     }
@@ -277,7 +277,7 @@ function showScaleQuestion(index) {
         '<div class="scale-question">' +
           '<div class="scale-question-num">第 ' + (i + 1) + ' 题</div>' +
           '<div class="scale-question-text">' + q.text + '</div>' +
-          '<input type="number" class="form-input" placeholder="' + (q.placeholder || '请输入') + '" value="' + val + '" min="' + (q.min || 0) + '" max="' + (q.max || 360) + '" oninput="currentScaleAnswers[' + i + ']=parseFloat(this.value)||0">' +
+          '<input type="number" class="form-input" placeholder="' + escapeAttr(q.placeholder || '请输入') + '" value="' + escapeAttr(val) + '" min="' + (q.min || 0) + '" max="' + (q.max || 360) + '" oninput="currentScaleAnswers[' + i + ']=parseFloat(this.value)||0">' +
         '</div>';
     }
   } else if (scale.type === 'yesno') {
