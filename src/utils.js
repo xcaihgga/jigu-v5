@@ -150,6 +150,21 @@ function escapeHtml(val) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+//  2.5 HTML 属性转义：语义专用版本，专用于 value/placeholder/min/max 等属性拼接
+//      - 与 escapeHtml 输出完全一致，单独命名以突出「此处是属性上下文」
+//      - 便于代码审查时快速识别属性转义点
+// ═══════════════════════════════════════════════════════════════
+function escapeAttr(val) {
+  if (val === null || val === undefined) return '';
+  return String(val)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// ═══════════════════════════════════════════════════════════════
 //  3. 安全读取 localStorage 的 JSON 数据
 //     - 解析失败时清理损坏数据、返回 fallback、一次性提示用户
 //     - 避免 JSON.parse 抛 SyntaxError 导致整个业务函数中断

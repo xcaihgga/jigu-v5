@@ -244,7 +244,7 @@ function showScaleQuestion(index) {
       '<div class="scale-question">' +
         '<div class="scale-question-text">' + (scale.question || '') + '</div>' +
         '<div class="form-group">' +
-          '<input type="number" class="form-input" id="numberInput" value="' + escapeHtml(String(val)) + '" placeholder="请输入分数" min="' + (scale.min || 0) + '" max="' + (scale.max || 100) + '" oninput="currentScaleAnswers[0]=parseFloat(this.value)||0">' +
+          '<input type="number" class="form-input" id="numberInput" value="' + escapeAttr(String(val)) + '" placeholder="请输入分数" min="' + (scale.min || 0) + '" max="' + (scale.max || 100) + '" oninput="currentScaleAnswers[0]=parseFloat(this.value)||0">' +
         '</div>' +
       '</div>';
   } else if (scale.type === 'number' && scale.customQuestions) {
@@ -258,7 +258,7 @@ function showScaleQuestion(index) {
       content += 
         '<div class="psfs-input-group">' +
           '<div class="form-label">活动 ' + (i + 1) + '</div>' +
-          '<input type="text" class="form-input psfs-activity-input" placeholder="请输入活动名称" value="' + escapeHtml(activity) + '" oninput="currentScaleAnswers[' + (i * 2) + ']=this.value">' +
+          '<input type="text" class="form-input psfs-activity-input" placeholder="请输入活动名称" value="' + escapeAttr(activity) + '" oninput="currentScaleAnswers[' + (i * 2) + ']=this.value">' +
           '<div class="psfs-slider">' +
             '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-3);margin-bottom:4px;">' +
               '<span>0分 完全不能做</span>' +
@@ -277,7 +277,7 @@ function showScaleQuestion(index) {
         '<div class="scale-question">' +
           '<div class="scale-question-num">第 ' + (i + 1) + ' 题</div>' +
           '<div class="scale-question-text">' + q.text + '</div>' +
-          '<input type="number" class="form-input" placeholder="' + escapeHtml(q.placeholder || '请输入') + '" value="' + escapeHtml(String(val)) + '" min="' + (q.min || 0) + '" max="' + (q.max || 360) + '" oninput="currentScaleAnswers[' + i + ']=parseFloat(this.value)||0">' +
+          '<input type="number" class="form-input" placeholder="' + escapeAttr(q.placeholder || '请输入') + '" value="' + escapeAttr(String(val)) + '" min="' + (q.min || 0) + '" max="' + (q.max || 360) + '" oninput="currentScaleAnswers[' + i + ']=parseFloat(this.value)||0">' +
         '</div>';
     }
   } else if (scale.type === 'yesno') {

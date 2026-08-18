@@ -67,6 +67,17 @@ function escapeHtml(val) {
     .replace(/'/g, '&#39;');
 }
 
+// 1.5. escapeAttr（属性专用，与 escapeHtml 输出一致，语义区分）
+function escapeAttr(val) {
+  if (val === null || val === undefined) return '';
+  return String(val)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // 2. safeGetJSON
 var __lsCorruptWarned = false;
 function safeGetJSON(key, fallback) {
@@ -209,6 +220,55 @@ testGroup('escapeHtml — XSS 转义', function() {
   var escaped = escapeHtml(malicious);
   assert(escaped.indexOf('<script>') === -1, '组合 XSS 被完全转义');
   assert(escaped.indexOf('">') === -1, '属性注入被转义');
+});
+
+// ── 1.5. escapeAttr — 属性级转义（本次安全修复新增） ──
+testGroup('escapeAttr — HTML 属性级转义（新增）', function() {
+  // 基础类型
+  assertEqual(escapeAttr(null), '', 'null 返回空串');
+  assertEqual(escapeAttr(undefined), '', 'undefined 返回空串');
+  assertEqual(escapeAttr(''), '', '空串返回空串');
+  assertEqual(escapeAttr(123), '123', '数字转字符串');
+  assertEqual(escapeAttr('hello'), 'hello', '纯文本不转义');
+
+  // 双引号注入：value="xxx" 被 " 突破
+  var breakDouble = 'test" autofocus onfocus="alert(1)';
+  var bdEsc = escapeAttr(breakDouble);
+  assert(bdEsc.indexOf('"') === -1, '双引号完全转义，不可突破 value="..."');
+  assertEqual(bdEsc, 'test&quot; autofocus onfocus=&quot;alert(1)', '双引号转义结果精确');
+
+  // 单引号注入：value='xxx' 被 ' 突破
+  var breakSingle = "it's\" onmouseover=alert(2)";
+  var bsEsc = escapeAttr(breakSingle);
+  assert(bsEsc.indexOf("'") === -1, '单引号完全转义，不可突破 value=...');
+  assertEqual(bsEsc, 'it&#39;s&quot; onmouseover=alert(2)', '单引号转义结果精确');
+
+  // 组合攻击：闭合属性 + 注入事件 + 再闭合
+  var combo = '"><img src=x onerror=alert(3)><input value="';
+  var ceEsc = escapeAttr(combo);
+  assert(ceEsc.indexOf('<img') === -1, '标签开始被转义');
+  assert(ceEsc.indexOf('onerror') === -1 || ceEsc.indexOf('<img') === -1, '无法注入标签上下文');
+  assert(ceEsc.indexOf('">') === -1, '属性无法再闭合');
+
+  // 与 escapeHtml 语义等价（保证两种 API 输出一致）
+  var samples = [null, undefined, '', 'abc', '<>&"\'特殊', 123];
+  for (var i = 0; i < samples.length; i++) {
+    assertEqual(escapeAttr(samples[i]), escapeHtml(samples[i]),
+      'escapeAttr 与 escapeHtml 输出一致 #' + i);
+  }
+
+  // 属性值反序列化验证：将转义结果放回 HTML 属性，再读 DOM，应与原值一致（逻辑验证）
+  // 模拟 value="<escaped>" 解还原后等于原始（字符串比较）
+  var original = '测试"活动\'名<>&测试';
+  var escaped = escapeAttr(original);
+  // 模拟浏览器的属性解码：反转所有实体 → 应等于原值
+  var decoded = escaped
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+  assertEqual(decoded, original, '属性解码完全还原为原值（不丢失字符）');
 });
 
 // ── 2. safeGetJSON ──
