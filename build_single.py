@@ -171,6 +171,7 @@ def build_deploy():
         ('src/scales-ui.js', 'src/scales-ui.js'),
         ('src/protocols-tools-guidelines.js', 'src/protocols-tools-guidelines.js'),
         ('src/dashboard.js', 'src/dashboard.js'),
+        ('src/migration-report.js', 'src/migration-report.js'),
         # 数据文件（由 data-loader.js 异步加载）
         ('src/scales.js', 'src/scales.js'),
         ('src/scales-extra.js', 'src/scales-extra.js'),
