@@ -3527,6 +3527,8 @@ pre {
 <script src="src/utils.js"></script>
 <!-- 懒加载：数据文件由 DataLoader 异步加载 -->
 <script src="src/data-loader.js"></script>
+<!-- 迁移报告数据：通过 <script> 加载，兼容 file:// 本地打开 -->
+<script src="src/migration-report.js"></script>
 <!-- 拆分模块：实时操作信息栏（路由依赖其 rtSession / rtSetModule 等函数，需先于 router 加载） -->
 <script src="src/realtime-bar.js"></script>
 <!-- 拆分模块：路由（Tab 切换 / 二级页跳转 / 历史回退），加载时立即绑定事件（DOM 已就绪） -->
@@ -4660,44 +4662,40 @@ function checkMigrationPermission() {
 
 /**
  * 渲染迁移报告内容
- * 通过 fetch 加载 migration-report.json 并渲染摘要卡片
+ * 读取 window.MIGRATION_REPORT（<script> 加载）并渲染摘要卡片，兼容 file:// 本地打开
  */
 function renderMigrationReport() {
   var contentEl = document.getElementById('migrationReportContent');
   var subtitleEl = document.getElementById('migrationSubtitle');
   if (!contentEl) return;
 
-  // 尝试加载报告数据
-  fetch('src/migration-report.json')
-    .then(function(res) {
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
-    })
-    .then(function(data) {
-      var subtitle = data.systemStatus === 'healthy' ? '✅ 系统健康' :
-                     data.systemStatus === 'degraded' ? '⚠️ 降级运行' :
-                     '❌ 系统错误';
-      if (subtitleEl) subtitleEl.textContent = subtitle;
+  // 读取通过 <script> 加载的迁移报告数据（兼容 file:// 本地打开）
+  var data = window.MIGRATION_REPORT;
 
-      contentEl.innerHTML = buildMigrationReportHTML(data);
+  if (!data) {
+    console.warn('[Migration] 报告数据未加载');
+    contentEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-tertiary);">' +
+      '<p style="font-size:14px;">报告数据加载失败</p>' +
+      '<p style="font-size:12px;margin-top:8px;color:var(--text-disabled);">请运行 <code>migrate-data.ts</code> 生成报告</p>' +
+      '</div>';
+    if (subtitleEl) subtitleEl.textContent = '加载失败';
+    return;
+  }
 
-      // 绑定导出按钮
-      var exportBtn = document.getElementById('migExportBtn');
-      if (exportBtn) {
-        exportBtn.addEventListener('click', function() {
-          exportMigrationCSV(data);
-        });
-      }
-    })
-    .catch(function(err) {
-      console.error('[Migration] 报告加载失败:', err);
-      contentEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-tertiary);">' +
-        '<p style="font-size:14px;">报告数据加载失败</p>' +
-        '<p style="font-size:12px;margin-top:4px;">' + (err.message || '未知错误') + '</p>' +
-        '<p style="font-size:12px;margin-top:8px;color:var(--text-disabled);">请运行 <code>migrate-data.ts</code> 生成报告</p>' +
-        '</div>';
-      if (subtitleEl) subtitleEl.textContent = '加载失败';
+  var subtitle = data.systemStatus === 'healthy' ? '✅ 系统健康' :
+                 data.systemStatus === 'degraded' ? '⚠️ 降级运行' :
+                 '❌ 系统错误';
+  if (subtitleEl) subtitleEl.textContent = subtitle;
+
+  contentEl.innerHTML = buildMigrationReportHTML(data);
+
+  // 绑定导出按钮
+  var exportBtn = document.getElementById('migExportBtn');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', function() {
+      exportMigrationCSV(data);
     });
+  }
 }
 
 /**
