@@ -67,6 +67,18 @@ function escapeHtml(val) {
     .replace(/'/g, '&#39;');
 }
 
+// 1.5 escapeAttr — 属性值转义
+function escapeAttr(val) {
+  if (val === null || val === undefined) return '';
+  return String(val)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/`/g, '&#96;');
+}
+
 // 2. safeGetJSON
 var __lsCorruptWarned = false;
 function safeGetJSON(key, fallback) {
@@ -209,6 +221,47 @@ testGroup('escapeHtml — XSS 转义', function() {
   var escaped = escapeHtml(malicious);
   assert(escaped.indexOf('<script>') === -1, '组合 XSS 被完全转义');
   assert(escaped.indexOf('">') === -1, '属性注入被转义');
+});
+
+// ── 1.5. escapeAttr — 属性值转义 ──
+testGroup('escapeAttr — 属性值 XSS 转义', function() {
+  assertEqual(escapeAttr(null), '', 'null 返回空串');
+  assertEqual(escapeAttr(undefined), '', 'undefined 返回空串');
+  assertEqual(escapeAttr(''), '', '空串返回空串');
+  assertEqual(escapeAttr('hello'), 'hello', '纯文本不转义');
+  assertEqual(escapeAttr(123), '123', '数字转字符串');
+
+  // 单引号（在 onclick="... ' ... ' " 场景打破属性边界）
+  assertEqual(escapeAttr("test' onclick=alert(1) "), 'test&#39; onclick=alert(1) ', '单引号转义');
+
+  // 双引号（在 value="... " ... " 场景打破属性边界）
+  assertEqual(escapeAttr('test" onmouseover=alert(1) '), 'test&quot; onmouseover=alert(1) ', '双引号转义');
+
+  // 反引号（HTML5 data-* 属性使用反引号触发）
+  assertEqual(escapeAttr("test`data-x=alert(1)"), 'test&#96;data-x=alert(1)', '反引号转义');
+
+  // 标签字符
+  assertEqual(escapeAttr('<img src=x onerror=alert(1)>'), '&lt;img src=x onerror=alert(1)&gt;', '< > 转义');
+
+  // & 字符
+  assertEqual(escapeAttr('a & b'), 'a &amp; b', '& 转义');
+
+  // 组合攻击模拟 value 属性注入
+  var attrPayload = '" onmouseover="alert(1)" data-x="';
+  var escaped = escapeAttr(attrPayload);
+  assert(escaped.indexOf('"') === -1, '双引号全部被转义，无法打破属性边界');
+  assert(escaped.indexOf('<') === -1, '尖括号全部被转义');
+  assert(escaped.indexOf('&quot;') >= 0, '双引号被转换为 &quot;');
+
+  // 组合攻击模拟 onclick 属性注入
+  var onclickPayload = "' onclick='alert(1)';//";
+  var escaped2 = escapeAttr(onclickPayload);
+  assert(escaped2.indexOf("'") === -1, '单引号全部被转义，无法打破属性边界');
+  assert(escaped2.indexOf('&#39;') >= 0, '单引号被转换为 &#39;');
+
+  // escapeAttr 与 escapeHtml 行为对比：escapeAttr 额外覆盖反引号
+  assertEqual(escapeHtml('test`'), 'test`', 'escapeHtml 不转义反引号');
+  assertEqual(escapeAttr('test`'), 'test&#96;', 'escapeAttr 转义反引号');
 });
 
 // ── 2. safeGetJSON ──

@@ -171,7 +171,7 @@
     });
 
     grid.innerHTML = muscleBodyParts.map(function (part) {
-      return '<div class="body-card" data-part="' + part.id + '" onclick="showMuscleList(\'' + part.id + '\', \'' + escapeHtml(part.name) + '\')">' +
+      return '<div class="body-card" data-part="' + part.id + '" onclick="showMuscleList(\'' + part.id + '\', \'' + escapeAttr(part.name) + '\')">' +
         '<div class="icon-wrap">' + icon(part.icon, 22) + '</div>' +
         '<div class="body-card-name">' + escapeHtml(part.name) + '</div>' +
         '<div class="body-card-count">' + (counts[part.id] || 0) + ' 块</div>' +
@@ -423,7 +423,7 @@
     });
 
     grid.innerHTML = diseaseBodyParts.map(function (part) {
-      return '<div class="body-card" data-part="' + part.id + '" onclick="showDiseaseList(\'' + part.id + '\', \'' + escapeHtml(part.name) + '\')">' +
+      return '<div class="body-card" data-part="' + part.id + '" onclick="showDiseaseList(\'' + part.id + '\', \'' + escapeAttr(part.name) + '\')">' +
         '<div class="icon-wrap">' + icon(part.icon, 22) + '</div>' +
         '<div class="body-card-name">' + escapeHtml(part.name) + '</div>' +
         '<div class="body-card-count">' + (counts[part.id] || 0) + ' 种</div>' +
