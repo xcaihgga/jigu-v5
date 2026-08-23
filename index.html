@@ -11,7 +11,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#4B3FE3">
 <meta name="apple-mobile-web-app-title" content="肌骨速查">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='36' fill='%234B3FE3'/><rect x='78' y='48' width='24' height='84' rx='12' fill='white'/><rect x='48' y='78' width='84' height='24' rx='12' fill='white'/></svg>">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 <title>肌骨康复速查 V5.0 专业版</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -4850,6 +4851,17 @@ function exportMigrationCSV(data) {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
+</script>
+<script>
+// PWA：注册 Service Worker（首次在线访问后建立离线缓存，之后断网/离线也能打开）
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('sw.js')
+      .catch(function(err) {
+        console.warn('[PWA] Service Worker 注册失败:', err);
+      });
+  });
 }
 </script>
 </body>

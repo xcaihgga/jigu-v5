@@ -161,6 +161,8 @@ def build_deploy():
     # 2. 复制数据文件 + 核心模块脚本（index.html 直接引用的全部 src）
     data_files = [
         ('data.js', 'data.js'),
+        ('manifest.webmanifest', 'manifest.webmanifest'),
+        ('sw.js', 'sw.js'),
         ('src/app-config.js', 'src/app-config.js'),
         # 拆分模块（被 index.html 直接 <script src> 引用，必须部署）
         ('src/logger.js', 'src/logger.js'),
@@ -212,6 +214,16 @@ def build_deploy():
         print(f"  ✅ 静态资源已复制: assets/ ({asset_count} 个文件)")
     else:
         print(f"  ⚠️  assets 目录不存在: {assets_src}")
+
+    # 3.6 复制 PWA 图标目录（manifest 引用的 icon-192/512/maskable/apple-touch）
+    icons_src = os.path.join(base_dir, 'icons')
+    icons_dst = os.path.join(deploy_dir, 'icons')
+    if os.path.exists(icons_src):
+        shutil.copytree(icons_src, icons_dst)
+        icon_count = sum(len(files) for _, _, files in os.walk(icons_dst))
+        print(f"  ✅ PWA 图标已复制: icons/ ({icon_count} 个文件)")
+    else:
+        print(f"  ⚠️  icons 目录不存在: {icons_src}")
 
     # 4. 创建 .nojekyll（GitHub Pages 需要）
     with open(os.path.join(deploy_dir, '.nojekyll'), 'w') as f:
