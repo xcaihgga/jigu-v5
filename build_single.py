@@ -170,6 +170,7 @@ def build_deploy():
         ('src/realtime-bar.js', 'src/realtime-bar.js'),
         ('src/router.js', 'src/router.js'),
         ('src/muscle-disease.js', 'src/muscle-disease.js'),
+        ('src/scale-teaching.js', 'src/scale-teaching.js'),
         ('src/scales-ui.js', 'src/scales-ui.js'),
         ('src/protocols-tools-guidelines.js', 'src/protocols-tools-guidelines.js'),
         ('src/dashboard.js', 'src/dashboard.js'),

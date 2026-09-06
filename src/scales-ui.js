@@ -188,6 +188,86 @@ function renderEvidenceHtml(scale) {
     '</div>';
 }
 
+/**
+ * 渲染量表教学详情（操作指引、体位、注意、常见错误、增强信效度）
+ * 数据源：window.scaleTeaching[scale.id]（scale-teaching.js）
+ * 无数据时返回空字符串，不影响原展示。
+ */
+function renderTeachingDetail(scale) {
+  const teaching = (window.scaleTeaching && window.scaleTeaching[scale.id]) || null;
+  if (!teaching) return '';
+
+  var html = '';
+
+  // 1. 标准指导语
+  if (teaching.adminGuide) {
+    html += '<div class="result-detail-section">' +
+      '<div class="result-detail-title">' + icon('list', 18) + '标准指导语（教学原话）</div>' +
+      '<p style="font-size:14px;color:var(--text-2);line-height:1.8;border-left:3px solid var(--primary,#4B3FE3);padding-left:10px;">"' +
+      teaching.adminGuide + '"</p>' +
+    '</div>';
+  }
+
+  // 2. 操作步骤
+  if (teaching.adminSteps && teaching.adminSteps.length) {
+    html += '<div class="result-detail-section">' +
+      '<div class="result-detail-title">' + icon('list', 18) + '操作步骤</div>' +
+      '<ol style="font-size:14px;color:var(--text-2);line-height:1.9;padding-left:20px;margin:0;">' +
+      teaching.adminSteps.map(function(s){ return '<li>' + s + '</li>'; }).join('') +
+      '</ol></div>';
+  }
+
+  // 3. 体位/环境要求
+  if (teaching.position) {
+    html += '<div class="result-detail-section">' +
+      '<div class="result-detail-title">' + icon('basics', 18) + '体位与环境</div>' +
+      '<p style="font-size:14px;color:var(--text-2);line-height:1.7;">' + teaching.position + '</p>' +
+    '</div>';
+  }
+
+  // 4. 注意事项
+  if (teaching.cautions && teaching.cautions.length) {
+    html += '<div class="result-detail-section">' +
+      '<div class="result-detail-title">' + icon('warning', 18) + '注意事项</div>' +
+      '<ul style="font-size:14px;color:var(--text-2);line-height:1.9;padding-left:20px;margin:0;">' +
+      teaching.cautions.map(function(s){ return '<li>' + s + '</li>'; }).join('') +
+      '</ul></div>';
+  }
+
+  // 5. 常见错误
+  if (teaching.pitfalls && teaching.pitfalls.length) {
+    html += '<div class="result-detail-section">' +
+      '<div class="result-detail-title" style="color:#d9480f;">⚠️ 常见错误与避免</div>' +
+      '<ul style="font-size:14px;color:var(--text-2);line-height:1.9;padding-left:20px;margin:0;">' +
+      teaching.pitfalls.map(function(s){ return '<li>' + s + '</li>'; }).join('') +
+      '</ul></div>';
+  }
+
+  // 6. 增强信效度数据（若 teaching.evidence 比原 scale.evidence 更丰富）
+  if (teaching.evidence) {
+    var ev = teaching.evidence;
+    var rows = [];
+    if (ev.mdc !== undefined && ev.mdc !== null) rows.push('<tr><td>MDC</td><td>' + ev.mdc + '</td><td>最小可检测变化</td></tr>');
+    if (ev.mcid !== undefined && ev.mcid !== null) rows.push('<tr><td>MCID</td><td>' + ev.mcid + '</td><td>最小临床重要差异</td></tr>');
+    if (ev.testRetest) rows.push('<tr><td>重测信度</td><td>' + ev.testRetest + '</td><td>ICC ≥0.75 良好</td></tr>');
+    if (ev.reliability) rows.push('<tr><td>内部一致性</td><td>' + ev.reliability + '</td><td>Cronbach α ≥0.8 良好</td></tr>');
+    if (ev.sensitivity) rows.push('<tr><td>敏感度</td><td>' + ev.sensitivity + '</td><td>真阳性率</td></tr>');
+    if (ev.specificity) rows.push('<tr><td>特异度</td><td>' + ev.specificity + '</td><td>真阴性率</td></tr>');
+    if (ev.source) {
+      var ys = ev.year ? ' (' + ev.year + ')' : '';
+      rows.push('<tr><td>来源</td><td colspan="2">' + ev.source + ys + '</td></tr>');
+    }
+    if (rows.length) {
+      html += '<div class="result-detail-section">' +
+        '<div class="result-detail-title">' + icon('evidence', 18) + '信效度数据（完整）</div>' +
+        '<table class="evidence-table"><tbody>' + rows.join('') + '</tbody></table>' +
+      '</div>';
+    }
+  }
+
+  return html;
+}
+
 function showScaleIntro() {
   const scale = currentScale;
   const content = 
@@ -200,6 +280,7 @@ function showScaleIntro() {
       '<p style="font-size:14px;color:var(--text-2);line-height:1.7;">' + (scale.reliability || '') + '</p>' +
     '</div>' +
     renderEvidenceHtml(scale) +
+    renderTeachingDetail(scale) +
     '<div class="result-detail-section">' +
       '<div class="result-detail-title">' + icon('list', 18) + '参考来源</div>' +
       '<p style="font-size:14px;color:var(--text-2);line-height:1.7;">' + (scale.reference || '') + '</p>' +
