@@ -404,8 +404,30 @@
     showPage('protocol-detail', true);
 
     var stagesHtml = (p.stages || []).map(function (s, i) {
-      var exercises = (s.exercises || []).map(function (e) {
-        return '<li class="stage-exercise-item">' + e + '</li>';
+      var exercises = (s.exercises || []).map(function (e, ei) {
+        // 第2批：读取教学扩展（protocol-teaching.js），有则渲染增强卡片，无则回退纯文本
+        var teachingAction = null;
+        var teach = (window.protocolTeaching && window.protocolTeaching[p.id]);
+        if (teach && teach.stages && teach.stages[i] &&
+            teach.stages[i].actions && teach.stages[i].actions[ei]) {
+          teachingAction = teach.stages[i].actions[ei];
+        }
+        if (!teachingAction) {
+          return '<li class="stage-exercise-item">' + e + '</li>';
+        }
+        var rows = [];
+        if (teachingAction.setup) rows.push('<div class="teach-row"><span class="teach-label">起始姿势</span><span>' + teachingAction.setup + '</span></div>');
+        if (teachingAction.keyPoints) rows.push('<div class="teach-row"><span class="teach-label">动作要领</span><span>' + teachingAction.keyPoints + '</span></div>');
+        if (teachingAction.dose) rows.push('<div class="teach-row"><span class="teach-label">剂量</span><span>' + teachingAction.dose + '</span></div>');
+        if (teachingAction.progress) rows.push('<div class="teach-row"><span class="teach-label">进阶</span><span>' + teachingAction.progress + '</span></div>');
+        if (teachingAction.regress) rows.push('<div class="teach-row"><span class="teach-label">退阶</span><span>' + teachingAction.regress + '</span></div>');
+        if (teachingAction.citation) rows.push('<div class="teach-row"><span class="teach-label">文献</span><span>' + teachingAction.citation + '</span></div>');
+        if (teachingAction.caution) rows.push('<div class="teach-row" style="color:var(--accent-amber);"><span class="teach-label">警示</span><span>' + teachingAction.caution + '</span></div>');
+        return '<li class="stage-exercise-item"><div class="teach-ex-item">' +
+          '<div class="teach-ex-title" onclick="this.classList.toggle(\'open\');this.nextElementSibling.classList.toggle(\'open\')">' + e +
+          '<span class="teach-ex-toggle">▸</span></div>' +
+          '<div class="teach-ex-detail">' + rows.join('') + '</div>' +
+          '</div></li>';
       }).join('');
       var caution = s.cautions ? '<div class="stage-caution"><strong>⚠ 注意事项</strong><br>' + s.cautions + '</div>' : '';
       var criteria = s.criteria ? '<div class="stage-criteria"><strong>✓ 进阶标准</strong><br>' + s.criteria + '</div>' : '';
