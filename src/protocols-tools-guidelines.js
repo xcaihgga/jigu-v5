@@ -22,6 +22,11 @@
 (function (global) {
   'use strict';
 
+  // 本地转义工具（兜底：即便 utils.js 未加载也不在模板里输出原始注入载荷）
+  var esc = typeof escapeHtml === 'function'
+    ? escapeHtml
+    : function (v) { return v == null ? '' : String(v).replace(/[&<>"']/g, function (m) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]; }); };
+
   // ═══════════════════════════════════════════════════
   //  1. 临床工具
   // ═══════════════════════════════════════════════════
@@ -348,16 +353,16 @@
       var painBadge = p.isPain
         ? ' <span style="display:inline-block;padding:2px 8px;background:linear-gradient(135deg,var(--status-error-default),#dc2626);color:#fff;font-size:11px;font-weight:600;border-radius:20px;margin-left:4px;">疼痛</span>'
         : '';
-      return '<div class="protocol-card" data-id="' + p.id + '">' +
+      return '<div class="protocol-card" data-id="' + esc(p.id) + '">' +
         '<div class="protocol-card-header">' +
-          '<div class="protocol-card-icon" data-cat="' + p.category + '">' + icon(p.icon || 'protocol', 26) + '</div>' +
+          '<div class="protocol-card-icon" data-cat="' + esc(p.category) + '">' + icon(p.icon || 'protocol', 26) + '</div>' +
           '<div class="protocol-card-info">' +
-            '<div class="protocol-card-title">' + p.name + '</div>' +
-            '<div class="protocol-card-evidence">循证来源：' + (p.evidence || '临床实践共识') + '</div>' +
+            '<div class="protocol-card-title">' + esc(p.name) + '</div>' +
+            '<div class="protocol-card-evidence">循证来源：' + esc(p.evidence || '临床实践共识') + '</div>' +
           '</div>' +
         '</div>' +
-        '<div class="protocol-card-desc">' + desc + '</div>' +
-        '<span class="protocol-card-badge" data-cat="' + p.category + '">' + (p.categoryName || '') + '</span>' +
+        '<div class="protocol-card-desc">' + esc(desc) + '</div>' +
+        '<span class="protocol-card-badge" data-cat="' + esc(p.category) + '">' + esc(p.categoryName || '') + '</span>' +
         (p.isPro ? ' <span class="pro-badge">PRO</span>' : '') +
         painBadge +
         '<div class="protocol-card-stages">' + stageTags + '</div>' +
@@ -413,33 +418,33 @@
           teachingAction = teach.stages[i].actions[ei];
         }
         if (!teachingAction) {
-          return '<li class="stage-exercise-item">' + e + '</li>';
+          return '<li class="stage-exercise-item">' + esc(e) + '</li>';
         }
         var rows = [];
-        if (teachingAction.setup) rows.push('<div class="teach-row"><span class="teach-label">起始姿势</span><span>' + teachingAction.setup + '</span></div>');
-        if (teachingAction.keyPoints) rows.push('<div class="teach-row"><span class="teach-label">动作要领</span><span>' + teachingAction.keyPoints + '</span></div>');
-        if (teachingAction.dose) rows.push('<div class="teach-row"><span class="teach-label">剂量</span><span>' + teachingAction.dose + '</span></div>');
-        if (teachingAction.progress) rows.push('<div class="teach-row"><span class="teach-label">进阶</span><span>' + teachingAction.progress + '</span></div>');
-        if (teachingAction.regress) rows.push('<div class="teach-row"><span class="teach-label">退阶</span><span>' + teachingAction.regress + '</span></div>');
-        if (teachingAction.citation) rows.push('<div class="teach-row"><span class="teach-label">文献</span><span>' + teachingAction.citation + '</span></div>');
-        if (teachingAction.caution) rows.push('<div class="teach-row" style="color:var(--accent-amber);"><span class="teach-label">警示</span><span>' + teachingAction.caution + '</span></div>');
+        if (teachingAction.setup) rows.push('<div class="teach-row"><span class="teach-label">起始姿势</span><span>' + esc(teachingAction.setup) + '</span></div>');
+        if (teachingAction.keyPoints) rows.push('<div class="teach-row"><span class="teach-label">动作要领</span><span>' + esc(teachingAction.keyPoints) + '</span></div>');
+        if (teachingAction.dose) rows.push('<div class="teach-row"><span class="teach-label">剂量</span><span>' + esc(teachingAction.dose) + '</span></div>');
+        if (teachingAction.progress) rows.push('<div class="teach-row"><span class="teach-label">进阶</span><span>' + esc(teachingAction.progress) + '</span></div>');
+        if (teachingAction.regress) rows.push('<div class="teach-row"><span class="teach-label">退阶</span><span>' + esc(teachingAction.regress) + '</span></div>');
+        if (teachingAction.citation) rows.push('<div class="teach-row"><span class="teach-label">文献</span><span>' + esc(teachingAction.citation) + '</span></div>');
+        if (teachingAction.caution) rows.push('<div class="teach-row" style="color:var(--accent-amber);"><span class="teach-label">警示</span><span>' + esc(teachingAction.caution) + '</span></div>');
         return '<li class="stage-exercise-item"><div class="teach-ex-item">' +
-          '<div class="teach-ex-title" onclick="this.classList.toggle(\'open\');this.nextElementSibling.classList.toggle(\'open\')">' + e +
+          '<div class="teach-ex-title" onclick="this.classList.toggle(\'open\');this.nextElementSibling.classList.toggle(\'open\')">' + esc(e) +
           '<span class="teach-ex-toggle">▸</span></div>' +
           '<div class="teach-ex-detail">' + rows.join('') + '</div>' +
           '</div></li>';
       }).join('');
-      var caution = s.cautions ? '<div class="stage-caution"><strong>⚠ 注意事项</strong><br>' + s.cautions + '</div>' : '';
-      var criteria = s.criteria ? '<div class="stage-criteria"><strong>✓ 进阶标准</strong><br>' + s.criteria + '</div>' : '';
+      var caution = s.cautions ? '<div class="stage-caution"><strong>⚠ 注意事项</strong><br>' + esc(s.cautions) + '</div>' : '';
+      var criteria = s.criteria ? '<div class="stage-criteria"><strong>✓ 进阶标准</strong><br>' + esc(s.criteria) + '</div>' : '';
       return '<div class="stage-card" data-stage-index="' + i + '">' +
         '<div class="stage-header" onclick="this.nextElementSibling.classList.toggle(\'open\');this.querySelector(\'.stage-arrow\').classList.toggle(\'open\')">' +
           '<div class="stage-number">' + (i + 1) + '</div>' +
-          '<div class="stage-name">' + s.name + '</div>' +
+          '<div class="stage-name">' + esc(s.name) + '</div>' +
           '<span class="icon stage-arrow" style="width:20px;height:20px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>' +
         '</div>' +
         '<div class="stage-content open">' +
-          '<div class="stage-goal"><strong>目标</strong>：' + (s.goal || '') + '</div>' +
-          '<div class="stage-duration">时长：' + (s.duration || '') + '</div>' +
+          '<div class="stage-goal"><strong>目标</strong>：' + esc(s.goal || '') + '</div>' +
+          '<div class="stage-duration">时长：' + esc(s.duration || '') + '</div>' +
           '<ul class="stage-exercise-list">' + exercises + '</ul>' +
           caution + criteria +
         '</div>' +
@@ -450,14 +455,14 @@
     var extraHtml = '';
     if (p.causes && p.causes.length > 0) {
       extraHtml += '<div style="padding:0 16px 4px;"><div class="stage-caution" style="background:rgba(239,68,68,0.08);border-left:3px solid var(--status-error-default);"><strong>病因因素</strong><br>' +
-        p.causes.map(function (c) { return '• ' + c; }).join('<br>') + '</div></div>';
+        p.causes.map(function (c) { return '• ' + esc(c); }).join('<br>') + '</div></div>';
     }
     if (p.symptoms && p.symptoms.length > 0) {
       extraHtml += '<div style="padding:4px 16px 4px;"><div class="stage-caution" style="background:rgba(245,158,11,0.08);border-left:3px solid var(--accent-amber);"><strong>临床表现</strong><br>' +
-        p.symptoms.map(function (s) { return '• ' + s; }).join('<br>') + '</div></div>';
+        p.symptoms.map(function (s) { return '• ' + esc(s); }).join('<br>') + '</div></div>';
     }
     if (p.evaluation) {
-      extraHtml += '<div style="padding:4px 16px 4px;"><div class="stage-caution" style="background:rgba(37,99,235,0.08);border-left:3px solid #2563eb;"><strong>评估方法</strong><br>' + p.evaluation + '</div></div>';
+      extraHtml += '<div style="padding:4px 16px 4px;"><div class="stage-caution" style="background:rgba(37,99,235,0.08);border-left:3px solid #2563eb;"><strong>评估方法</strong><br>' + esc(p.evaluation) + '</div></div>';
     }
 
     // 阶段概览表格（点击高亮 + 滚动联动）
@@ -467,7 +472,7 @@
         var topExercises = (s.exercises || []).slice(0, 3).map(function (e) {
           var shortName = e.split('：')[0].split('（')[0];
           if (shortName.length > 20) shortName = shortName.substring(0, 20) + '...';
-          return '<li>' + shortName + '</li>';
+          return '<li>' + esc(shortName) + '</li>';
         }).join('');
         var stageNameShort = s.name.split('（')[0].split('：')[0];
         var durationMatch = s.name.match(/（([^）]+)）/);
@@ -481,12 +486,12 @@
 
         return '<tr onclick="highlightStageRow(this, ' + i + ')">' +
           '<td data-label="#"><span class="stage-overview-num">' + (i + 1) + '</span></td>' +
-          '<td data-label="阶段"><div class="stage-overview-name">' + stageNameShort + '</div>' +
-          (durationText ? '<div class="stage-overview-duration">' + durationText + '</div>' : '') + '</td>' +
-          '<td class="stage-overview-goal" data-label="治疗目标">' + (s.goal || '') + '</td>' +
+          '<td data-label="阶段"><div class="stage-overview-name">' + esc(stageNameShort) + '</div>' +
+          (durationText ? '<div class="stage-overview-duration">' + esc(durationText) + '</div>' : '') + '</td>' +
+          '<td class="stage-overview-goal" data-label="治疗目标">' + esc(s.goal || '') + '</td>' +
           '<td class="stage-overview-exercises" data-label="核心训练动作"><ul>' + topExercises + '</ul></td>' +
-          '<td data-label="频率"><span class="freq-tag ' + freqClass + '">' + freqText + '</span></td>' +
-          '<td data-label="进阶标准" style="font-size:11px;color:var(--accent-green, #10B981);">' + criteriaShort + '</td>' +
+          '<td data-label="频率"><span class="freq-tag ' + freqClass + '">' + esc(freqText) + '</span></td>' +
+          '<td data-label="进阶标准" style="font-size:11px;color:var(--accent-green, #10B981);">' + esc(criteriaShort) + '</td>' +
         '</tr>';
       }).join('');
 
@@ -518,10 +523,10 @@
 
     container.innerHTML = '<div class="protocol-detail">' +
       '<div class="protocol-detail-header">' +
-        '<div class="protocol-detail-title">' + p.name + proBadge + painBadge + '</div>' +
-        '<div class="protocol-detail-evidence">循证来源：' + (p.evidence || '临床实践共识') + '</div>' +
-        '<div class="protocol-detail-desc">' + desc + '</div>' +
-        '<span class="protocol-card-badge" data-cat="' + p.category + '" style="margin-top:8px;">' + (p.categoryName || '') + '</span>' +
+        '<div class="protocol-detail-title">' + esc(p.name) + proBadge + painBadge + '</div>' +
+        '<div class="protocol-detail-evidence">循证来源：' + esc(p.evidence || '临床实践共识') + '</div>' +
+        '<div class="protocol-detail-desc">' + esc(desc) + '</div>' +
+        '<span class="protocol-card-badge" data-cat="' + esc(p.category) + '" style="margin-top:8px;">' + esc(p.categoryName || '') + '</span>' +
       '</div>' +
       extraHtml +
       overviewHtml +
