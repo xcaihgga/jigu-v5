@@ -1702,6 +1702,60 @@ body { display: flex; flex-direction: column; width: 100%; max-width: 100%; marg
 .teach-row { display:flex; gap:6px; font-size:13px; line-height:1.6; padding:3px 0; color:var(--text-2); }
 .teach-row .teach-label { flex-shrink:0; width:52px; color:var(--primary); font-weight:600; }
 
+/* ===== 临床推理（第3批：鉴别路径/决策树/案例库） ===== */
+#clinicalReasoningSection { margin-bottom:16px; }
+.cr-section-head { margin-bottom:10px; }
+.cr-section-title { font-size:18px; font-weight:700; color:var(--text-1); line-height:1.3; }
+.cr-section-subtitle { font-size:13px; color:var(--text-3); margin-top:4px; }
+.cr-catbar { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+
+.cr-card { background:var(--bg-2); border:1px solid var(--border); border-radius:var(--radius-md); margin-bottom:12px; box-shadow:var(--shadow-sm); overflow:hidden; }
+.cr-card-head { display:flex; align-items:center; gap:10px; padding:14px 14px; cursor:pointer; }
+.cr-card-head:hover { background:rgba(75,63,227,0.04); }
+.cr-num { flex-shrink:0; width:24px; height:24px; border-radius:6px; background:rgba(75,63,227,0.12); color:var(--primary); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+.cr-title { flex:1; font-size:15px; font-weight:600; color:var(--text-1); line-height:1.4; }
+.cr-toggle { flex-shrink:0; color:var(--text-3); transition:transform .2s; }
+.cr-toggle.open { transform:rotate(90deg); }
+
+.cr-card-body { display:none; padding:12px 14px 14px; border-top:1px solid var(--border); }
+.cr-card-body.open { display:block; }
+.cr-context { font-size:14px; color:var(--text-2); line-height:1.7; margin:0 0 10px; }
+.cr-table-wrap { overflow-x:auto; }
+.cr-table { width:100%; border-collapse:collapse; font-size:13px; }
+.cr-table th { background:rgba(75,63,227,0.06); color:var(--primary); font-weight:600; padding:8px 10px; text-align:left; white-space:nowrap; }
+.cr-table td { padding:8px 10px; border-top:1px solid var(--border); color:var(--text-2); line-height:1.5; vertical-align:top; }
+.cr-table .cr-test { font-weight:600; color:var(--text-1); white-space:nowrap; }
+.cr-table .cr-a, .cr-table .cr-col-a { border-left:3px solid rgba(75,63,227,0.5); }
+.cr-table .cr-b, .cr-table .cr-col-b { border-left:3px solid rgba(217,119,6,0.5); }
+.cr-src { color:var(--text-3); font-size:12px; white-space:nowrap; }
+.cr-tag { color:var(--text-3); white-space:nowrap; }
+
+.cr-conclusion { margin-top:10px; background:rgba(75,63,227,0.05); border:1px solid rgba(75,63,227,0.15); border-radius:8px; padding:10px 12px; font-size:13px; color:var(--text-2); line-height:1.6; }
+.cr-conclusion-label { display:inline-block; background:var(--primary); color:#fff; font-size:12px; font-weight:600; border-radius:4px; padding:1px 8px; margin-right:8px; }
+.cr-evidence { margin-top:8px; font-size:12px; color:var(--text-3); line-height:1.5; }
+
+.cr-root { font-size:14px; font-weight:600; color:var(--text-1); margin-bottom:10px; background:rgba(75,63,227,0.06); border-radius:8px; padding:10px 12px; }
+.cr-branch-label { display:inline-block; background:var(--bg-3); color:var(--text-2); font-size:12px; font-weight:600; border-radius:4px; padding:1px 8px; margin-right:8px; }
+.cr-branches { display:flex; flex-direction:column; gap:10px; }
+.cr-branch { border:1px solid var(--border); border-radius:8px; padding:10px 12px; }
+.cr-branch-node { font-size:13px; color:var(--text-1); line-height:1.6; margin:2px 0; }
+.cr-branch-condition { color:var(--text-2); }
+.cr-branch-decision { font-weight:600; }
+.cr-branch-arrow { color:var(--text-3); font-size:12px; margin:2px 0 2px 20px; }
+.cr-branch-why { font-size:12px; color:var(--text-3); margin:4px 0 2px 20px; line-height:1.5; }
+.cr-branch-src { font-size:12px; color:var(--text-3); margin-left:20px; }
+.cr-link { cursor:pointer; color:var(--primary); font-weight:600; margin-left:8px; font-size:12px; }
+
+.cr-c-label { font-size:13px; font-weight:700; color:var(--primary); margin:12px 0 6px; }
+.cr-c-label:first-of-type { margin-top:0; }
+.cr-c-text { font-size:14px; color:var(--text-2); line-height:1.7; margin:0; }
+.cr-scale-row { display:flex; flex-wrap:wrap; gap:8px; }
+.cr-scale-chip { cursor:pointer; background:rgba(75,63,227,0.08); border:1px solid rgba(75,63,227,0.15); color:var(--primary); font-size:13px; border-radius:15px; padding:4px 12px; }
+.cr-scale-chip:hover { background:rgba(75,63,227,0.15); }
+.cr-plan { margin:0; padding-left:20px; }
+.cr-plan li { font-size:13px; color:var(--text-2); line-height:1.7; margin:4px 0; }
+.cr-plan b { color:var(--text-1); }
+
 /* ===== 数据看板 ===== */
 .dashboard-header { margin-bottom:16px; padding:4px 2px 0; }
 .dashboard-title { font-size:22px; font-weight:700; color:var(--text-1); line-height:1.3; }
@@ -3377,6 +3431,21 @@ pre {
   </div>
 
   <div class="page" id="page-guidelines">
+    <!-- 临床推理（第 3 批：鉴别路径 / 决策树 / 案例库） -->
+    <div id="clinicalReasoningSection">
+      <div class="cr-section-head">
+        <h3 class="cr-section-title">临床推理</h3>
+        <p class="cr-section-subtitle">从症状查体鉴别 → 量表/方案决策 → 完整案例推演</p>
+      </div>
+      <div class="cr-catbar">
+        <button class="quick-nav-item" id="crTabDiff" onclick="crSelectTab('diff')">鉴别路径</button>
+        <button class="quick-nav-item" id="crTabTree" onclick="crSelectTab('tree')">决策树</button>
+        <button class="quick-nav-item" id="crTabCase" onclick="crSelectTab('case')">案例库</button>
+      </div>
+      <div id="crDiffList"></div>
+      <div id="crTreeList"></div>
+      <div id="crCaseList"></div>
+    </div>
     <div class="search-box">
       <span class="icon" id="guidelinesSearchIcon"></span>
       <input type="text" id="guidelinesSearch" placeholder="搜索临床指南...">
@@ -3987,6 +4056,9 @@ function filterScales(scales, category, keyword) {
 <script src="src/scales-ui.js"></script>
 <!-- 康复方案教学详情（数据文件，必须在 protocols-tools-guidelines.js 之前加载） -->
 <script src="src/protocol-teaching.js"></script>
+<!-- 临床推理（第 3 批：数据 + 渲染） -->
+<script src="src/clinical-reasoning.js"></script>
+<script src="src/clinical-reasoning-ui.js"></script>
 <!-- 拆分模块：临床工具 + 临床指南 + 康复方案（依赖 utils/router/realtime-bar/muscle-disease） -->
 <script src="src/protocols-tools-guidelines.js"></script>
 <!-- 拆分模块：数据看板（依赖 utils.safeGetJSON） -->
@@ -4636,6 +4708,7 @@ async function init() {
   safeCall('renderToolsList', renderToolsList);
   safeCall('renderGuidelinesCategoryBar', renderGuidelinesCategoryBar);
   safeCall('renderGuidelinesList', renderGuidelinesList);
+  safeCall('renderClinicalReasoning', renderClinicalReasoning);
   safeCall('renderProtocolCatBar', renderProtocolCatBar);
   safeCall('renderProtocolList', renderProtocolList);
 
