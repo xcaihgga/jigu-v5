@@ -198,6 +198,7 @@
     assessment: '评估量表',
     tools: '临床工具',
     guidelines: '临床指南',
+    quiz: '知识测验',
     protocol: '循证方案',
     dashboard: '数据看板',
     patient: '病例管理',

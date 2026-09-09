@@ -175,6 +175,8 @@ def build_deploy():
         ('src/protocol-teaching.js', 'src/protocol-teaching.js'),
         ('src/clinical-reasoning.js', 'src/clinical-reasoning.js'),
         ('src/clinical-reasoning-ui.js', 'src/clinical-reasoning-ui.js'),
+        ('src/quiz.js', 'src/quiz.js'),
+        ('src/quiz-ui.js', 'src/quiz-ui.js'),
         ('src/protocols-tools-guidelines.js', 'src/protocols-tools-guidelines.js'),
         ('src/dashboard.js', 'src/dashboard.js'),
         ('src/migration-report.js', 'src/migration-report.js'),
