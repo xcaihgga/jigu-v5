@@ -22,7 +22,7 @@
     { name: '踝练习', path: 'assets/illustrations/rehab-ankle-exercise.webp', keywords: ['踝', '勾脚', '绷脚', '踝泵', '背屈', '跖屈', '内翻', '外翻', '腓骨', '胫骨前'] },
     { name: '单腿站立', path: 'assets/illustrations/rehab-single-leg-stance.webp', keywords: ['单腿', '单脚', '站立平衡', '单腿站'] },
     { name: '平衡训练', path: 'assets/illustrations/rehab-balance-training.webp', keywords: ['平衡', '本体感觉', '平衡板', '平衡垫', '防跌倒', '坐站'] },
-    { name: 'BOSU 本体感觉', path: 'assets/illustrations/rehab-proprioception-bosu.webp', keywords: ['bosu', '不稳定面', '干扰', '本体'] },
+    { name: 'BOSU 本体感觉', path: 'assets/illustrations/rehab-proprioception-bosu.webp', keywords: ['bosu', '半圆球', '不稳定面', '干扰', '本体'] },
     { name: '弹力带抗阻', path: 'assets/illustrations/rehab-resistance-band.webp', keywords: ['弹力带', '抗阻', '阻力带', '橡皮筋', '等张', '渐进抗阻'] },
     { name: '泡沫轴', path: 'assets/illustrations/rehab-foam-roller.webp', keywords: ['泡沫轴', '滚筒', '筋膜放松', '滚压'] },
     { name: '手治疗', path: 'assets/illustrations/rehab-hand-therapy.webp', keywords: ['手', '握', '抓', '捏', '精细', '手指', '腕'] },
