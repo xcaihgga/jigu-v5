@@ -173,6 +173,7 @@ def build_deploy():
         ('src/scale-teaching.js', 'src/scale-teaching.js'),
         ('src/scales-ui.js', 'src/scales-ui.js'),
         ('src/protocol-teaching.js', 'src/protocol-teaching.js'),
+        ('src/exercise-media.js', 'src/exercise-media.js'),
         ('src/clinical-reasoning.js', 'src/clinical-reasoning.js'),
         ('src/clinical-reasoning-ui.js', 'src/clinical-reasoning-ui.js'),
         ('src/quiz.js', 'src/quiz.js'),

@@ -416,6 +416,27 @@
           return '<li class="stage-exercise-item">' + e + '</li>';
         }
         var rows = [];
+        // 第5批：自动匹配动作插图（动效替代GIF），用动作名+起始姿势+要领联合匹配
+        var media = null;
+        try {
+          var mediaText = (e || '') + ' ' + (teachingAction.setup || '') + ' ' + (teachingAction.keyPoints || '');
+          if (window.exerciseMedia && typeof window.exerciseMedia.findForAction === 'function') {
+            media = window.exerciseMedia.findForAction(mediaText);
+          }
+        } catch (e2) { media = null; }
+        var mediaHtml = '';
+        if (media) {
+          mediaHtml = '<div class="teach-media">' +
+            '<div class="teach-media-frame" data-anim="0">' +
+              '<img src="' + media.path + '" alt="' + media.name + '" onerror="this.parentNode.style.display=\'none\'">' +
+              '<div class="teach-media-anim-overlay"></div>' +
+            '</div>' +
+            '<div class="teach-media-bar">' +
+              '<span class="teach-media-name">' + media.name + '（匹配度' + media.match + '）</span>' +
+              '<button class="teach-media-play" onclick="emTogglePlay(this)">▶ 播放动效</button>' +
+            '</div>' +
+          '</div>';
+        }
         if (teachingAction.setup) rows.push('<div class="teach-row"><span class="teach-label">起始姿势</span><span>' + teachingAction.setup + '</span></div>');
         if (teachingAction.keyPoints) rows.push('<div class="teach-row"><span class="teach-label">动作要领</span><span>' + teachingAction.keyPoints + '</span></div>');
         if (teachingAction.dose) rows.push('<div class="teach-row"><span class="teach-label">剂量</span><span>' + teachingAction.dose + '</span></div>');
@@ -426,7 +447,7 @@
         return '<li class="stage-exercise-item"><div class="teach-ex-item">' +
           '<div class="teach-ex-title" onclick="this.classList.toggle(\'open\');this.nextElementSibling.classList.toggle(\'open\')">' + e +
           '<span class="teach-ex-toggle">▸</span></div>' +
-          '<div class="teach-ex-detail">' + rows.join('') + '</div>' +
+          '<div class="teach-ex-detail">' + mediaHtml + rows.join('') + '</div>' +
           '</div></li>';
       }).join('');
       var caution = s.cautions ? '<div class="stage-caution"><strong>⚠ 注意事项</strong><br>' + s.cautions + '</div>' : '';

@@ -26,6 +26,7 @@ const PRECACHE = [
   './src/scale-teaching.js',
   './src/scales-ui.js',
   './src/protocol-teaching.js',
+  './src/exercise-media.js',
   './src/clinical-reasoning.js',
   './src/clinical-reasoning-ui.js',
   './src/quiz.js',
