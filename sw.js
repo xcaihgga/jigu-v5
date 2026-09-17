@@ -31,6 +31,7 @@ const PRECACHE = [
   './src/clinical-reasoning-ui.js',
   './src/quiz.js',
   './src/quiz-ui.js',
+  './src/techs.js',
   './src/protocols-tools-guidelines.js',
   './src/dashboard.js',
   './src/migration-report.js'

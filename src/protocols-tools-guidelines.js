@@ -312,11 +312,24 @@
     bar.querySelectorAll('.protocol-cat-chip').forEach(function (el) {
       el.addEventListener('click', function () {
         currentProtocolCat = this.dataset.cat;
+        currentTechChapter = 'ALL'; // 切换主分类时重置章节筛选
         renderProtocolCatBar();
         renderProtocolList();
       });
     });
+    // 章节子筛选栏：仅 TECH 分类显示并渲染
+    var techBar = document.getElementById('techChapterBar');
+    if (techBar) {
+      if (currentProtocolCat === 'TECH') {
+        techBar.style.display = '';
+        renderTechChapterBar();
+      } else {
+        techBar.style.display = 'none';
+      }
+    }
   }
+
+  // ─── 康复方案列表 ───────────────────────────────
 
   function renderProtocolList() {
     var container = document.getElementById('protocolListContainer');
@@ -324,6 +337,12 @@
     var searchEl = document.getElementById('protocolSearch');
     var search = (searchEl ? searchEl.value : '') || '';
     search = search.toLowerCase();
+
+    // 康复技术分类：渲染 techs.js 数据（41 项，来自《康复治疗技术速查表》）
+    if (currentProtocolCat === 'TECH') {
+      renderTechList(container, search);
+      return;
+    }
 
     var protocols = typeof rehabProtocols !== 'undefined' ? rehabProtocols : [];
     var filtered = protocols.filter(function (p) {
@@ -369,6 +388,144 @@
         showProtocolDetail(this.dataset.id);
       });
     });
+  }
+
+  // ═══════════════════════════════════════════════════
+  //  3b. 康复技术（techs.js，41 项速查表）
+  // ═══════════════════════════════════════════════════
+
+  var currentTechChapter = 'ALL';
+
+  // TECH 分类专属章节子筛选栏
+  function renderTechChapterBar() {
+    var bar = document.getElementById('techChapterBar');
+    if (!bar) return;
+    var techs = typeof rehabTechs !== 'undefined' ? rehabTechs : [];
+    var chapters = [];
+    techs.forEach(function (t) {
+      if (t.chapter && chapters.indexOf(t.chapter) < 0) chapters.push(t.chapter);
+    });
+    var chips = [{ id: 'ALL', name: '全部' }].concat(chapters.map(function (c) {
+      return { id: c, name: c.replace(/（\d+项）/g, '') };
+    }));
+    bar.innerHTML = chips.map(function (c) {
+      var active = c.id === currentTechChapter ? ' active' : '';
+      return '<div class="protocol-cat-chip tech-chapter-chip' + active + '" data-ch="' + c.id + '">' + c.name + '</div>';
+    }).join('');
+    bar.querySelectorAll('.tech-chapter-chip').forEach(function (el) {
+      el.addEventListener('click', function () {
+        currentTechChapter = this.dataset.ch;
+        renderTechChapterBar();
+        var container = document.getElementById('protocolListContainer');
+        var searchEl = document.getElementById('protocolSearch');
+        renderTechList(container, (searchEl ? searchEl.value : '') || '');
+      });
+    });
+  }
+
+  function renderTechList(container, search) {
+    var techs = typeof rehabTechs !== 'undefined' ? rehabTechs : [];
+    var filtered = techs.filter(function (t) {
+      var chapterMatch = currentTechChapter === 'ALL' || (t.chapter || '').indexOf(currentTechChapter) === 0;
+      var searchMatch = !search ||
+        (t.title && t.title.toLowerCase().indexOf(search) >= 0) ||
+        (t.indications && t.indications.toLowerCase().indexOf(search) >= 0) ||
+        (t.procedure && t.procedure.toLowerCase().indexOf(search) >= 0) ||
+        (t.contraindications && t.contraindications.toLowerCase().indexOf(search) >= 0) ||
+        (t.evidence && t.evidence.toLowerCase().indexOf(search) >= 0);
+      return chapterMatch && searchMatch;
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = '<div class="dashboard-empty">暂无匹配技术</div>';
+      return;
+    }
+
+    container.innerHTML = filtered.map(function (t) {
+      var warnBadge = t.warn
+        ? '<span class="protocol-card-badge" style="background:rgba(239,68,68,0.12);color:#dc2626;border-color:rgba(239,68,68,0.3);">⚠️ 原文警示</span>'
+        : '';
+      var chapterTag = (t.chapter || '').replace(/（\d+项）/, '');
+      var indications = t.indications || '';
+      var desc = indications.length > 80 ? indications.substring(0, 80) + '…' : indications;
+      return '<div class="protocol-card" data-idx="' + t.num + '">' +
+        '<div class="protocol-card-header">' +
+          '<div class="protocol-card-icon" style="background:rgba(124,58,237,0.12);color:#7c3aed;">' + icon('layers', 26) + '</div>' +
+          '<div class="protocol-card-info">' +
+            '<div class="protocol-card-title">' + (t.title || '') + '</div>' +
+            '<div class="protocol-card-evidence">' + (t.chapter || '') + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="protocol-card-desc">适应症：' + desc + '</div>' +
+        '<span class="protocol-card-badge" style="color:#7c3aed;border-color:rgba(124,58,237,0.3);background:rgba(124,58,237,0.06);">' + chapterTag + '</span>' +
+        warnBadge +
+      '</div>';
+    }).join('');
+
+    container.querySelectorAll('.protocol-card').forEach(function (el) {
+      el.addEventListener('click', function () {
+        showTechDetail(parseInt(this.dataset.idx, 10));
+      });
+    });
+  }
+
+  function showTechDetail(num) {
+    var techs = typeof rehabTechs !== 'undefined' ? rehabTechs : [];
+    var t = techs.find(function (x) { return x.num === num; });
+    if (!t) return;
+
+    if (typeof rtSession !== 'undefined') rtSession.protocols++;
+    if (typeof rtSetAction === 'function') rtSetAction('查看康复技术: ' + (t.title || ''));
+    if (typeof updateSessionStats === 'function') updateSessionStats();
+    if (global.interactionLog) {
+      global.interactionLog.info('tech.detail.open', {
+        techNum: t.num, techTitle: t.title, warn: !!t.warn,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    var container = document.getElementById('page-tech-detail');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'page';
+      container.id = 'page-tech-detail';
+      document.getElementById('content').appendChild(container);
+    }
+
+    showPage('tech-detail', true);
+
+    function block(label, text, cls) {
+      if (!text) return '';
+      return '<div class="stage-caution" style="' + (cls || '') + '"><strong>' + label + '</strong><br>' + text + '</div>';
+    }
+
+    var warnHtml = t.warn
+      ? '<div style="padding:12px 16px 0;"><div class="stage-caution" style="background:rgba(239,68,68,0.10);border-left:4px solid #dc2626;"><strong>⚠️ 安全警示</strong><br>原文标注此技术含安全警示，操作前必须逐条核对禁忌证，出现不适应立即停止并重新评估。</div></div>'
+      : '';
+
+    container.innerHTML = '<div class="protocol-detail">' +
+      '<div class="protocol-detail-header">' +
+        '<div class="protocol-detail-title">' + (t.title || '') +
+          (t.warn ? ' <span style="display:inline-block;padding:2px 8px;background:linear-gradient(135deg,#dc2626,#f87171);color:#fff;font-size:11px;font-weight:600;border-radius:20px;vertical-align:middle;">⚠️</span>' : '') +
+        '</div>' +
+        '<div class="protocol-detail-evidence">' + (t.chapter || '') + '</div>' +
+      '</div>' +
+      warnHtml +
+      '<div style="padding:12px 16px 20px;display:flex;flex-direction:column;gap:10px;">' +
+        block('适应症', t.indications, 'background:rgba(37,99,235,0.06);border-left:3px solid #2563eb;') +
+        block('核心操作要点', t.procedure, 'background:rgba(16,185,129,0.06);border-left:3px solid #10b981;') +
+        block('禁忌证', t.contraindications, 'background:rgba(239,68,68,0.07);border-left:3px solid var(--status-error-default);') +
+        block('临床适用场景与循证参考', t.evidence, 'background:rgba(245,158,11,0.07);border-left:3px solid var(--accent-amber);') +
+      '</div>' +
+    '</div>';
+
+    container.classList.add('active');
+    container.classList.add('fade-in');
+    setTimeout(function () { container.classList.remove('fade-in'); }, 200);
+    var contentEl = document.getElementById('content');
+    if (contentEl) contentEl.scrollTop = 0;
+    var navBack = document.getElementById('navBack');
+    if (navBack) navBack.style.display = 'flex';
   }
 
   function showProtocolDetail(id) {
@@ -687,6 +844,8 @@
   global.showGuidelineDetail = showGuidelineDetail;
   global.renderProtocolCatBar = renderProtocolCatBar;
   global.renderProtocolList = renderProtocolList;
+  global.renderTechChapterBar = renderTechChapterBar;
+  global.showTechDetail = showTechDetail;
   global.showProtocolDetail = showProtocolDetail;
   global.highlightStageRow = highlightStageRow;
 })(typeof window !== 'undefined' ? window : this);

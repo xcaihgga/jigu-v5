@@ -110,6 +110,9 @@ window.clinicalReasoning = {
       branches: [
         { condition: '存在马尾综合征警示（大小便障碍/鞍区麻木/进行性双下肢无力）', decision: '立即急诊转诊，勿在门诊处理', action: null, why: '马尾综合征为外科急症，延误致永久神经损伤', source: 'NICE NG59' },
         { condition: '伴下肢放射痛+直腿抬高试验阳性', decision: '怀疑神经根受压', action: 'protocol:pro-lumbar-disc-herniation', why: 'MRI确认后再针对性训练', source: 'NICE NG59' },
+        { condition: '腰痛+反复运动测试后痛向腰骶集中（中心化）', decision: '考虑 McKenzie 麦肯基疗法（力学诊断）', action: 'tech:1', why: '症状中心化提示 MDT 方向偏爱，麦肯基延伸训练可获益', source: 'techs.js: #1' },
+        { condition: '慢性腰痛+改良卷腹/侧桥/鸟狗可维持稳定、无骨盆代偿', decision: '考虑 McGill 核心稳定训练（Big 3）', action: 'tech:2', why: '核心肌力耐力不足时，生物力学核心训练有B级证据', source: 'techs.js: #2' },
+        { condition: '腰痛+骨盆稳定性差、需渐进负荷悬吊', decision: '考虑悬吊治疗（S-E-T）', action: 'tech:3', why: '悬吊强化深层核心与神经肌肉控制', source: 'techs.js: #3' },
         { condition: '腰痛为主、无下肢放射+俯卧伸髋痛（骶髂应力）', decision: '怀疑骶髂关节痛', action: 'protocol:pain-lbp-sacroiliac', why: '骶髂关节痛的康复与腰椎源性不同，需专门稳定训练', source: 'IASP 2021' },
         { condition: '腰痛+活动后缓解但晨僵/活动受限', decision: '怀疑腰椎活动度不足', action: 'protocol:pain-lbp-mobility-deficit', why: '活动度不足危害低但需循序渐进恢复', source: '临床' },
         { condition: '腰痛+重复动作诱发、易复发（机械性腰痛）', decision: '怀疑腰椎不稳/协调障碍', action: 'protocol:pain-lbp-instability', why: '核心稳定+协调训练针对不稳', source: '临床' }
@@ -123,6 +126,7 @@ window.clinicalReasoning = {
         { condition: '急性大量血肿+抽屉试验/轴移试验阳性', decision: '高度怀疑ACL损伤', action: 'protocol:pt-acl', why: 'ACL重建与否均按分阶段康复', source: 'MGB 指南' },
         { condition: '旋转损伤+麦氏试验阳性+阵发性卡锁', decision: '怀疑半月板撕裂', action: 'protocol:pain-meniscus-injury', why: '卡锁提示需评估手术', source: 'AAOS' },
         { condition: '膝前痛+上下楼痛+髌骨研磨痛', decision: '怀疑髌股关节痛', action: 'protocol:pain-patellofemoral', why: '髌股关节康复以股四头肌+臀肌强化为主', source: 'JPFA' },
+        { condition: '膝活动度受限+主动/被动 ROM 僵硬，无新鲜韧带损伤', decision: '考虑关节松动术（Maitland/Mulligan）', action: 'tech:25', why: 'ROM 受限且非急性炎症、关节置换早期时，松动术可改善活动度', source: 'techs.js: #25' },
         { condition: '多向不稳+多处韧带松（伴全身关节松弛）', decision: '怀疑多韧带损伤/髓质松弛', action: 'protocol:pt-acl', why: '按保护性康复', source: '临床' }
       ]
     },
@@ -134,6 +138,7 @@ window.clinicalReasoning = {
         { condition: '外伤史+jobe试验/疼痛弧阳性，被动活动多正常', decision: '撞击/肩袖损伤', action: 'protocol:pt-rotator-cuff', why: '分4阶段恢复', source: 'ISAKOS 2025' },
         { condition: '无明确外伤+主动被动均受限+夜间静息痛进行性', decision: '冻结肩（肩周炎）', action: 'protocol:pt-rotator-cuff', why: '以被动牵拉+ROM为主', source: 'ISAKOS' },
         { condition: '挥拍/甩臂高危动作后+外旋抗阻痛', decision: '肩胛下肌/肩外旋肌损伤', action: 'protocol:pt-rotator-cuff', why: '强化期加入肩外旋训练', source: 'ISAKOS' },
+        { condition: '慢性肩周软组织紧张、活动度/牵拉主诉明显', decision: '考虑肌筋膜放松相关技术辅助', action: 'tech:9', why: '筋膜/软组织紧张时，肌筋膜链处理可改善活动度（注意48h内急性期除外）', source: 'techs.js: #9' },
         { condition: '肩痛+颈部活动诱发+上肢放射', decision: '颈椎源性肩痛', action: 'protocol:pain-neck-radiating', why: '处理颈源而非肩关节', source: 'NICE NG59' }
       ]
     },

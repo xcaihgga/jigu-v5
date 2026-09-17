@@ -577,5 +577,6 @@ window.protocolCategories = [
   { id: 'PT', name: '物理治疗', color: '#2563eb', icon: 'body' },
   { id: 'OT', name: '作业治疗', color: '#10b981', icon: 'hand' },
   { id: 'ST', name: '言语治疗', color: '#f59e0b', icon: 'mouth' },
+  { id: 'TECH', name: '康复技术', color: '#7c3aed', icon: 'layers' },
 ];
 }

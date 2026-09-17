@@ -16,7 +16,8 @@
     'src/knowledge-base.js',
     'src/rehab-protocols.js',
     'src/protocols-pro.js',
-    'src/pain-protocols.js'
+    'src/pain-protocols.js',
+    'src/techs.js'
   ];
   const BACKGROUND_FILES = ['data.js']; // 大文件，后台加载
   const DATA_FILES = CORE_FILES.concat(BACKGROUND_FILES);

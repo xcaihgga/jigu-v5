@@ -43,6 +43,10 @@
       var sid = action.slice('scale:'.length);
       return '<span class="cr-link" onclick="crGoScale(\'' + sid + '\')">查看量表 ›</span>';
     }
+    if (action.indexOf('tech:') === 0) {
+      var tnum = action.slice('tech:'.length);
+      return '<span class="cr-link" onclick="showTechDetail(' + tnum + ')">查看技术 ›</span>';
+    }
     return '<span class="cr-link">' + action + '</span>';
   }
 

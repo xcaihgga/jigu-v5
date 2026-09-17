@@ -1642,6 +1642,7 @@ body { display: flex; flex-direction: column; width: 100%; max-width: 100%; marg
 .protocol-cat-chip[data-cat="PT"].active { background:#2563eb; }
 .protocol-cat-chip[data-cat="OT"].active { background:var(--accent-teal); }
 .protocol-cat-chip[data-cat="ST"].active { background:var(--accent-amber); }
+.protocol-cat-chip[data-cat="TECH"].active { background:#7c3aed; }
 .protocol-cat-chip[data-cat="ALL"].active { background:var(--primary); }
 
 .protocol-card { background:var(--bg-2); border-radius:var(--radius-md); padding:16px; margin-bottom:12px; box-shadow:var(--shadow-sm); border:1px solid var(--border); cursor:pointer; transition:all .2s; }
@@ -3543,6 +3544,7 @@ pre {
 
   <div class="page" id="page-protocol">
     <div class="protocol-cat-bar" id="protocolCatBar"></div>
+    <div class="protocol-cat-bar" id="techChapterBar" style="display:none;"></div>
     <div class="search-box">
       <span class="icon" id="protocolSearchIcon"></span>
       <input type="text" id="protocolSearch" placeholder="搜索康复方案...">

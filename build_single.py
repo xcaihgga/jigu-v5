@@ -24,6 +24,7 @@ DATA_SCRIPTS = {
     'src/rehab-protocols.js': 'rehab-protocols.js',
     'src/protocols-pro.js': 'protocols-pro.js',
     'src/pain-protocols.js': 'pain-protocols.js',
+    'src/techs.js': 'techs.js',
 }
 
 # 用于匹配的 script src 模式
@@ -63,6 +64,7 @@ def build_single():
         ('src/rehab-protocols.js?v=4.0', 'src/rehab-protocols.js'),
         ('src/protocols-pro.js?v=4.0', 'src/protocols-pro.js'),
         ('src/pain-protocols.js?v=4.0', 'src/pain-protocols.js'),
+        ('src/techs.js?v=4.0', 'src/techs.js'),
     ]
 
     # 注意：由于现在 index.html 已经不直接引用这些数据脚本，
@@ -190,6 +192,7 @@ def build_deploy():
         ('src/rehab-protocols.js', 'src/rehab-protocols.js'),
         ('src/protocols-pro.js', 'src/protocols-pro.js'),
         ('src/pain-protocols.js', 'src/pain-protocols.js'),
+        ('src/techs.js', 'src/techs.js'),
     ]
 
     total_data_size = 0

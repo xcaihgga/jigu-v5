@@ -90,7 +90,20 @@ window.quizData = {
         { q: '腰痛伴不明原因体重下降、夜间痛、发热等，应？', options: ['继续训练', '警惕红旗征并转诊评估', '只做按摩', '加大核心训练'], answer: 1, explain: '这些为非机械性腰痛红旗征，需警惕肿瘤/感染等，须转诊（NICE NG59 红旗征）。', source: 'NICE NG59' },
         { q: '存在进行性肌力下降/麻木加重的神经根症状，应？', options: ['坚持训练', '及时评估并考虑影像学检查', '静养一年', '热敷'], answer: 1, explain: '神经功能进行性加重提示需进一步评估（临床推理案例随访要点）。', source: 'clinical-reasoning.js' },
         { q: '急性期疼痛训练的基本安全原则是？', options: ['疼痛到极致', '在无痛/轻微可耐受范围内进行', '完全无痛长期不动', '只做过伸'], answer: 1, explain: 'pain-ankle-sprain 等方案：严格在无痛范围内训练。', source: 'pain-protocols.js' },
-        { q: '踝扭伤反复发作、明显不稳定，应？', options: ['继续忍', '评估韧带松弛及重建必要性', '加大跳跃', '忽视'], answer: 1, explain: 'pain-ankle-sprain：反复扭伤需关注韧带松弛程度并评估。', source: 'pain-protocols.js: pain-ankle-sprain' }
+        { q: '踝扭伤反复发作、明显不稳定，应？', options: ['继续忍', '评估韧带松弛及重建必要性', '加大跳跃', '忽视'], answer: 1, explain: 'pain-ankle-sprain：反复扭伤需关注韧带松弛程度并评估。', source: 'pain-protocols.js: pain-ankle-sprain' },
+        // ── 以下为《康复治疗技术速查表》⚠️ 技术专属禁忌（techs.js） ──
+        { q: '患者拟行 McKenzie 麦肯基疗法，下列哪项属绝对禁忌，应直接排除？', options: ['非特异性慢性腰痛', '腰椎间盘突出伴可中心化疼痛', '马尾综合征（大小便障碍/会阴麻木）', '姿势性腰痛'], answer: 2, explain: 'techs #1：马尾综合征为绝对禁忌，须立即急诊转诊。', source: 'techs.js: #1 McKenzie' },
+        { q: '拟对患者行悬吊治疗 S-E-T，下列哪项应视为禁忌排除？', options: ['肌力轻度下降', '重度骨质疏松症', '功能障碍恢复期', '术后早期无负重禁忌'], answer: 1, explain: 'techs #3：重度骨质疏松、高血压危象、心功能Ⅳ级、急性传染病等均为禁忌。', source: 'techs.js: #3 悬吊S-E-T' },
+        { q: '肌内效贴扎前应排除的禁忌是？', options: ['局部皮肤完好', '深静脉血栓（DVT）', '慢性的无炎症疼痛', '运动员训练恢复'], answer: 1, explain: 'techs #4：恶性肿瘤、蜂窝组织炎/皮肤感染、DVT、不能避开的开放性伤口均为禁忌。', source: 'techs.js: #4 肌内效贴扎' },
+        { q: '患者下肢急性软组织损伤后 36 小时（红肿热痛期），下列可操作的技术是？', options: ['肌筋膜链直接按摩', '冰敷与抬高制动', '肌筋膜扳机点深压', '巫毒带加压'], answer: 1, explain: 'techs #9：急性软组织损伤 48h 内红肿热痛期为筋膜直接操作禁忌。冰敷/抬高不属禁忌。', source: 'techs.js: #9 肌筋膜链' },
+        { q: '巫毒带（Voodoo Floss）加压应绝对避免的部位是？', options: ['大腿', '头颈部', '前臂', '小腿'], answer: 1, explain: 'techs #11：头颈部禁缠，压迫可能影响颈静脉回流。', source: 'techs.js: #11 巫毒带' },
+        { q: '拟行淋巴综合消肿 CDT/手法引流（MLD），最应先排除？', options: ['非急性单纯淋巴水肿', '急性深静脉血栓（DVT）', '术后恢复水肿', '轻微活动受限'], answer: 1, explain: 'techs #21：急性 DVT 时 MLD 与压力治疗均禁忌；急性感染、失代偿性心衰也禁忌。', source: 'techs.js: #21 CDT' },
+        { q: '正骨整脊（Spinal Manipulation）前最重要的神经性排除是？', options: ['椎动脉供血不足（VBI）或椎动脉夹层史', '慢性机械性颈痛', '姿势不良', '颈部轻度僵硬'], answer: 0, explain: 'techs #24：椎动脉供血不足/夹层史、寰枢椎不稳、急性脊髓压迫等为高危及禁忌，须先排除。', source: 'techs.js: #24 正骨整脊' },
+        { q: '患者有 Down 综合征，拟行颈椎手法，应警惕并首先评估？', options: ['寰枢椎不稳/半脱位', '普通肌肉疲劳', '肩关节挛缩', '皮肤过敏'], answer: 0, explain: 'techs #24：Down 综合征寰枢椎不稳为手法治疗高危禁忌，须先评估排除。', source: 'techs.js: #24 正骨整脊' },
+        { q: '颅荐椎疗法（CST）的绝对禁忌是？', options: ['慢性紧张性头痛', '急性脑出血/颅内压增高', '睡眠不佳', '轻微颈部不适'], answer: 1, explain: 'techs #12：颅内压增高、急性脑出血/硬膜下/蛛网膜下腔出血、急性颅内动脉瘤、脑脊液漏等为绝对禁忌。', source: 'techs.js: #12 颅荐椎CST' },
+        { q: '关节松动术再急性炎症期且伴关节大量积液时，正确做法是？', options: ['立即 IV-V 级全范围松动', '避免高等级手法，视肿胀/滑膜炎程度处理', '进行深层强力按摩', '热敷后过度牵拉'], answer: 1, explain: 'techs #25：急性炎症期尤其是 IV-V 级手法可加重滑膜炎，关节大量积液时须避免高等级松动。', source: 'techs.js: #25 关节松动术' },
+        { q: '神经松动术（Neural Flossing）操作前应排除的禁忌是？', options: ['慢性神经性紧张', '急性神经根炎/进行性神经损害', '常规肌肉僵硬', '活动量不足'], answer: 1, explain: 'techs #6：急性神经炎/神经根炎、脊髓压迫/进行性神经损害、马尾综合征等为禁忌。', source: 'techs.js: #6 神经松动术' },
+        { q: '筋膜手法（Fascial Manipulation）涉及腹部/盆底操作，首先排除？', options: ['妊娠', '慢性肌肉紧张', '单纯腰痛', '工作久坐'], answer: 0, explain: 'techs #23：妊娠时脏器与盆底内手法禁忌；急性盆腔炎、急腹症、腹主动脉瘤、凝血障碍等也为禁忌。', source: 'techs.js: #23 筋膜手法' }
       ]
     }
   ]
