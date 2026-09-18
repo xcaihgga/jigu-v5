@@ -396,6 +396,9 @@
 
   var currentTechChapter = 'ALL';
 
+  // 内部转义别名（内容来自外部导入的 techs.js，含 <、& 等特殊字符，必须转义防注入/渲染错乱）
+  function esc(val) { return typeof escapeHtml === 'function' ? escapeHtml(val) : String(val == null ? '' : val); }
+
   // TECH 分类专属章节子筛选栏
   function renderTechChapterBar() {
     var bar = document.getElementById('techChapterBar');
@@ -410,7 +413,7 @@
     }));
     bar.innerHTML = chips.map(function (c) {
       var active = c.id === currentTechChapter ? ' active' : '';
-      return '<div class="protocol-cat-chip tech-chapter-chip' + active + '" data-ch="' + c.id + '">' + c.name + '</div>';
+      return '<div class="protocol-cat-chip tech-chapter-chip' + active + '" data-ch="' + esc(c.id) + '">' + esc(c.name) + '</div>';
     }).join('');
     bar.querySelectorAll('.tech-chapter-chip').forEach(function (el) {
       el.addEventListener('click', function () {
@@ -450,14 +453,14 @@
       var desc = indications.length > 80 ? indications.substring(0, 80) + '…' : indications;
       return '<div class="protocol-card" data-idx="' + t.num + '">' +
         '<div class="protocol-card-header">' +
-          '<div class="protocol-card-icon" style="background:rgba(124,58,237,0.12);color:#7c3aed;">' + icon('layers', 26) + '</div>' +
+          '<div class="protocol-card-icon" style="background:rgba(124,58,237,0.12);color:#7c3aed;">' + icon('list', 26) + '</div>' +
           '<div class="protocol-card-info">' +
-            '<div class="protocol-card-title">' + (t.title || '') + '</div>' +
-            '<div class="protocol-card-evidence">' + (t.chapter || '') + '</div>' +
+            '<div class="protocol-card-title">' + esc(t.title) + '</div>' +
+            '<div class="protocol-card-evidence">' + esc(t.chapter) + '</div>' +
           '</div>' +
         '</div>' +
-        '<div class="protocol-card-desc">适应症：' + desc + '</div>' +
-        '<span class="protocol-card-badge" style="color:#7c3aed;border-color:rgba(124,58,237,0.3);background:rgba(124,58,237,0.06);">' + chapterTag + '</span>' +
+        '<div class="protocol-card-desc">适应症：' + esc(desc) + '</div>' +
+        '<span class="protocol-card-badge" style="color:#7c3aed;border-color:rgba(124,58,237,0.3);background:rgba(124,58,237,0.06);">' + esc(chapterTag) + '</span>' +
         warnBadge +
       '</div>';
     }).join('');
@@ -496,7 +499,7 @@
 
     function block(label, text, cls) {
       if (!text) return '';
-      return '<div class="stage-caution" style="' + (cls || '') + '"><strong>' + label + '</strong><br>' + text + '</div>';
+      return '<div class="stage-caution" style="' + (cls || '') + '"><strong>' + label + '</strong><br>' + esc(text) + '</div>';
     }
 
     var warnHtml = t.warn
@@ -505,10 +508,10 @@
 
     container.innerHTML = '<div class="protocol-detail">' +
       '<div class="protocol-detail-header">' +
-        '<div class="protocol-detail-title">' + (t.title || '') +
+        '<div class="protocol-detail-title">' + esc(t.title) +
           (t.warn ? ' <span style="display:inline-block;padding:2px 8px;background:linear-gradient(135deg,#dc2626,#f87171);color:#fff;font-size:11px;font-weight:600;border-radius:20px;vertical-align:middle;">⚠️</span>' : '') +
         '</div>' +
-        '<div class="protocol-detail-evidence">' + (t.chapter || '') + '</div>' +
+        '<div class="protocol-detail-evidence">' + esc(t.chapter) + '</div>' +
       '</div>' +
       warnHtml +
       '<div style="padding:12px 16px 20px;display:flex;flex-direction:column;gap:10px;">' +

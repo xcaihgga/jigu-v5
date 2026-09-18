@@ -38,6 +38,9 @@
     return state[catId];
   }
 
+  // 转义别名：题库内容经 innerHTML 渲染，统一转义防特殊字符破坏结构
+  function esc(val) { return typeof escapeHtml === 'function' ? escapeHtml(val) : String(val == null ? '' : val); }
+
   function resetState(catId) {
     state[catId] = { choices: {}, submitted: false };
   }
@@ -49,7 +52,7 @@
     var data = (global.quizData || {}).categories || [];
     bar.innerHTML = data.map(function (c) {
       return '<button class="quick-nav-item ' + (c.id === currentCat ? 'active' : '') +
-        '" onclick="quizSelectCategory(\'' + c.id + '\')">' + c.name +
+        '" onclick="quizSelectCategory(\'' + esc(c.id) + '\')">' + esc(c.name) +
         '<span class="quiz-count">' + c.questions.length + '题</span></button>';
     }).join('');
   }
@@ -80,19 +83,19 @@
         }
         return '<div class="' + cls.join(' ') + '" onclick="quizChoose(' + qi + ',' + oi + ')">' +
           '<span class="quiz-opt-key">' + String.fromCharCode(65 + oi) + '</span>' +
-          '<span class="quiz-opt-text">' + opt + '</span>' + mark +
+          '<span class="quiz-opt-text">' + esc(opt) + '</span>' + mark +
         '</div>';
       }).join('');
 
       var explainHtml = '';
       if (showResult) {
-        explainHtml = '<div class="quiz-explain"><b>解析：</b>' + item.explain +
-          (item.source ? ' <span class="quiz-src">（来源：' + item.source + '）</span>' : '') + '</div>';
+        explainHtml = '<div class="quiz-explain"><b>解析：</b>' + esc(item.explain) +
+          (item.source ? ' <span class="quiz-src">（来源：' + esc(item.source) + '）</span>' : '') + '</div>';
       }
 
       return '<div class="quiz-question">' +
         '<div class="quiz-q-head"><span class="quiz-q-num">' + (qi + 1) + '</span>' +
-          '<span class="quiz-q-text">' + item.q + '</span></div>' +
+          '<span class="quiz-q-text">' + esc(item.q) + '</span></div>' +
         '<div class="quiz-opts">' + opts + '</div>' + explainHtml +
       '</div>';
     }).join('');
