@@ -4158,9 +4158,9 @@ function renderPatientList() {
   let filtered = patients;
   if (kw) {
     filtered = patients.filter(p => 
-      (p.name && p.name.toLowerCase().includes(kw)) ||
-      (p.diagnosis && p.diagnosis.toLowerCase().includes(kw)) ||
-      (p.chiefComplaint && p.chiefComplaint.toLowerCase().includes(kw))
+      (p.name && String(p.name).toLowerCase().includes(kw)) ||
+      (p.diagnosis && String(p.diagnosis).toLowerCase().includes(kw)) ||
+      (p.chiefComplaint && String(p.chiefComplaint).toLowerCase().includes(kw))
     );
   }
   

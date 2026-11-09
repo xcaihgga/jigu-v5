@@ -512,7 +512,7 @@ function showScaleResult(result) {
       const score = currentScaleAnswers[i * 2 + 1] || 0;
       content += 
         '<div class="field-row">' +
-          '<div class="field-label">' + activity + '</div>' +
+          '<div class="field-label">' + escapeHtml(activity) + '</div>' +
           '<div class="field-value">' + score + ' 分</div>' +
         '</div>';
     }
@@ -712,11 +712,12 @@ function viewHistoryDetail(recordId) {
   if (!scale) return;
   
   currentScale = scale;
-  currentScaleAnswers = [...record.answers];
+  const answers = Array.isArray(record.answers) ? record.answers : [];
+  currentScaleAnswers = [...answers];
   currentScaleChoiceIdx = [];
   if (scale.type === 'choice' && scale.questions) {
     for (let i = 0; i < scale.questions.length; i++) {
-      const idx = scale.questions[i].scores.indexOf(record.answers[i]);
+      const idx = scale.questions[i].scores.indexOf(answers[i]);
       currentScaleChoiceIdx.push(idx);
     }
   }
@@ -725,12 +726,12 @@ function viewHistoryDetail(recordId) {
   if (scale.customQuestions) {
     const scores = [];
     for (let i = 0; i < (scale.questionCount || 3); i++) {
-      scores.push(record.answers[i * 2 + 1] || 0);
+      scores.push(answers[i * 2 + 1] || 0);
     }
     result = scale.calculate(scores, record.activities);
     result.activities = record.activities;
   } else {
-    result = scale.calculate(record.answers);
+    result = scale.calculate(answers);
   }
   
   const interp = getInterpretation(result.score, result.maxScore, scale.interpretation);
@@ -750,7 +751,7 @@ function viewHistoryDetail(recordId) {
     for (let i = 0; i < result.activities.length; i++) {
       content += 
         '<div class="field-row">' +
-          '<div class="field-label">' + result.activities[i] + '</div>' +
+          '<div class="field-label">' + escapeHtml(result.activities[i]) + '</div>' +
           '<div class="field-value">' + (record.answers[i * 2 + 1] || 0) + ' 分</div>' +
         '</div>';
     }
